@@ -2,6 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "4.0.3"
     id("io.spring.dependency-management") version "1.1.7"
+    id("org.sonarqube") version "7.1.0.6387"
 }
 
 group = "id.ac.ui.cs.advprog"
@@ -38,4 +39,12 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+
+sonar {
+  properties {
+    property("sonar.projectKey", "advprog-2026-B6-project_MySawit-backend")
+    property("sonar.organization", "advprog-2026-6-project")
+  }
 }
