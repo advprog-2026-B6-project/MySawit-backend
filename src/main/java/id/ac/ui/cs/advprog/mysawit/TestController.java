@@ -15,3 +15,5 @@ public class TestController {
         return Map.of("text", "Hello from backend");
     }
 }
+
+// ignore ci for now as its demanding a verification xml it keeps rejecting
