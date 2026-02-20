@@ -55,7 +55,7 @@ tasks.jacocoTestReport {
 sonarqube {
     properties {
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.organization", "advprog-2026-b6-project")
-        property("sonar.projectKey", "advprog-2026-b6-project_MySawit-backend")
+        property("sonar.organization", "advprog-2026-6-project")
+        property("sonar.projectKey", "advprog-2026-B6-project_MySawit-backend")
     }
 }
