@@ -43,4 +43,4 @@ jobs:
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build sonar --info --dependency-verification=off
+        run: ./gradlew build sonar --info
