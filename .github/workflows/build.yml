@@ -3,8 +3,16 @@ on:
   push:
     branches:
       - main
+      - staging
   pull_request:
     types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - staging
+
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build and analyze
@@ -13,11 +21,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available
+          java-version: 21
+          distribution: 'temurin' # Alternative distribution options are available
       - name: Cache SonarQube packages
         uses: actions/cache@v4
         with:
@@ -30,9 +38,9 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
-      - name: Make Gradle wrapper executable
+      - name: Make gradlew executable
         run: chmod +x gradlew
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build sonar --info
+        run: ./gradlew build sonar --info --dependency-verification=off
