@@ -9,7 +9,7 @@ import java.util.Map;
 @RestController
 public class TestController {
 
-    @CrossOrigin(origins = "*")
+    @CrossOrigin(origins = {"http://localhost:3000", "https://my-sawit-frontend.vercel.app"})
     @GetMapping("/test-json")
     public Map<String, String> testJson() {
         return Map.of("text", "Hello from backend");

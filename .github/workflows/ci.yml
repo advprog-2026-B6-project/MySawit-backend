@@ -26,4 +26,4 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run unit tests
-        run: ./gradlew test --dependency-verification=off
+        run: ./gradlew test
