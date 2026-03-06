@@ -24,7 +24,8 @@ jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
-    # Run on all push/PR events. Note: `publish_results: true` only works on the default branch.
+    # Scorecard only supports the default branch for push events
+    if: github.event_name != 'push' || github.ref == 'refs/heads/main'
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write
