@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin/wages") //tentatif dapat diubah juga sesuai diskusi kelompok
-@PreAuthorize("hasRole('ADMIN_UTAMA')") // mungkin nanti diubah mengikuti modul user
+@CrossOrigin(origins = "http://localhost:3000")
+//@PreAuthorize("hasRole('ADMIN_UTAMA')") // mungkin nanti diubah mengikuti modul user
 public class WageSettingController {
 
     private final WageSettingService wageSettingService;
