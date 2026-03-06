@@ -16,7 +16,9 @@ public class WageSettingService {
 
     public WageSetting getWageSetting() {
         return repository.findById("DEFAULT")
-                .orElseGet(() -> repository.save(new WageSetting("DEFAULT", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)));
+                .orElseGet(() -> repository.save(
+                        new WageSetting("DEFAULT", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+                ));
     }
 
     public WageSetting updateWages(BigDecimal upahBuruh, BigDecimal upahSupir, BigDecimal upahMandor) {
