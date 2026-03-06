@@ -1,0 +1,61 @@
+package id.ac.ui.cs.advprog.mysawit.hasil.repository;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Repository;
+
+import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
+
+@Repository
+@Primary
+public class PostgresHasilRepository implements HasilRepository {
+    private final HasilJpaRepository jpaRepository;
+
+    public PostgresHasilRepository(HasilJpaRepository jpaRepository) {
+        this.jpaRepository = jpaRepository;
+    }
+
+    @Override
+    public Hasil save(Hasil report) {
+        HasilEntity entity = toEntity(report);
+        HasilEntity savedEntity = jpaRepository.save(entity);
+        return toDomain(savedEntity);
+    }
+
+    @Override
+    public Optional<Hasil> findByWorkerIdAndDate(String workerId, LocalDate hasilDate) {
+        return jpaRepository.findByWorkerIdAndHasilDate(workerId, hasilDate)
+                .map(this::toDomain);
+    }
+
+    @Override
+    public boolean existsByWorkerIdAndDate(String workerId, LocalDate hasilDate) {
+        return jpaRepository.existsByWorkerIdAndHasilDate(workerId, hasilDate);
+    }
+
+    private HasilEntity toEntity(Hasil report) {
+        return new HasilEntity(
+                report.getId(),
+                report.getWorkerId(),
+                report.getHasilDate(),
+                report.getWeightKg(),
+                report.getNews(),
+                report.getPhotoUrls(),
+                report.isLocked()
+        );
+    }
+
+    private Hasil toDomain(HasilEntity entity) {
+        return new Hasil(
+                entity.getId(),
+                entity.getWorkerId(),
+                entity.getHasilDate(),
+                entity.getWeightKg(),
+                entity.getNews(),
+                entity.getPhotoUrls(),
+                entity.isLocked()
+        );
+    }
+}
