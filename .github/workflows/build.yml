@@ -4,11 +4,13 @@ on:
     branches:
       - main
       - staging
+      - pengiriman
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
       - main
       - staging
+      - pengiriman
 
 permissions:
   contents: read
