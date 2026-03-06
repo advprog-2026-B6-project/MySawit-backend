@@ -5,7 +5,6 @@ import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSawitRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -90,7 +89,8 @@ public class KebunSawitServiceImpl implements KebunSawitService {
         return repository.findByKodeUnik(kodeUnik);
     }
 
-    private boolean isValidSquare(Coordinate kiriAtas, Coordinate kiriBawah, Coordinate kananAtas, Coordinate kananBawah) {
+    private boolean isValidSquare(Coordinate kiriAtas, Coordinate kiriBawah, 
+                                  Coordinate kananAtas, Coordinate kananBawah) {
         // Hitung kuadrat jarak dari 4 sisi yang bersebelahan
         double sisiKiri = distSq(kiriAtas, kiriBawah);
         double sisiKanan = distSq(kananAtas, kananBawah);
