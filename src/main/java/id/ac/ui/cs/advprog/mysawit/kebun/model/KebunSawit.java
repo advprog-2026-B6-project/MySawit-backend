@@ -14,7 +14,7 @@ public class KebunSawit {
     private String id;
     private String namaKebun;
     private String kodeUnik;
-    private double luasHektare;
+    private Double luasHektare;
 
     private Coordinate kiriAtas;
     private Coordinate kiriBawah;
