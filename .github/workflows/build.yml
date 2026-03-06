@@ -4,13 +4,13 @@ on:
     branches:
       - main
       - staging
-      - pengiriman
+      - manajemen-pengiriman
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
       - main
       - staging
-      - pengiriman
+      - manajemen-pengiriman
 
 permissions:
   contents: read
