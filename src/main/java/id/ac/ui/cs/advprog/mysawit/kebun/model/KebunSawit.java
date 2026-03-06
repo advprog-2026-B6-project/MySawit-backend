@@ -11,6 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class KebunSawit {
+    private String id;
     private String namaKebun;
     private String kodeUnik;
     private double luasHektare;
