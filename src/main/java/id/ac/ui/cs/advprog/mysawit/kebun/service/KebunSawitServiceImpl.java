@@ -1,9 +1,11 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.service;
 
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
+import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSawitRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,6 +44,12 @@ public class KebunSawitServiceImpl implements KebunSawitService {
         if (kebun.getKiriAtas() == null || kebun.getKiriBawah() == null
                 || kebun.getKananAtas() == null || kebun.getKananBawah() == null) {
             throw new IllegalArgumentException("Semua 4 koordinat harus diisi");
+        }
+
+        // Validasi 4 koordinat membentuk persegi
+        if (!isValidSquare(kebun.getKiriAtas(), kebun.getKiriBawah(), 
+                           kebun.getKananAtas(), kebun.getKananBawah())) {
+            throw new IllegalArgumentException("Keempat koordinat yang dimasukkan tidak membentuk persegi sempurna");
         }
 
         // Validasi luas kebun tidak negatif
@@ -85,5 +93,28 @@ public class KebunSawitServiceImpl implements KebunSawitService {
     @Override
     public Optional<KebunSawit> findByKodeUnik(String kodeUnik) {
         return repository.findByKodeUnik(kodeUnik);
+    }
+
+    private boolean isValidSquare(Coordinate kiriAtas, Coordinate kiriBawah, Coordinate kananAtas, Coordinate kananBawah) {
+        // Hitung kuadrat jarak dari 4 sisi yang bersebelahan
+        double sisiKiri = distSq(kiriAtas, kiriBawah);
+        double sisiKanan = distSq(kananAtas, kananBawah);
+        double sisiAtas = distSq(kiriAtas, kananAtas);
+        double sisiBawah = distSq(kiriBawah, kananBawah);
+
+        // Persegi valid jika: 
+        // 1. Jaraknya lebih dari 0 (bukan titik yang menumpuk di koordinat yang sama)
+        // 2. Keempat sisinya sama panjang
+        return sisiKiri > 0 && 
+               sisiKiri == sisiKanan && 
+               sisiKanan == sisiAtas && 
+               sisiAtas == sisiBawah;
+    }
+
+    // Menghitung kuadrat jarak
+    private double distSq(Coordinate p1, Coordinate p2) {
+        double dx = p1.getX() - p2.getX();
+        double dy = p1.getY() - p2.getY();
+        return (dx * dx) + (dy * dy);
     }
 }
