@@ -44,11 +44,6 @@ public class KebunSawitServiceImpl implements KebunSawitService {
             throw new IllegalArgumentException("Semua 4 koordinat harus diisi");
         }
 
-        // Validasi luas kebun tidak null
-        if (kebun.getLuasHektare() == null) {
-            throw new IllegalArgumentException("Luas kebun tidak boleh null");
-        }
-
         // Validasi luas kebun tidak negatif
         if (kebun.getLuasHektare() < 0) {
             throw new IllegalArgumentException("Luas kebun tidak boleh negatif");
