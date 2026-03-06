@@ -1,4 +1,10 @@
-HELP.md
+/.env
+/.env.*
+/.idea/
+/.vscode/
+build/
+*.iml
+/.gradle/HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -34,6 +40,7 @@ out/
 /.nb-gradle/
 
 ### VS Code ###
+.env
 .vscode/
 
 .env
