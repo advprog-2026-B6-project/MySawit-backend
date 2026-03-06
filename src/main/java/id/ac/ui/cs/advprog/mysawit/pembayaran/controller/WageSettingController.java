@@ -8,8 +8,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/wages")
-@PreAuthorize("hasRole('ADMIN_UTAMA')") // Pastikan role ini sesuai dengan konfigurasi security-mu
+@RequestMapping("/api/admin/wages") //tentatif dapat diubah juga sesuai diskusi kelompok
+@PreAuthorize("hasRole('ADMIN_UTAMA')") // mungkin nanti diubah mengikuti modul user
 public class WageSettingController {
 
     private final WageSettingService wageSettingService;
