@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -129,6 +130,28 @@ class SupirTrukServiceImplTest {
         SupirTruk result = supirTrukService.updateStatusBertugas(supirTrukId, true);
 
         assertTrue(result.isSedangBertugas());
+        verify(supirTrukRepository).save(supirTruk);
+    }
+
+    @Test
+    void testUpdateStatusBertugasNotFound() {
+        when(supirTrukRepository.findById(supirTrukId)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                supirTrukService.updateStatusBertugas(supirTrukId, true));
+
+        assertTrue(exception.getMessage().contains("Supir truk tidak ditemukan"));
+    }
+
+    @Test
+    void testUpdateStatusBertugasToFalse() {
+        supirTruk.setSedangBertugas(true);
+        when(supirTrukRepository.findById(supirTrukId)).thenReturn(Optional.of(supirTruk));
+        when(supirTrukRepository.save(any(SupirTruk.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        SupirTruk result = supirTrukService.updateStatusBertugas(supirTrukId, false);
+
+        assertFalse(result.isSedangBertugas());
         verify(supirTrukRepository).save(supirTruk);
     }
 }

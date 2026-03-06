@@ -145,4 +145,54 @@ class PengirimanControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
+
+    @Test
+    void testBuatPengirimanWithNullMandorId() {
+        BuatPengirimanRequest request = new BuatPengirimanRequest(
+                null, supirTrukId, 300.0, "Pabrik A");
+
+        when(pengirimanService.buatPengiriman(any(), any(), eq(300.0), eq("Pabrik A")))
+                .thenReturn(pengiriman);
+
+        ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    void testUbahStatusPengirimanError() {
+        UUID pengirimanId = pengiriman.getId();
+
+        UbahStatusRequest request = new UbahStatusRequest(supirTrukId, StatusPengiriman.MEMUAT);
+
+        when(pengirimanService.ubahStatusPengiriman(eq(pengirimanId), any(), any()))
+                .thenThrow(new IllegalArgumentException("Transisi status tidak valid"));
+
+        ResponseEntity<?> response = pengirimanController.ubahStatusPengiriman(pengirimanId, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void testGetDaftarPengirimanSupirError() {
+        when(pengirimanService.getDaftarPengirimanSupir(supirTrukId))
+                .thenThrow(new IllegalArgumentException("Supir tidak ditemukan"));
+
+        ResponseEntity<?> response = pengirimanController.getDaftarPengirimanSupir(supirTrukId);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void testGetPengirimanByIdError() {
+        UUID pengirimanId = UUID.randomUUID();
+
+        when(pengirimanService.getPengirimanById(pengirimanId))
+                .thenThrow(new IllegalArgumentException("Pengiriman tidak ditemukan"));
+
+        ResponseEntity<?> response = pengirimanController.getPengirimanById(pengirimanId);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
 }

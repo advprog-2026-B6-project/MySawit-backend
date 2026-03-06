@@ -151,6 +151,23 @@ class PengirimanServiceImplTest {
     }
 
     @Test
+    void testUbahStatusKeTibaSupirTrukTidakDitemukan() {
+        // This tests the edge case where the supir truk is found for the pengiriman
+        // but when changing status to TIBA, the supir truk is no longer in the repository
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.MENGIRIM);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(supirTrukRepository.findById(supirTrukId)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.ubahStatusPengiriman(pengirimanId, supirTrukId, StatusPengiriman.TIBA));
+
+        assertTrue(exception.getMessage().contains("Supir truk tidak ditemukan"));
+    }
+
+    @Test
     void testUbahStatusPengirimanBukanSupirYangDitugaskan() {
         Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
         UUID pengirimanId = pengiriman.getId();
@@ -206,6 +223,127 @@ class PengirimanServiceImplTest {
 
         assertEquals(2, result.size());
         verify(pengirimanRepository).findAllSedangBerlangsung();
+    }
+
+    @Test
+    void testUbahStatusPengirimanNotFound() {
+        UUID pengirimanId = UUID.randomUUID();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.ubahStatusPengiriman(pengirimanId, supirTrukId, StatusPengiriman.MEMUAT));
+
+        assertTrue(exception.getMessage().contains("Pengiriman tidak ditemukan"));
+    }
+
+    @Test
+    void testGetPengirimanByIdSuccess() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        Pengiriman result = pengirimanService.getPengirimanById(pengirimanId);
+
+        assertNotNull(result);
+        assertEquals(pengirimanId, result.getId());
+        verify(pengirimanRepository).findById(pengirimanId);
+    }
+
+    @Test
+    void testGetPengirimanByIdNotFound() {
+        UUID pengirimanId = UUID.randomUUID();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.getPengirimanById(pengirimanId));
+
+        assertTrue(exception.getMessage().contains("Pengiriman tidak ditemukan"));
+    }
+
+    @Test
+    void testGetAllPengiriman() {
+        Pengiriman pengiriman1 = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
+        Pengiriman pengiriman2 = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik B");
+
+        when(pengirimanRepository.findAll()).thenReturn(Arrays.asList(pengiriman1, pengiriman2));
+
+        List<Pengiriman> result = pengirimanService.getAllPengiriman();
+
+        assertEquals(2, result.size());
+        verify(pengirimanRepository).findAll();
+    }
+
+    @Test
+    void testTransisiTidakValidDariMemuatKeMenunggu() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.MEMUAT);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.ubahStatusPengiriman(pengirimanId, supirTrukId, StatusPengiriman.MENUNGGU));
+
+        assertTrue(exception.getMessage().contains("Transisi status tidak valid"));
+    }
+
+    @Test
+    void testTransisiTidakValidDariMemuatKeTiba() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.MEMUAT);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.ubahStatusPengiriman(pengirimanId, supirTrukId, StatusPengiriman.TIBA));
+
+        assertTrue(exception.getMessage().contains("Transisi status tidak valid"));
+    }
+
+    @Test
+    void testTransisiTidakValidDariMengirimKeMenunggu() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.MENGIRIM);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.ubahStatusPengiriman(pengirimanId, supirTrukId, StatusPengiriman.MENUNGGU));
+
+        assertTrue(exception.getMessage().contains("Transisi status tidak valid"));
+    }
+
+    @Test
+    void testTransisiTidakValidDariMengirimKeMemuat() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.MENGIRIM);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.ubahStatusPengiriman(pengirimanId, supirTrukId, StatusPengiriman.MEMUAT));
+
+        assertTrue(exception.getMessage().contains("Transisi status tidak valid"));
+    }
+
+    @Test
+    void testTransisiTidakValidDariTiba() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.ubahStatusPengiriman(pengirimanId, supirTrukId, StatusPengiriman.MENUNGGU));
+
+        assertTrue(exception.getMessage().contains("Transisi status tidak valid"));
     }
 
     private Pengiriman createPengiriman(UUID supirTrukId, UUID mandorId, 
