@@ -52,15 +52,10 @@ public class KebunSawitServiceImpl implements KebunSawitService {
             throw new IllegalArgumentException("Keempat koordinat yang dimasukkan tidak membentuk persegi sempurna");
         }
 
-        // Validasi luas kebun tidak negatif
-        if (kebun.getLuasHektare() < 0) {
-            throw new IllegalArgumentException("Luas kebun tidak boleh negatif");
-        }
-
-        // Validasi luas kebun tidak 0
-        if (kebun.getLuasHektare() == 0) {
-            throw new IllegalArgumentException("Luas kebun tidak boleh 0");
-        }
+        // Hitung luas berdasarkan koordinat (distSq mengembalikan luas dalam meter persegi)
+        double luasMeterPersegi = distSq(kebun.getKiriAtas(), kebun.getKiriBawah());
+        double luasHektare = luasMeterPersegi / 10000.0;
+        kebun.setLuasHektare(luasHektare);
 
         // Cek overlap dengan semua kebun yang sudah ada
         for (KebunSawit existing : repository.findAll()) {
