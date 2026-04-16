@@ -1,7 +1,9 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.controller;
 
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApiResponse;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.PengirimanService;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.SupirTrukService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +22,12 @@ import java.util.UUID;
 public class SupirTrukController {
 
     private final SupirTrukService supirTrukService;
+    private final PengirimanService pengirimanService;
 
-    public SupirTrukController(SupirTrukService supirTrukService) {
+    public SupirTrukController(SupirTrukService supirTrukService,
+                               PengirimanService pengirimanService) {
         this.supirTrukService = supirTrukService;
+        this.pengirimanService = pengirimanService;
     }
 
     @GetMapping("/bertugas")
@@ -45,6 +50,19 @@ public class SupirTrukController {
             SupirTruk supirTruk = supirTrukService.getSupirTrukById(id);
             return ResponseEntity.ok(
                     ApiResponse.success("Supir truk berhasil diambil", supirTruk));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}/pengiriman")
+    public ResponseEntity<ApiResponse<List<Pengiriman>>> getPengirimanSupirTruk(@PathVariable UUID id) {
+        try {
+            supirTrukService.getSupirTrukById(id);
+            List<Pengiriman> pengirimanList = pengirimanService.getDaftarPengirimanSupir(id);
+            return ResponseEntity.ok(
+                    ApiResponse.success("Daftar pengiriman supir berhasil diambil", pengirimanList));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(e.getMessage()));

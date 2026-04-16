@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.controller;
 
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.PengirimanService;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.SupirTrukService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,9 @@ class SupirTrukControllerTest {
 
     @Mock
     private SupirTrukService supirTrukService;
+
+    @Mock
+    private PengirimanService pengirimanService;
 
     @InjectMocks
     private SupirTrukController supirTrukController;
@@ -105,5 +110,33 @@ class SupirTrukControllerTest {
         ResponseEntity<?> response = supirTrukController.tambahSupirTruk(supirTruk);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    }
+
+    @Test
+    void testGetPengirimanSupirTrukSuccess() {
+        Pengiriman pengiriman = Pengiriman.builder()
+                .supirTrukId(supirTrukId)
+                .mandorId(1L)
+                .muatanKg(100)
+                .tujuan("Jakarta")
+                .build();
+        when(supirTrukService.getSupirTrukById(supirTrukId)).thenReturn(supirTruk);
+        when(pengirimanService.getDaftarPengirimanSupir(supirTrukId))
+                .thenReturn(List.of(pengiriman));
+
+        ResponseEntity<?> response = supirTrukController.getPengirimanSupirTruk(supirTrukId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    void testGetPengirimanSupirTrukNotFound() {
+        when(supirTrukService.getSupirTrukById(supirTrukId))
+                .thenThrow(new IllegalArgumentException("Supir truk tidak ditemukan"));
+
+        ResponseEntity<?> response = supirTrukController.getPengirimanSupirTruk(supirTrukId);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 }
