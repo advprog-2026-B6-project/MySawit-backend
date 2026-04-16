@@ -20,7 +20,7 @@ class BuatPengirimanRequestTest {
 
     @Test
     void testParameterizedConstructor() {
-        UUID mandorId = UUID.randomUUID();
+        Long mandorId = 1L;
         UUID supirTrukId = UUID.randomUUID();
 
         BuatPengirimanRequest request = new BuatPengirimanRequest(
@@ -35,7 +35,7 @@ class BuatPengirimanRequestTest {
     @Test
     void testSetMandorId() {
         BuatPengirimanRequest request = new BuatPengirimanRequest();
-        UUID mandorId = UUID.randomUUID();
+        Long mandorId = 42L;
 
         request.setMandorId(mandorId);
 
@@ -73,7 +73,7 @@ class BuatPengirimanRequestTest {
     @Test
     void testSetAllValues() {
         BuatPengirimanRequest request = new BuatPengirimanRequest();
-        UUID mandorId = UUID.randomUUID();
+        Long mandorId = 99L;
         UUID supirTrukId = UUID.randomUUID();
 
         request.setMandorId(mandorId);

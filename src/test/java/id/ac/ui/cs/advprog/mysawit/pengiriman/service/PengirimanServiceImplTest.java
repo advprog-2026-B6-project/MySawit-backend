@@ -1,10 +1,13 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
+import id.ac.ui.cs.advprog.mysawit.model.Role;
+import id.ac.ui.cs.advprog.mysawit.model.User;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
+import id.ac.ui.cs.advprog.mysawit.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,16 +37,20 @@ class PengirimanServiceImplTest {
     @Mock
     private SupirTrukRepository supirTrukRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private PengirimanServiceImpl pengirimanService;
 
-    private UUID mandorId;
+    private Long mandorId;
     private UUID supirTrukId;
     private SupirTruk supirTruk;
+    private User mandorUser;
 
     @BeforeEach
     void setUp() {
-        mandorId = UUID.randomUUID();
+        mandorId = 1L;
         supirTrukId = UUID.randomUUID();
         supirTruk = SupirTruk.builder()
                 .id(supirTrukId)
@@ -51,10 +58,12 @@ class PengirimanServiceImplTest {
                 .nomorTelepon("081234567890")
                 .platNomorTruk("B 1234 ABC")
                 .build();
+        mandorUser = new User("Ahmad Mandor", "ahmad", "secret", Role.MANDOR, "CERT-001");
     }
 
     @Test
     void testBuatPengirimanSuccess() {
+        when(userRepository.findById(mandorId)).thenReturn(Optional.of(mandorUser));
         when(supirTrukRepository.findById(supirTrukId)).thenReturn(Optional.of(supirTruk));
         when(pengirimanRepository.save(any(Pengiriman.class))).thenAnswer(i -> i.getArguments()[0]);
         when(supirTrukRepository.save(any(SupirTruk.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -80,6 +89,7 @@ class PengirimanServiceImplTest {
 
     @Test
     void testBuatPengirimanMuatanTepat400Kg() {
+        when(userRepository.findById(mandorId)).thenReturn(Optional.of(mandorUser));
         when(supirTrukRepository.findById(supirTrukId)).thenReturn(Optional.of(supirTruk));
         when(pengirimanRepository.save(any(Pengiriman.class))).thenAnswer(i -> i.getArguments()[0]);
         when(supirTrukRepository.save(any(SupirTruk.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -104,7 +114,29 @@ class PengirimanServiceImplTest {
     }
 
     @Test
+    void testBuatPengirimanMandorTidakDitemukan() {
+        when(userRepository.findById(mandorId)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.buatPengiriman(mandorId, supirTrukId, 300.0, "Pabrik A"));
+
+        assertTrue(exception.getMessage().contains("Mandor tidak ditemukan"));
+    }
+
+    @Test
+    void testBuatPengirimanUserBukanMandor() {
+        User bukanMandor = new User("Budi Buruh", "budi", "secret", Role.BURUH, null);
+        when(userRepository.findById(mandorId)).thenReturn(Optional.of(bukanMandor));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.buatPengiriman(mandorId, supirTrukId, 300.0, "Pabrik A"));
+
+        assertTrue(exception.getMessage().contains("bukan seorang Mandor"));
+    }
+
+    @Test
     void testBuatPengirimanSupirTidakDitemukan() {
+        when(userRepository.findById(mandorId)).thenReturn(Optional.of(mandorUser));
         when(supirTrukRepository.findById(supirTrukId)).thenReturn(Optional.empty());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
@@ -152,8 +184,6 @@ class PengirimanServiceImplTest {
 
     @Test
     void testUbahStatusKeTibaSupirTrukTidakDitemukan() {
-        // This tests the edge case where the supir truk is found for the pengiriman
-        // but when changing status to TIBA, the supir truk is no longer in the repository
         Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
         pengiriman.setStatus(StatusPengiriman.MENGIRIM);
         UUID pengirimanId = pengiriman.getId();
@@ -346,7 +376,7 @@ class PengirimanServiceImplTest {
         assertTrue(exception.getMessage().contains("Transisi status tidak valid"));
     }
 
-    private Pengiriman createPengiriman(UUID supirTrukId, UUID mandorId, 
+    private Pengiriman createPengiriman(UUID supirTrukId, Long mandorId, 
                                          double muatanKg, String tujuan) {
         return Pengiriman.builder()
                 .supirTrukId(supirTrukId)

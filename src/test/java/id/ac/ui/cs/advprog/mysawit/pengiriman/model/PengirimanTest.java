@@ -27,7 +27,7 @@ class PengirimanTest {
     @Test
     void testPengirimanCreationWithParams() {
         UUID supirId = UUID.randomUUID();
-        UUID mandorId = UUID.randomUUID();
+        Long mandorId = 1L;
 
         Pengiriman pengiriman = Pengiriman.builder()
                 .supirTrukId(supirId)
@@ -112,7 +112,7 @@ class PengirimanTest {
     @Test
     void testSetMandorId() {
         Pengiriman pengiriman = Pengiriman.builder().build();
-        UUID mandorId = UUID.randomUUID();
+        Long mandorId = 42L;
         pengiriman.setMandorId(mandorId);
 
         assertEquals(mandorId, pengiriman.getMandorId());
@@ -171,7 +171,7 @@ class PengirimanTest {
     void testAllArgsConstructor() {
         UUID id = UUID.randomUUID();
         UUID supirId = UUID.randomUUID();
-        UUID mandorId = UUID.randomUUID();
+        Long mandorId = 7L;
         LocalDateTime waktuDibuat = LocalDateTime.now();
         LocalDateTime waktuDiperbarui = LocalDateTime.now();
 
@@ -194,7 +194,7 @@ class PengirimanTest {
     void testEqualsAndHashCode() {
         UUID id = UUID.randomUUID();
         UUID supirId = UUID.randomUUID();
-        UUID mandorId = UUID.randomUUID();
+        Long mandorId = 99L;
         LocalDateTime waktu = LocalDateTime.now();
 
         Pengiriman pengiriman1 = new Pengiriman(

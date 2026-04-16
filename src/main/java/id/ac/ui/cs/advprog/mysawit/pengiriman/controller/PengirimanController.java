@@ -33,14 +33,8 @@ public class PengirimanController {
     public ResponseEntity<ApiResponse<Pengiriman>> buatPengiriman(
             @RequestBody BuatPengirimanRequest request) {
         try {
-            // Auto-generate mandorId if not provided
-            UUID mandorId = request.getMandorId();
-            if (mandorId == null) {
-                mandorId = UUID.randomUUID();
-            }
-            
             Pengiriman pengiriman = pengirimanService.buatPengiriman(
-                    mandorId,
+                    request.getMandorId(),
                     request.getSupirTrukId(),
                     request.getMuatanKg(),
                     request.getTujuan()

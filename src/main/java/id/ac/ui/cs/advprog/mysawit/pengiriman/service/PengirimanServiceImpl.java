@@ -1,10 +1,13 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
+import id.ac.ui.cs.advprog.mysawit.model.Role;
+import id.ac.ui.cs.advprog.mysawit.model.User;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
+import id.ac.ui.cs.advprog.mysawit.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,15 +18,18 @@ public class PengirimanServiceImpl implements PengirimanService {
 
     private final PengirimanRepository pengirimanRepository;
     private final SupirTrukRepository supirTrukRepository;
+    private final UserRepository userRepository;
 
     public PengirimanServiceImpl(PengirimanRepository pengirimanRepository,
-                                  SupirTrukRepository supirTrukRepository) {
+                                  SupirTrukRepository supirTrukRepository,
+                                  UserRepository userRepository) {
         this.pengirimanRepository = pengirimanRepository;
         this.supirTrukRepository = supirTrukRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
-    public Pengiriman buatPengiriman(UUID mandorId, UUID supirTrukId, double muatanKg, String tujuan) {
+    public Pengiriman buatPengiriman(Long mandorId, UUID supirTrukId, double muatanKg, String tujuan) {
         if (muatanKg > Pengiriman.MAX_MUATAN_KG) {
             throw new IllegalArgumentException(
                 "Muatan melebihi batas maksimal. Maksimal muatan adalah " 
@@ -34,7 +40,15 @@ public class PengirimanServiceImpl implements PengirimanService {
             throw new IllegalArgumentException("Muatan harus lebih dari 0 kg");
         }
 
-        // Validasi supir truk ada
+        //validasi mandor: harus punya role mandor
+        User mandor = userRepository.findById(mandorId)
+                .orElseThrow(() -> new IllegalArgumentException("Mandor tidak ditemukan"));
+        if (mandor.getRole() != Role.MANDOR) {
+            throw new IllegalArgumentException(
+                "User dengan id " + mandorId + " bukan seorang Mandor");
+        }
+
+        //validasi supir truk ada
         SupirTruk supirTruk = supirTrukRepository.findById(supirTrukId)
                 .orElseThrow(() -> new IllegalArgumentException("Supir truk tidak ditemukan"));
 

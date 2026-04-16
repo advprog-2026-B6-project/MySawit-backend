@@ -33,13 +33,13 @@ class PengirimanControllerTest {
     @InjectMocks
     private PengirimanController pengirimanController;
 
-    private UUID mandorId;
+    private Long mandorId;
     private UUID supirTrukId;
     private Pengiriman pengiriman;
 
     @BeforeEach
     void setUp() {
-        mandorId = UUID.randomUUID();
+        mandorId = 1L;
         supirTrukId = UUID.randomUUID();
         pengiriman = Pengiriman.builder()
                 .supirTrukId(supirTrukId)
@@ -54,7 +54,7 @@ class PengirimanControllerTest {
         BuatPengirimanRequest request = new BuatPengirimanRequest(
                 mandorId, supirTrukId, 300.0, "Pabrik A");
 
-        when(pengirimanService.buatPengiriman(any(), any(), eq(300.0), eq("Pabrik A")))
+        when(pengirimanService.buatPengiriman(eq(mandorId), eq(supirTrukId), eq(300.0), eq("Pabrik A")))
                 .thenReturn(pengiriman);
 
         ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
@@ -68,8 +68,48 @@ class PengirimanControllerTest {
         BuatPengirimanRequest request = new BuatPengirimanRequest(
                 mandorId, supirTrukId, 500.0, "Pabrik A");
 
-        when(pengirimanService.buatPengiriman(any(), any(), eq(500.0), eq("Pabrik A")))
+        when(pengirimanService.buatPengiriman(eq(mandorId), eq(supirTrukId), eq(500.0), eq("Pabrik A")))
                 .thenThrow(new IllegalArgumentException("Muatan melebihi batas maksimal"));
+
+        ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void testBuatPengirimanMandorTidakDitemukan() {
+        BuatPengirimanRequest request = new BuatPengirimanRequest(
+                99L, supirTrukId, 300.0, "Pabrik A");
+
+        when(pengirimanService.buatPengiriman(eq(99L), eq(supirTrukId), eq(300.0), eq("Pabrik A")))
+                .thenThrow(new IllegalArgumentException("Mandor tidak ditemukan"));
+
+        ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void testBuatPengirimanUserBukanMandor() {
+        Long bukanMandorId = 2L;
+        BuatPengirimanRequest request = new BuatPengirimanRequest(
+                bukanMandorId, supirTrukId, 300.0, "Pabrik A");
+
+        when(pengirimanService.buatPengiriman(eq(bukanMandorId), eq(supirTrukId), eq(300.0), eq("Pabrik A")))
+                .thenThrow(new IllegalArgumentException("bukan seorang Mandor"));
+
+        ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void testBuatPengirimanWithNullMandorId() {
+        BuatPengirimanRequest request = new BuatPengirimanRequest(
+                null, supirTrukId, 300.0, "Pabrik A");
+
+        when(pengirimanService.buatPengiriman(eq(null), eq(supirTrukId), eq(300.0), eq("Pabrik A")))
+                .thenThrow(new IllegalArgumentException("Mandor tidak ditemukan"));
 
         ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
 
@@ -92,6 +132,20 @@ class PengirimanControllerTest {
     }
 
     @Test
+    void testUbahStatusPengirimanError() {
+        UUID pengirimanId = pengiriman.getId();
+
+        UbahStatusRequest request = new UbahStatusRequest(supirTrukId, StatusPengiriman.MEMUAT);
+
+        when(pengirimanService.ubahStatusPengiriman(eq(pengirimanId), any(), any()))
+                .thenThrow(new IllegalArgumentException("Transisi status tidak valid"));
+
+        ResponseEntity<?> response = pengirimanController.ubahStatusPengiriman(pengirimanId, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
     void testGetDaftarPengirimanSupir() {
         Pengiriman pengiriman2 = Pengiriman.builder()
                 .supirTrukId(supirTrukId)
@@ -107,6 +161,16 @@ class PengirimanControllerTest {
         ResponseEntity<?> response = pengirimanController.getDaftarPengirimanSupir(supirTrukId);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testGetDaftarPengirimanSupirError() {
+        when(pengirimanService.getDaftarPengirimanSupir(supirTrukId))
+                .thenThrow(new IllegalArgumentException("Supir tidak ditemukan"));
+
+        ResponseEntity<?> response = pengirimanController.getDaftarPengirimanSupir(supirTrukId);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -135,56 +199,6 @@ class PengirimanControllerTest {
     }
 
     @Test
-    void testGetAllPengiriman() {
-        List<Pengiriman> pengirimanList = Arrays.asList(pengiriman);
-
-        when(pengirimanService.getAllPengiriman())
-                .thenReturn(pengirimanList);
-
-        ResponseEntity<?> response = pengirimanController.getAllPengiriman();
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
-
-    @Test
-    void testBuatPengirimanWithNullMandorId() {
-        BuatPengirimanRequest request = new BuatPengirimanRequest(
-                null, supirTrukId, 300.0, "Pabrik A");
-
-        when(pengirimanService.buatPengiriman(any(), any(), eq(300.0), eq("Pabrik A")))
-                .thenReturn(pengiriman);
-
-        ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
-    }
-
-    @Test
-    void testUbahStatusPengirimanError() {
-        UUID pengirimanId = pengiriman.getId();
-
-        UbahStatusRequest request = new UbahStatusRequest(supirTrukId, StatusPengiriman.MEMUAT);
-
-        when(pengirimanService.ubahStatusPengiriman(eq(pengirimanId), any(), any()))
-                .thenThrow(new IllegalArgumentException("Transisi status tidak valid"));
-
-        ResponseEntity<?> response = pengirimanController.ubahStatusPengiriman(pengirimanId, request);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
-    void testGetDaftarPengirimanSupirError() {
-        when(pengirimanService.getDaftarPengirimanSupir(supirTrukId))
-                .thenThrow(new IllegalArgumentException("Supir tidak ditemukan"));
-
-        ResponseEntity<?> response = pengirimanController.getDaftarPengirimanSupir(supirTrukId);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
     void testGetPengirimanByIdError() {
         UUID pengirimanId = UUID.randomUUID();
 
@@ -194,5 +208,17 @@ class PengirimanControllerTest {
         ResponseEntity<?> response = pengirimanController.getPengirimanById(pengirimanId);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void testGetAllPengiriman() {
+        List<Pengiriman> pengirimanList = Arrays.asList(pengiriman);
+
+        when(pengirimanService.getAllPengiriman())
+                .thenReturn(pengirimanList);
+
+        ResponseEntity<?> response = pengirimanController.getAllPengiriman();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 }

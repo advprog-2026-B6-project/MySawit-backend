@@ -24,7 +24,7 @@ class PengirimanRepositoryImplTest {
     void testSave() {
         Pengiriman pengiriman = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(1L)
                 .muatanKg(300.0)
                 .tujuan("Pabrik A")
                 .build();
@@ -39,7 +39,7 @@ class PengirimanRepositoryImplTest {
     void testFindByIdFound() {
         Pengiriman pengiriman = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(1L)
                 .muatanKg(300.0)
                 .tujuan("Pabrik A")
                 .build();
@@ -62,13 +62,13 @@ class PengirimanRepositoryImplTest {
     void testFindAll() {
         Pengiriman pengiriman1 = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(1L)
                 .muatanKg(200.0)
                 .tujuan("Pabrik A")
                 .build();
         Pengiriman pengiriman2 = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(2L)
                 .muatanKg(300.0)
                 .tujuan("Pabrik B")
                 .build();
@@ -93,19 +93,19 @@ class PengirimanRepositoryImplTest {
         UUID supirTrukId = UUID.randomUUID();
         Pengiriman pengiriman1 = Pengiriman.builder()
                 .supirTrukId(supirTrukId)
-                .mandorId(UUID.randomUUID())
+                .mandorId(1L)
                 .muatanKg(200.0)
                 .tujuan("Pabrik A")
                 .build();
         Pengiriman pengiriman2 = Pengiriman.builder()
                 .supirTrukId(supirTrukId)
-                .mandorId(UUID.randomUUID())
+                .mandorId(1L)
                 .muatanKg(300.0)
                 .tujuan("Pabrik B")
                 .build();
         Pengiriman pengiriman3 = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(2L)
                 .muatanKg(100.0)
                 .tujuan("Pabrik C")
                 .build();
@@ -123,7 +123,7 @@ class PengirimanRepositoryImplTest {
     void testFindBySupirTrukIdNoMatch() {
         Pengiriman pengiriman = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(1L)
                 .muatanKg(200.0)
                 .tujuan("Pabrik A")
                 .build();
@@ -138,7 +138,7 @@ class PengirimanRepositoryImplTest {
     void testFindAllSedangBerlangsung() {
         Pengiriman pengiriman1 = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(1L)
                 .muatanKg(200.0)
                 .tujuan("Pabrik A")
                 .build();
@@ -146,7 +146,7 @@ class PengirimanRepositoryImplTest {
 
         Pengiriman pengiriman2 = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(1L)
                 .muatanKg(300.0)
                 .tujuan("Pabrik B")
                 .build();
@@ -154,7 +154,7 @@ class PengirimanRepositoryImplTest {
 
         Pengiriman pengiriman3 = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(2L)
                 .muatanKg(100.0)
                 .tujuan("Pabrik C")
                 .build();
@@ -162,7 +162,7 @@ class PengirimanRepositoryImplTest {
 
         Pengiriman pengiriman4 = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(2L)
                 .muatanKg(150.0)
                 .tujuan("Pabrik D")
                 .build();
@@ -182,7 +182,7 @@ class PengirimanRepositoryImplTest {
     void testFindAllSedangBerlangsungEmpty() {
         Pengiriman pengiriman = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(1L)
                 .muatanKg(200.0)
                 .tujuan("Pabrik A")
                 .build();
@@ -198,7 +198,7 @@ class PengirimanRepositoryImplTest {
     void testDeleteById() {
         Pengiriman pengiriman = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(1L)
                 .muatanKg(300.0)
                 .tujuan("Pabrik A")
                 .build();
@@ -220,7 +220,7 @@ class PengirimanRepositoryImplTest {
     void testUpdateExistingPengiriman() {
         Pengiriman pengiriman = Pengiriman.builder()
                 .supirTrukId(UUID.randomUUID())
-                .mandorId(UUID.randomUUID())
+                .mandorId(1L)
                 .muatanKg(300.0)
                 .tujuan("Pabrik A")
                 .build();

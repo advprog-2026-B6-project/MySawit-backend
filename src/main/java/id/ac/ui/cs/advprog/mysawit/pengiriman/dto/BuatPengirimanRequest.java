@@ -3,7 +3,7 @@ package id.ac.ui.cs.advprog.mysawit.pengiriman.dto;
 import java.util.UUID;
 
 public class BuatPengirimanRequest {
-    private UUID mandorId;
+    private Long mandorId;
     private UUID supirTrukId;
     private double muatanKg;
     private String tujuan;
@@ -11,18 +11,18 @@ public class BuatPengirimanRequest {
     public BuatPengirimanRequest() {
     }
 
-    public BuatPengirimanRequest(UUID mandorId, UUID supirTrukId, double muatanKg, String tujuan) {
+    public BuatPengirimanRequest(Long mandorId, UUID supirTrukId, double muatanKg, String tujuan) {
         this.mandorId = mandorId;
         this.supirTrukId = supirTrukId;
         this.muatanKg = muatanKg;
         this.tujuan = tujuan;
     }
 
-    public UUID getMandorId() {
+    public Long getMandorId() {
         return mandorId;
     }
 
-    public void setMandorId(UUID mandorId) {
+    public void setMandorId(Long mandorId) {
         this.mandorId = mandorId;
     }
 

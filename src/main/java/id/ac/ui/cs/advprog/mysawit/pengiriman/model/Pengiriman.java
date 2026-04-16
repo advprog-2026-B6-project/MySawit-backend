@@ -19,7 +19,7 @@ public class Pengiriman {
     @Builder.Default
     private UUID id = UUID.randomUUID();
     private UUID supirTrukId;
-    private UUID mandorId;
+    private Long mandorId;
     private double muatanKg;
     private String tujuan;
 
