@@ -5,7 +5,8 @@ public enum StatusPengiriman {
     MEMUAT("Memuat"),
     MENGIRIM("Mengirim"),
     TIBA("Tiba"),
-    DISETUJUI("Disetujui");
+    DISETUJUI("Disetujui"),
+    DITOLAK("Ditolak");
 
     private final String displayName;
 

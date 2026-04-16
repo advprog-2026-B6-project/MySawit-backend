@@ -98,6 +98,7 @@ public class PengirimanServiceImpl implements PengirimanService {
             case MENGIRIM -> statusBaru == StatusPengiriman.TIBA;
             case TIBA -> false;
             case DISETUJUI -> false;
+            case DITOLAK -> false;
         };
 
         if (!valid) {
@@ -136,6 +137,38 @@ public class PengirimanServiceImpl implements PengirimanService {
         }
 
         pengiriman.setStatus(StatusPengiriman.DISETUJUI);
+        return pengirimanRepository.save(pengiriman);
+    }
+
+    @Override
+    public Pengiriman tolakPengiriman(UUID pengirimanId, Long mandorId, String alasanPenolakan) {
+        Pengiriman pengiriman = pengirimanRepository.findById(pengirimanId)
+                .orElseThrow(() -> new IllegalArgumentException("Pengiriman tidak ditemukan"));
+
+        if (mandorId == null) {
+            throw new IllegalArgumentException("Mandor tidak ditemukan");
+        }
+
+        if (alasanPenolakan == null || alasanPenolakan.trim().isEmpty()) {
+            throw new IllegalArgumentException("Alasan penolakan wajib diisi");
+        }
+
+        User mandor = userRepository.findById(mandorId)
+                .orElseThrow(() -> new IllegalArgumentException("Mandor tidak ditemukan"));
+        if (mandor.getRole() != Role.MANDOR) {
+            throw new IllegalArgumentException("User dengan id " + mandorId + " bukan seorang Mandor");
+        }
+
+        if (!pengiriman.getMandorId().equals(mandorId)) {
+            throw new IllegalArgumentException("Mandor tidak berhak menolak pengiriman ini");
+        }
+
+        if (pengiriman.getStatus() != StatusPengiriman.TIBA) {
+            throw new IllegalArgumentException("Pengiriman belum sampai tujuan");
+        }
+
+        pengiriman.setAlasanPenolakan(alasanPenolakan.trim());
+        pengiriman.setStatus(StatusPengiriman.DITOLAK);
         return pengirimanRepository.save(pengiriman);
     }
 

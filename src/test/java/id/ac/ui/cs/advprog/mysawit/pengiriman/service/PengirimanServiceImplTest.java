@@ -371,6 +371,82 @@ class PengirimanServiceImplTest {
     }
 
     @Test
+    void testTolakPengirimanSuccess() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(mandorId)).thenReturn(Optional.of(mandorUser));
+        when(pengirimanRepository.save(any(Pengiriman.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        Pengiriman result = pengirimanService.tolakPengiriman(pengirimanId, mandorId, "  Tidak sesuai  ");
+
+        assertEquals(StatusPengiriman.DITOLAK, result.getStatus());
+        assertEquals("Tidak sesuai", result.getAlasanPenolakan());
+        assertNotNull(result.getWaktuDitolak());
+    }
+
+    @Test
+    void testTolakPengirimanAlasanKosong() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.tolakPengiriman(pengirimanId, mandorId, "   "));
+
+        assertTrue(exception.getMessage().contains("Alasan penolakan wajib diisi"));
+    }
+
+    @Test
+    void testTolakPengirimanBelumTiba() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.MENGIRIM);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(mandorId)).thenReturn(Optional.of(mandorUser));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.tolakPengiriman(pengirimanId, mandorId, "Alasan"));
+
+        assertTrue(exception.getMessage().contains("belum sampai tujuan"));
+    }
+
+    @Test
+    void testTolakPengirimanMandorTidakDitemukan() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(mandorId)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.tolakPengiriman(pengirimanId, mandorId, "Alasan"));
+
+        assertTrue(exception.getMessage().contains("Mandor tidak ditemukan"));
+    }
+
+    @Test
+    void testTolakPengirimanMandorTidakSesuai() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, 99L, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(mandorId)).thenReturn(Optional.of(mandorUser));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.tolakPengiriman(pengirimanId, mandorId, "Alasan"));
+
+        assertTrue(exception.getMessage().contains("Mandor tidak berhak"));
+    }
+
+    @Test
     void testGetPengirimanByIdSuccess() {
         Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
         UUID pengirimanId = pengiriman.getId();

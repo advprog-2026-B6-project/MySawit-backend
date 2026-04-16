@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApiResponse;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovePengirimanRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.BuatPengirimanRequest;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.RejectPengirimanRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.UbahStatusRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.PengirimanService;
@@ -74,6 +75,23 @@ public class PengirimanController {
             Pengiriman pengiriman = pengirimanService.setujuiPengiriman(id, request.getMandorId());
             return ResponseEntity.ok(
                     ApiResponse.success("Pengiriman berhasil disetujui", pengiriman));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<ApiResponse<Pengiriman>> rejectPengiriman(
+            @PathVariable UUID id,
+            @RequestBody RejectPengirimanRequest request) {
+        try {
+            Pengiriman pengiriman = pengirimanService.tolakPengiriman(
+                    id,
+                    request.getMandorId(),
+                    request.getAlasanPenolakan());
+            return ResponseEntity.ok(
+                    ApiResponse.success("Pengiriman berhasil ditolak", pengiriman));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(e.getMessage()));

@@ -15,12 +15,13 @@ class StatusPengirimanTest {
         assertEquals("Mengirim", StatusPengiriman.MENGIRIM.getDisplayName());
         assertEquals("Tiba", StatusPengiriman.TIBA.getDisplayName());
         assertEquals("Disetujui", StatusPengiriman.DISETUJUI.getDisplayName());
+        assertEquals("Ditolak", StatusPengiriman.DITOLAK.getDisplayName());
     }
 
     @Test
     void testStatusPengirimanValues() {
         StatusPengiriman[] values = StatusPengiriman.values();
-        assertEquals(5, values.length);
+        assertEquals(6, values.length);
     }
 
     @Test
@@ -54,6 +55,12 @@ class StatusPengirimanTest {
     }
 
     @Test
+    void testValueOfDitolak() {
+        StatusPengiriman status = StatusPengiriman.valueOf("DITOLAK");
+        assertEquals(StatusPengiriman.DITOLAK, status);
+    }
+
+    @Test
     void testValueOfInvalid() {
         assertThrows(IllegalArgumentException.class, () -> 
                 StatusPengiriman.valueOf("INVALID"));
@@ -66,6 +73,7 @@ class StatusPengirimanTest {
         assertEquals(2, StatusPengiriman.MENGIRIM.ordinal());
         assertEquals(3, StatusPengiriman.TIBA.ordinal());
         assertEquals(4, StatusPengiriman.DISETUJUI.ordinal());
+        assertEquals(5, StatusPengiriman.DITOLAK.ordinal());
     }
 
     @Test
@@ -75,6 +83,7 @@ class StatusPengirimanTest {
         assertEquals("MENGIRIM", StatusPengiriman.MENGIRIM.name());
         assertEquals("TIBA", StatusPengiriman.TIBA.name());
         assertEquals("DISETUJUI", StatusPengiriman.DISETUJUI.name());
+        assertEquals("DITOLAK", StatusPengiriman.DITOLAK.name());
     }
 
     @Test

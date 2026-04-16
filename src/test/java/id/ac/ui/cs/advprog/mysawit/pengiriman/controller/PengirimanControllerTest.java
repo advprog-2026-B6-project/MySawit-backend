@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.mysawit.pengiriman.controller;
 
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovePengirimanRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.BuatPengirimanRequest;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.RejectPengirimanRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.UbahStatusRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
@@ -200,6 +201,33 @@ class PengirimanControllerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
+
+        @Test
+        void testRejectPengirimanSuccess() {
+                UUID pengirimanId = pengiriman.getId();
+                RejectPengirimanRequest request = new RejectPengirimanRequest(mandorId, "Tidak sesuai");
+
+                when(pengirimanService.tolakPengiriman(eq(pengirimanId), eq(mandorId), eq("Tidak sesuai")))
+                                .thenReturn(pengiriman);
+
+                ResponseEntity<?> response = pengirimanController.rejectPengiriman(pengirimanId, request);
+
+                assertEquals(HttpStatus.OK, response.getStatusCode());
+                assertNotNull(response.getBody());
+        }
+
+        @Test
+        void testRejectPengirimanError() {
+                UUID pengirimanId = pengiriman.getId();
+                RejectPengirimanRequest request = new RejectPengirimanRequest(mandorId, "");
+
+                when(pengirimanService.tolakPengiriman(eq(pengirimanId), eq(mandorId), eq("")))
+                                .thenThrow(new IllegalArgumentException("Alasan penolakan wajib diisi"));
+
+                ResponseEntity<?> response = pengirimanController.rejectPengiriman(pengirimanId, request);
+
+                assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        }
 
     @Test
     void testGetDaftarPengirimanBerlangsung() {

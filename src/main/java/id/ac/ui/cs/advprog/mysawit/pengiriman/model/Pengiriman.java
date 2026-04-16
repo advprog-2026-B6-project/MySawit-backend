@@ -35,11 +35,18 @@ public class Pengiriman {
 
     private LocalDateTime waktuDisetujui;
 
+    private LocalDateTime waktuDitolak;
+
+    private String alasanPenolakan;
+
     public void setStatus(StatusPengiriman status) {
         this.status = status;
         this.waktuDiperbarui = LocalDateTime.now();
         if (status == StatusPengiriman.DISETUJUI) {
             this.waktuDisetujui = LocalDateTime.now();
+        }
+        if (status == StatusPengiriman.DITOLAK) {
+            this.waktuDitolak = LocalDateTime.now();
         }
     }
 
