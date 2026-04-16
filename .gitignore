@@ -1,9 +1,16 @@
-HELP.md
+/.env
+/.env.*
+/.idea/
+/.vscode/
+build/
+*.iml
+/.gradle/HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+.env
 
 ### STS ###
 .apt_generated
@@ -34,4 +41,7 @@ out/
 /.nb-gradle/
 
 ### VS Code ###
+.env
 .vscode/
+
+.env
