@@ -96,7 +96,8 @@ public class PengirimanServiceImpl implements PengirimanService {
             case MENUNGGU -> statusBaru == StatusPengiriman.MEMUAT;
             case MEMUAT -> statusBaru == StatusPengiriman.MENGIRIM;
             case MENGIRIM -> statusBaru == StatusPengiriman.TIBA;
-            case TIBA -> false; 
+            case TIBA -> false;
+            case DISETUJUI -> false;
         };
 
         if (!valid) {
@@ -109,6 +110,33 @@ public class PengirimanServiceImpl implements PengirimanService {
     @Override
     public List<Pengiriman> getDaftarPengirimanSupir(UUID supirTrukId) {
         return pengirimanRepository.findBySupirTrukId(supirTrukId);
+    }
+
+    @Override
+    public Pengiriman setujuiPengiriman(UUID pengirimanId, Long mandorId) {
+        Pengiriman pengiriman = pengirimanRepository.findById(pengirimanId)
+                .orElseThrow(() -> new IllegalArgumentException("Pengiriman tidak ditemukan"));
+
+        if (mandorId == null) {
+            throw new IllegalArgumentException("Mandor tidak ditemukan");
+        }
+
+        User mandor = userRepository.findById(mandorId)
+                .orElseThrow(() -> new IllegalArgumentException("Mandor tidak ditemukan"));
+        if (mandor.getRole() != Role.MANDOR) {
+            throw new IllegalArgumentException("User dengan id " + mandorId + " bukan seorang Mandor");
+        }
+
+        if (!pengiriman.getMandorId().equals(mandorId)) {
+            throw new IllegalArgumentException("Mandor tidak berhak menyetujui pengiriman ini");
+        }
+
+        if (pengiriman.getStatus() != StatusPengiriman.TIBA) {
+            throw new IllegalArgumentException("Pengiriman belum sampai tujuan");
+        }
+
+        pengiriman.setStatus(StatusPengiriman.DISETUJUI);
+        return pengirimanRepository.save(pengiriman);
     }
 
     @Override

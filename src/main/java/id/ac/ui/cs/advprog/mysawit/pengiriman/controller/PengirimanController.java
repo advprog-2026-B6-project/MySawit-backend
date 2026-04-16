@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApiResponse;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovePengirimanRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.BuatPengirimanRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.UbahStatusRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
@@ -59,6 +60,20 @@ public class PengirimanController {
             );
             return ResponseEntity.ok(
                     ApiResponse.success("Status pengiriman berhasil diubah", pengiriman));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<ApiResponse<Pengiriman>> approvePengiriman(
+            @PathVariable UUID id,
+            @RequestBody ApprovePengirimanRequest request) {
+        try {
+            Pengiriman pengiriman = pengirimanService.setujuiPengiriman(id, request.getMandorId());
+            return ResponseEntity.ok(
+                    ApiResponse.success("Pengiriman berhasil disetujui", pengiriman));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(e.getMessage()));

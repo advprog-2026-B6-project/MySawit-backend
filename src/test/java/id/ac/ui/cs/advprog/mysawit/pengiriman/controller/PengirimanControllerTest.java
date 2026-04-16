@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.controller;
 
+import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovePengirimanRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.BuatPengirimanRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.UbahStatusRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
@@ -144,6 +145,33 @@ class PengirimanControllerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
+
+        @Test
+        void testApprovePengirimanSuccess() {
+                UUID pengirimanId = pengiriman.getId();
+                ApprovePengirimanRequest request = new ApprovePengirimanRequest(mandorId);
+
+                when(pengirimanService.setujuiPengiriman(eq(pengirimanId), eq(mandorId)))
+                                .thenReturn(pengiriman);
+
+                ResponseEntity<?> response = pengirimanController.approvePengiriman(pengirimanId, request);
+
+                assertEquals(HttpStatus.OK, response.getStatusCode());
+                assertNotNull(response.getBody());
+        }
+
+        @Test
+        void testApprovePengirimanError() {
+                UUID pengirimanId = pengiriman.getId();
+                ApprovePengirimanRequest request = new ApprovePengirimanRequest(mandorId);
+
+                when(pengirimanService.setujuiPengiriman(eq(pengirimanId), eq(mandorId)))
+                                .thenThrow(new IllegalArgumentException("Pengiriman belum sampai tujuan"));
+
+                ResponseEntity<?> response = pengirimanController.approvePengiriman(pengirimanId, request);
+
+                assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        }
 
     @Test
     void testGetDaftarPengirimanSupir() {

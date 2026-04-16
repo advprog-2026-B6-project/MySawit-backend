@@ -22,6 +22,7 @@ class PengirimanTest {
         assertEquals(StatusPengiriman.MENUNGGU, pengiriman.getStatus());
         assertNotNull(pengiriman.getWaktuDibuat());
         assertNotNull(pengiriman.getWaktuDiperbarui());
+        assertNull(pengiriman.getWaktuDisetujui());
     }
 
     @Test
@@ -81,6 +82,14 @@ class PengirimanTest {
     }
 
     @Test
+    void testIsSedangBerlangsungDisetujui() {
+        Pengiriman pengiriman = Pengiriman.builder().build();
+        pengiriman.setStatus(StatusPengiriman.DISETUJUI);
+
+        assertFalse(pengiriman.isSedangBerlangsung());
+    }
+
+    @Test
     void testSetStatusUpdatesWaktuDiperbarui() {
         Pengiriman pengiriman = Pengiriman.builder().build();
         LocalDateTime waktuAwal = pengiriman.getWaktuDiperbarui();
@@ -89,6 +98,16 @@ class PengirimanTest {
 
         // The waktuDiperbarui should be updated to current time (>= waktuAwal)
         assertTrue(pengiriman.getWaktuDiperbarui().compareTo(waktuAwal) >= 0);
+    }
+
+    @Test
+    void testSetStatusDisetujuiUpdatesWaktuDisetujui() {
+        Pengiriman pengiriman = Pengiriman.builder().build();
+        assertNull(pengiriman.getWaktuDisetujui());
+
+        pengiriman.setStatus(StatusPengiriman.DISETUJUI);
+
+        assertNotNull(pengiriman.getWaktuDisetujui());
     }
 
     @Test
@@ -165,6 +184,7 @@ class PengirimanTest {
         assertEquals(StatusPengiriman.MENUNGGU, pengiriman.getStatus());
         assertNotNull(pengiriman.getWaktuDibuat());
         assertNotNull(pengiriman.getWaktuDiperbarui());
+        assertNull(pengiriman.getWaktuDisetujui());
     }
 
     @Test
@@ -174,10 +194,11 @@ class PengirimanTest {
         Long mandorId = 7L;
         LocalDateTime waktuDibuat = LocalDateTime.now();
         LocalDateTime waktuDiperbarui = LocalDateTime.now();
+    LocalDateTime waktuDisetujui = LocalDateTime.now();
 
         Pengiriman pengiriman = new Pengiriman(
                 id, supirId, mandorId, 200.0, "Tujuan Test",
-                StatusPengiriman.MEMUAT, waktuDibuat, waktuDiperbarui
+        StatusPengiriman.MEMUAT, waktuDibuat, waktuDiperbarui, waktuDisetujui
         );
 
         assertEquals(id, pengiriman.getId());
@@ -188,6 +209,7 @@ class PengirimanTest {
         assertEquals(StatusPengiriman.MEMUAT, pengiriman.getStatus());
         assertEquals(waktuDibuat, pengiriman.getWaktuDibuat());
         assertEquals(waktuDiperbarui, pengiriman.getWaktuDiperbarui());
+        assertEquals(waktuDisetujui, pengiriman.getWaktuDisetujui());
     }
 
     @Test
@@ -196,14 +218,15 @@ class PengirimanTest {
         UUID supirId = UUID.randomUUID();
         Long mandorId = 99L;
         LocalDateTime waktu = LocalDateTime.now();
+    LocalDateTime waktuDisetujui = LocalDateTime.now();
 
         Pengiriman pengiriman1 = new Pengiriman(
                 id, supirId, mandorId, 200.0, "Tujuan",
-                StatusPengiriman.MENUNGGU, waktu, waktu
+        StatusPengiriman.MENUNGGU, waktu, waktu, waktuDisetujui
         );
         Pengiriman pengiriman2 = new Pengiriman(
                 id, supirId, mandorId, 200.0, "Tujuan",
-                StatusPengiriman.MENUNGGU, waktu, waktu
+        StatusPengiriman.MENUNGGU, waktu, waktu, waktuDisetujui
         );
 
         assertEquals(pengiriman1, pengiriman2);

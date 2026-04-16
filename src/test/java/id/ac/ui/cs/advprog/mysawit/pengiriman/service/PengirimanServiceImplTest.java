@@ -268,6 +268,109 @@ class PengirimanServiceImplTest {
     }
 
     @Test
+    void testSetujuiPengirimanSuccess() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(mandorId)).thenReturn(Optional.of(mandorUser));
+        when(pengirimanRepository.save(any(Pengiriman.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        Pengiriman result = pengirimanService.setujuiPengiriman(pengirimanId, mandorId);
+
+        assertEquals(StatusPengiriman.DISETUJUI, result.getStatus());
+        assertNotNull(result.getWaktuDisetujui());
+    }
+
+    @Test
+    void testSetujuiPengirimanNotFound() {
+        UUID pengirimanId = UUID.randomUUID();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.setujuiPengiriman(pengirimanId, mandorId));
+
+        assertTrue(exception.getMessage().contains("Pengiriman tidak ditemukan"));
+    }
+
+    @Test
+    void testSetujuiPengirimanMandorTidakDitemukan() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(mandorId)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.setujuiPengiriman(pengirimanId, mandorId));
+
+        assertTrue(exception.getMessage().contains("Mandor tidak ditemukan"));
+    }
+
+    @Test
+    void testSetujuiPengirimanMandorNull() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.setujuiPengiriman(pengirimanId, null));
+
+        assertTrue(exception.getMessage().contains("Mandor tidak ditemukan"));
+    }
+
+    @Test
+    void testSetujuiPengirimanBukanMandor() {
+        User bukanMandor = new User("Budi", "budi", "secret", Role.BURUH, null);
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(mandorId)).thenReturn(Optional.of(bukanMandor));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.setujuiPengiriman(pengirimanId, mandorId));
+
+        assertTrue(exception.getMessage().contains("bukan seorang Mandor"));
+    }
+
+    @Test
+    void testSetujuiPengirimanMandorTidakSesuai() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, 99L, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(mandorId)).thenReturn(Optional.of(mandorUser));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.setujuiPengiriman(pengirimanId, mandorId));
+
+        assertTrue(exception.getMessage().contains("Mandor tidak berhak"));
+    }
+
+    @Test
+    void testSetujuiPengirimanBelumTiba() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.MENGIRIM);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(mandorId)).thenReturn(Optional.of(mandorUser));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.setujuiPengiriman(pengirimanId, mandorId));
+
+        assertTrue(exception.getMessage().contains("belum sampai tujuan"));
+    }
+
+    @Test
     void testGetPengirimanByIdSuccess() {
         Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
         UUID pengirimanId = pengiriman.getId();

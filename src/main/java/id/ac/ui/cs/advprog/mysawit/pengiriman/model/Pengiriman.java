@@ -33,9 +33,14 @@ public class Pengiriman {
     @Builder.Default
     private LocalDateTime waktuDiperbarui = LocalDateTime.now();
 
+    private LocalDateTime waktuDisetujui;
+
     public void setStatus(StatusPengiriman status) {
         this.status = status;
         this.waktuDiperbarui = LocalDateTime.now();
+        if (status == StatusPengiriman.DISETUJUI) {
+            this.waktuDisetujui = LocalDateTime.now();
+        }
     }
 
     public boolean isSedangBerlangsung() {
