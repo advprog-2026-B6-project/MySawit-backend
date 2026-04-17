@@ -368,6 +368,44 @@ class KebunSawitServiceImplTest {
         }
 
         @Test
+        void getDetail_filterSupirByName_handlesNullFullname() {
+            KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
+            when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
+            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.empty());
+
+            KebunSupirEntity supir1 = new KebunSupirEntity("sa-1", "id-1", 20L);
+            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of(supir1));
+            when(userReader.findUsersByIds(List.of(20L))).thenReturn(List.of(
+                    new UserSnapshot(20L, null, "supir1", "SUPIR", null)));
+
+            KebunDetailResponse detail = service.getDetail("id-1", "Andi");
+            assertTrue(detail.getSupirList().isEmpty());
+        }
+
+        @Test
+        void getDetail_filterSupirByEmptyString_returnsAll() {
+            KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
+            when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
+            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.empty());
+
+            KebunSupirEntity supir1 = new KebunSupirEntity("sa-1", "id-1", 20L);
+            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of(supir1));
+            when(userReader.findUsersByIds(List.of(20L))).thenReturn(List.of(
+                    new UserSnapshot(20L, "Andi Supir", "supir1", "SUPIR", null)));
+
+            KebunDetailResponse detail = service.getDetail("id-1", "");
+            assertEquals(1, detail.getSupirList().size());
+        }
+
+        @Test
+        void findAll_nullFilters_returnsAll() {
+            KebunSawit k1 = createValidKebun("id-1", "KB-0001", 0, 0, 200);
+            when(repository.findAll()).thenReturn(List.of(k1));
+            List<KebunSawit> result = service.findAll(null, null);
+            assertEquals(1, result.size());
+        }
+
+        @Test
         void getDetail_nonExistentKebun_shouldThrow() {
             when(repository.findById("nonexistent")).thenReturn(Optional.empty());
 
