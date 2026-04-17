@@ -8,7 +8,6 @@ import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorJpaRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirEntity;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirJpaRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSawitRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,9 +53,7 @@ class KebunSawitServiceImplTest {
         return kebun;
     }
 
-    // =====================================================================
     // CREATE TESTS (existing from 25% milestone, ensure no regression)
-    // =====================================================================
     @Nested
     class CreateTests {
         @Test
@@ -114,9 +111,7 @@ class KebunSawitServiceImplTest {
         }
     }
 
-    // =====================================================================
     // UPDATE TESTS
-    // =====================================================================
     @Nested
     class UpdateTests {
         @Test
@@ -238,9 +233,7 @@ class KebunSawitServiceImplTest {
         }
     }
 
-    // =====================================================================
     // DELETE TESTS
-    // =====================================================================
     @Nested
     class DeleteTests {
         @Test
@@ -275,9 +268,7 @@ class KebunSawitServiceImplTest {
         }
     }
 
-    // =====================================================================
     // FIND ALL TESTS
-    // =====================================================================
     @Nested
     class FindAllTests {
         @Test
@@ -315,9 +306,7 @@ class KebunSawitServiceImplTest {
         }
     }
 
-    // =====================================================================
     // GET DETAIL TESTS
-    // =====================================================================
     @Nested
     class GetDetailTests {
         @Test
