@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.mysawit.pembayaran.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.WageSetting;
@@ -22,7 +23,7 @@ class WageSettingServiceTest {
     private WageSettingRepository repository;
 
     @InjectMocks
-    private WageSettingService service;
+    private WageSettingServiceImpl service;
 
     private WageSetting existingSetting;
 
@@ -34,6 +35,29 @@ class WageSettingServiceTest {
                 new BigDecimal("0.75"),
                 new BigDecimal("2.00")
         );
+    }
+
+    @Test
+    void testGetWageSetting_Exists() {
+        when(repository.findById("DEFAULT")).thenReturn(Optional.of(existingSetting));
+        
+        WageSetting result = service.getWageSetting();
+        assertEquals("DEFAULT", result.getId());
+        assertEquals(new BigDecimal("1.50"), result.getUpahBuruhPerKg());
+    }
+
+    @Test
+    void testGetWageSetting_NotFound_ShouldCreateDefault() {
+        when(repository.findById("DEFAULT")).thenReturn(Optional.empty());
+        when(repository.save(any(WageSetting.class))).thenAnswer(i -> i.getArgument(0));
+
+        WageSetting result = service.getWageSetting();
+        
+        assertEquals("DEFAULT", result.getId());
+        assertEquals(BigDecimal.ZERO, result.getUpahBuruhPerKg());
+        assertEquals(BigDecimal.ZERO, result.getUpahSupirPerKg());
+        assertEquals(BigDecimal.ZERO, result.getUpahMandorPerKg());
+        verify(repository, times(1)).save(any(WageSetting.class));
     }
 
     @Test
@@ -60,10 +84,8 @@ class WageSettingServiceTest {
 
         BigDecimal newUpahSupir = new BigDecimal("1.00");
 
-        // Update supir saja, yang lain null
         WageSetting result = service.updateWages(null, newUpahSupir, null);
 
-        // Supir berubah, buruh dan mandor tetap nilai lama
         assertEquals(new BigDecimal("1.50"), result.getUpahBuruhPerKg());
         assertEquals(newUpahSupir, result.getUpahSupirPerKg());
         assertEquals(new BigDecimal("2.00"), result.getUpahMandorPerKg());
