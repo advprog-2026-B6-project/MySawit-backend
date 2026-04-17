@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.mysawit.pembayaran.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.WageSetting;
@@ -22,7 +23,7 @@ class WageSettingServiceTest {
     private WageSettingRepository repository;
 
     @InjectMocks
-    private WageSettingService service;
+    private WageSettingServiceImpl service;
 
     private WageSetting existingSetting;
 
