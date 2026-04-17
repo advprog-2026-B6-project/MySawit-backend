@@ -90,11 +90,16 @@ public class PayrollServiceImpl implements PayrollService {
     }
 
     @Override
-    public List<PayrollResponse> getPayrollsByUsernameForAdmin(String username, LocalDate startDate, LocalDate endDate) {
+    public List<PayrollResponse> getPayrollsByUsernameForAdmin(
+        String username, LocalDate startDate, LocalDate endDate) {
+
         if (!userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("User not found: " + username);
+            throw new IllegalArgumentException(
+                "User not found: " + username);
         }
-        List<Payroll> payrolls = payrollRepository.findByUsernameAndDateFilter(username, startDate, endDate);
+        List<Payroll> payrolls = payrollRepository
+        .findByUsernameAndDateFilter(username, startDate, endDate);
+        
         return payrolls.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
