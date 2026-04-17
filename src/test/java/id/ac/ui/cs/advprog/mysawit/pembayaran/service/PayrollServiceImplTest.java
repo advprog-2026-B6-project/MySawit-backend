@@ -35,7 +35,8 @@ public class PayrollServiceImplTest {
 
     @Test
     void testCalculateWage_Buruh() {
-        WageSetting mockSetting = new WageSetting("1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
+        WageSetting mockSetting = new WageSetting(
+            "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
         when(wageSettingService.getWageSetting()).thenReturn(mockSetting);
 
         // totalKg = 10 -> baseWage = 10 * 100 = 1000
@@ -46,7 +47,8 @@ public class PayrollServiceImplTest {
 
     @Test
     void testCalculateWage_Supir() {
-        WageSetting mockSetting = new WageSetting("1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
+        WageSetting mockSetting = new WageSetting(
+            "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
         when(wageSettingService.getWageSetting()).thenReturn(mockSetting);
 
         // totalKg = 15 -> baseWage = 15 * 200 = 3000
@@ -57,7 +59,8 @@ public class PayrollServiceImplTest {
 
     @Test
     void testCalculateWage_Mandor() {
-        WageSetting mockSetting = new WageSetting("1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
+        WageSetting mockSetting = new WageSetting(
+            "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
         when(wageSettingService.getWageSetting()).thenReturn(mockSetting);
 
         // totalKg = 5 -> baseWage = 5 * 300 = 1500
@@ -68,7 +71,8 @@ public class PayrollServiceImplTest {
 
     @Test
     void testCalculateWage_UnknownRole_ShouldReturnZero() {
-        WageSetting mockSetting = new WageSetting("1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
+        WageSetting mockSetting = new WageSetting(
+            "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
         when(wageSettingService.getWageSetting()).thenReturn(mockSetting);
 
         BigDecimal result = payrollService.calculateWage("ADMIN", new BigDecimal("10"));
@@ -83,13 +87,15 @@ public class PayrollServiceImplTest {
 
     @Test
     void testCalculateWage_NullKg_ShouldReturnZero() {
-        BigDecimal result = payrollService.calculateWage("BURUH", null);
+        BigDecimal result = payrollService.calculateWage(
+            "BURUH", null);
         assertEquals(BigDecimal.ZERO, result);
     }
 
     @Test
     void testCalculateWage_DecimalKgAndScale() {
-        WageSetting mockSetting = new WageSetting("1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
+        WageSetting mockSetting = new WageSetting(
+            "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
         when(wageSettingService.getWageSetting()).thenReturn(mockSetting);
 
         // totalKg = 10.55 -> base = 10.55 * 100 = 1055.00

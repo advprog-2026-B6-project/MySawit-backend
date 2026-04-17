@@ -69,7 +69,8 @@ public class PayrollServiceImpl implements PayrollService {
     @Override
     public PayrollResponse createPayroll(PayrollCreateRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + request.getUsername()));
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "User not found with username: " + request.getUsername()));
                 
         String roleStr = user.getRole() != null ? user.getRole().name() : "";
 
@@ -99,12 +100,12 @@ public class PayrollServiceImpl implements PayrollService {
         }
         List<Payroll> payrolls = payrollRepository
         .findByUsernameAndDateFilter(username, startDate, endDate);
-        
         return payrolls.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<PayrollResponse> getPayrollsForWorker(String username, LocalDate startDate, LocalDate endDate, String status) {
+    public List<PayrollResponse> getPayrollsForWorker(
+        String username, LocalDate startDate, LocalDate endDate, String status) {
         List<Payroll> payrolls = payrollRepository.findByUsernameAndFilter(username, startDate, endDate, status);
         return payrolls.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
