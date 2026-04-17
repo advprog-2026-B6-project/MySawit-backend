@@ -49,6 +49,8 @@ public class HasilEntity {
     private HasilStatus status;
 
     public HasilEntity() {
+        // constructor kosong buat JPA/Hibernate supaya bisa 
+        // bikin entity ini saat ambil data dari db
     }
 
     public static HasilEntity from(Hasil report) {

@@ -148,6 +148,58 @@ class HasilControllerTest {
                 () -> controller.workerHistoryForMandor("buruh-9", null, null, null));
     }
 
+    @Test
+    void buruhCanReportHarvestWhenNotYetSubmitted() {
+        setAuthentication("buruh-1", "BURUH");
+        given(hasilService.findByWorkerAndDate("buruh-1", LocalDate.now()))
+                .willReturn(java.util.Optional.empty());
+
+        var response = controller.todayStatus();
+
+        assertEquals(false, response.hasSubmitted());
+        assertEquals("Anda belum melaporkan panen hari ini", response.message());
+    }
+
+    @Test
+    void buruhCannotSubmitWhenAlreadyReported() {
+        setAuthentication("buruh-1", "BURUH");
+        given(hasilService.findByWorkerAndDate("buruh-1", LocalDate.now()))
+                .willReturn(java.util.Optional.of(
+                        Hasil.of("1", "buruh-1", LocalDate.now(), 100.0,
+                                "Panen", List.of("foto.jpg"), true, HasilStatus.SUBMITTED)
+                ));
+
+        var response = controller.todayStatus();
+
+        assertEquals(true, response.hasSubmitted());
+        assertEquals("Panen hari ini sudah dilaporkan dan tidak bisa diedit", response.message());
+    }
+
+    @Test
+    void workerHistoryForMandorWithStatusFilter() {
+        setAuthentication("mandor-1", "MANDOR");
+        given(hasilService.findAll()).willReturn(List.of(
+                Hasil.of("1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
+                        "Panen pagi", List.of("foto-1.jpg"), true, HasilStatus.SUBMITTED),
+                Hasil.of("2", "buruh-1", LocalDate.of(2026, 3, 7), 80.0,
+                        "Panen siang", List.of("foto-2.jpg"), true, HasilStatus.VERIFIED)
+        ));
+        given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
+                new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1")
+        ));
+
+        var response = controller.workerHistoryForMandor(
+                "buruh-1",
+                LocalDate.of(2026, 3, 1),
+                LocalDate.of(2026, 3, 31),
+                HasilStatus.VERIFIED);
+
+        assertEquals(200, response.getStatusCode().value());
+        List<HasilHistoryResponse> body = response.getBody();
+        assertEquals(1, body.size());
+        assertEquals("VERIFIED", body.get(0).status());
+    }
+
     private void setAuthentication(String username, String role) {
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
