@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.mysawit.hasil.controller;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,13 +10,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.multipart.MultipartFile;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilHistoryResponse;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
@@ -156,7 +160,7 @@ class HasilControllerTest {
 
         var response = controller.todayStatus();
 
-        assertEquals(false, response.hasSubmitted());
+        assertEquals(false, response.hasSubmittedToday());
         assertEquals("Anda belum melaporkan panen hari ini", response.message());
     }
 
@@ -171,7 +175,7 @@ class HasilControllerTest {
 
         var response = controller.todayStatus();
 
-        assertEquals(true, response.hasSubmitted());
+        assertEquals(true, response.hasSubmittedToday());
         assertEquals("Panen hari ini sudah dilaporkan dan tidak bisa diedit", response.message());
     }
 
@@ -198,6 +202,41 @@ class HasilControllerTest {
         List<HasilHistoryResponse> body = response.getBody();
         assertEquals(1, body.size());
         assertEquals("VERIFIED", body.get(0).status());
+    }
+
+    @Test
+    void buruhCanCreateHarvestReport() {
+        setAuthentication("buruh-1", "BURUH");
+        MultipartFile photo1 = org.mockito.Mockito.mock(MultipartFile.class);
+        given(photo1.getOriginalFilename()).willReturn("foto-1.jpg");
+        
+        Hasil createdReport = Hasil.of("h-1", "buruh-1", LocalDate.now(), 125.5,
+                "Panen dini", List.of("foto-1.jpg"), true, HasilStatus.SUBMITTED);
+        given(hasilService.create(any(String.class), any(Double.class), any(String.class), any(List.class)))
+                .willReturn(createdReport);
+
+        var response = controller.create(125.5, "Panen dini", List.of(photo1));
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = response.getBody();
+        assertEquals("h-1", body.get("id"));
+        assertEquals("buruh-1", body.get("workerId"));
+        assertEquals("SUBMITTED", body.get("status"));
+    }
+
+    @Test
+    void unauthenticatedUserCannotAccessHistory() {
+        // No authentication set
+        assertThrows(AccessDeniedException.class,
+                () -> controller.myHistory(null, null, null));
+    }
+
+    @Test
+    void unauthorizedRoleCannotAccessBuruhFeatures() {
+        setAuthentication("user-1", "PEMBELI");
+        assertThrows(AccessDeniedException.class,
+                () -> controller.myHistory(null, null, null));
     }
 
     private void setAuthentication(String username, String role) {
