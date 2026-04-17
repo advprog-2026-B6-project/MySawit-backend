@@ -179,11 +179,8 @@ public class HasilController {
     }
 
     private boolean matchesWorkerName(String workerId, String workerName) {
-        if (workerName == null || workerName.isBlank()) {
-            return true;
-        }
-
-        return userRepository.findByUsername(workerId)
+        return workerName == null || workerName.isBlank()
+                || userRepository.findByUsername(workerId)
                 .map(User::getFullname)
                 .map(fullname -> fullname != null && fullname.toLowerCase().contains(workerName.toLowerCase()))
                 .orElse(false);

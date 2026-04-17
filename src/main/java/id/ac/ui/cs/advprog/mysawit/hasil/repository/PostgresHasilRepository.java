@@ -45,28 +45,19 @@ public class PostgresHasilRepository implements HasilRepository {
     }
 
     private HasilEntity toEntity(Hasil report) {
-        return new HasilEntity(
-                report.getId(),
-                report.getWorkerId(),
-                report.getHasilDate(),
-                report.getWeightKg(),
-                report.getNews(),
-                report.getPhotoUrls(),
-                report.isLocked(),
-                report.getStatus()
-        );
+        return HasilEntity.from(report);
     }
 
     private Hasil toDomain(HasilEntity entity) {
-        return new Hasil(
-                entity.getId(),
-                entity.getWorkerId(),
-                entity.getHasilDate(),
-                entity.getWeightKg(),
-                entity.getNews(),
-                entity.getPhotoUrls(),
-                entity.isLocked(),
-                entity.getStatus() == null ? HasilStatus.SUBMITTED : entity.getStatus()
+        return Hasil.of(
+            entity.getId(),
+            entity.getWorkerId(),
+            entity.getHasilDate(),
+            entity.getWeightKg(),
+            entity.getNews(),
+            entity.getPhotoUrls(),
+            entity.isLocked(),
+            entity.getStatus() == null ? HasilStatus.SUBMITTED : entity.getStatus()
         );
     }
 }

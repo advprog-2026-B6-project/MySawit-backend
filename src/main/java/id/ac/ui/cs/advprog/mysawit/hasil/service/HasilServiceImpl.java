@@ -49,15 +49,15 @@ public class HasilServiceImpl implements HasilService {
             throw new DailySubmissionLimitException("Buruh hanya bisa submit 1 kali per hari");
         }
 
-        Hasil report = new Hasil(
-                UUID.randomUUID().toString(),
-                workerId,
-                today,
-                kilogram,
-                news,
-                photoUrls,
-                true,
-                HasilStatus.SUBMITTED
+        Hasil report = Hasil.of(
+            UUID.randomUUID().toString(),
+            workerId,
+            today,
+            kilogram,
+            news,
+            photoUrls,
+            true,
+            HasilStatus.SUBMITTED
         );
         return hasilRepository.save(report);
     }
