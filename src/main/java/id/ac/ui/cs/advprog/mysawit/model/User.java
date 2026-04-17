@@ -21,15 +21,25 @@ public class User {
 
     private String certificationNumber; // cmn utk MANDOR 
 
+    private String mandorUsername;
+
     public User() {
     }
 
     public User(String fullname, String username, String password, Role role, String certificationNumber) {
+        this(fullname, username, password, role, certificationNumber, null);
+    }
+    // just in case old code masih manggil constructor lama, biar ga error.
+    // udah fully implemented? hapus yang atas, keep yang bawah
+
+    public User(String fullname, String username, String password, Role role, String certificationNumber,
+                String mandorUsername) {
         this.fullname = fullname;
         this.username = username;
         this.password = password;
         this.role = role;
         this.certificationNumber = certificationNumber;
+        this.mandorUsername = mandorUsername;
     }
 
     public Long getId() {
@@ -74,5 +84,13 @@ public class User {
 
     public void setCertificationNumber(String certificationNumber) {
         this.certificationNumber = certificationNumber;
+    }
+
+    public String getMandorUsername() {
+        return mandorUsername;
+    }
+
+    public void setMandorUsername(String mandorUsername) {
+        this.mandorUsername = mandorUsername;
     }
 }
