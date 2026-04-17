@@ -50,9 +50,9 @@ class HasilControllerTest {
     void buruhCanSeeOwnHistoryWithFilters() {
         setAuthentication("buruh-1", "BURUH");
         given(hasilService.findAll()).willReturn(List.of(
-                new Hasil("1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
+                Hasil.of("1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
                         "Panen pagi", List.of("foto-1.jpg"), true, HasilStatus.SUBMITTED),
-                new Hasil("2", "buruh-2", LocalDate.of(2026, 3, 6), 80.0,
+                Hasil.of("2", "buruh-2", LocalDate.of(2026, 3, 6), 80.0,
                         "Panen lain", List.of("foto-2.jpg"), true, HasilStatus.SUBMITTED)
         ));
         given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
@@ -73,11 +73,11 @@ class HasilControllerTest {
     void mandorCanFilterHistoryByDateAndWorkerName() {
         setAuthentication("mandor-1", "MANDOR");
         given(hasilService.findAll()).willReturn(List.of(
-                new Hasil("1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
+                Hasil.of("1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
                         "Panen pagi", List.of("foto-1.jpg"), true, HasilStatus.SUBMITTED),
-                new Hasil("2", "buruh-2", LocalDate.of(2026, 3, 7), 80.0,
+                Hasil.of("2", "buruh-2", LocalDate.of(2026, 3, 7), 80.0,
                         "Panen lain", List.of("foto-2.jpg"), true, HasilStatus.SUBMITTED),
-                new Hasil("3", "buruh-3", LocalDate.of(2026, 3, 6), 70.0,
+                Hasil.of("3", "buruh-3", LocalDate.of(2026, 3, 6), 70.0,
                         "Panen luar", List.of("foto-3.jpg"), true, HasilStatus.SUBMITTED)
         ));
         given(userRepository.findAll()).willReturn(List.of(
@@ -96,6 +96,45 @@ class HasilControllerTest {
         assertEquals(1, body.size());
         assertEquals("buruh-1", body.get(0).workerId());
         assertEquals("Budi", body.get(0).workerName());
+    }
+
+    @Test
+    void mandorCanViewAllSupervisedWorkersWhenNameFilterBlank() {
+        setAuthentication("mandor-1", "MANDOR");
+        given(hasilService.findAll()).willReturn(List.of(
+                Hasil.of("1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
+                        "Panen pagi", List.of("foto-1.jpg"), true, HasilStatus.SUBMITTED),
+                Hasil.of("2", "buruh-2", LocalDate.of(2026, 3, 7), 80.0,
+                        "Panen siang", List.of("foto-2.jpg"), true, HasilStatus.SUBMITTED)
+        ));
+        given(userRepository.findAll()).willReturn(List.of(
+                new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1"),
+                new User("Beni", "buruh-2", "pw", Role.BURUH, null, "mandor-1")
+        ));
+        given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
+                new User(null, "buruh-1", "pw", Role.BURUH, null, "mandor-1")
+        ));
+        given(userRepository.findByUsername("buruh-2")).willReturn(java.util.Optional.of(
+                new User("Beni", "buruh-2", "pw", Role.BURUH, null, "mandor-1")
+        ));
+
+        var response = controller.mandorHistory(null, "");
+
+        assertEquals(200, response.getStatusCode().value());
+        List<HasilHistoryResponse> body = response.getBody();
+        assertEquals(2, body.size());
+        assertEquals("buruh-1", body.get(1).workerName());
+    }
+
+    @Test
+    void myHistoryRejectsInvalidDateRange() {
+        setAuthentication("buruh-1", "BURUH");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.myHistory(
+                        LocalDate.of(2026, 3, 31),
+                        LocalDate.of(2026, 3, 1),
+                        HasilStatus.SUBMITTED));
     }
 
     @Test
