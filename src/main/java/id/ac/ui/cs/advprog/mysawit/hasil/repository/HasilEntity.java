@@ -12,6 +12,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+
+import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
 
 @Entity
 @Table(name = "hasil_reports")
@@ -38,12 +42,16 @@ public class HasilEntity {
 
     @Column(nullable = false)
     private boolean locked;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private HasilStatus status;
 
     public HasilEntity() {
     }
 
     public HasilEntity(String id, String workerId, LocalDate hasilDate, double weightKg, String news,
-                       List<String> photoUrls, boolean locked) {
+                       List<String> photoUrls, boolean locked, HasilStatus status) {
         this.id = id;
         this.workerId = workerId;
         this.hasilDate = hasilDate;
@@ -51,6 +59,7 @@ public class HasilEntity {
         this.news = news;
         this.photoUrls = new ArrayList<>(photoUrls);
         this.locked = locked;
+        this.status = status;
     }
 
     public String getId() {
@@ -79,5 +88,9 @@ public class HasilEntity {
 
     public boolean isLocked() {
         return locked;
+    }
+
+    public HasilStatus getStatus() {
+        return status;
     }
 }

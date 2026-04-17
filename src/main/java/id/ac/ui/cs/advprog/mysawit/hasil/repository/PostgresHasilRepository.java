@@ -1,12 +1,14 @@
 package id.ac.ui.cs.advprog.mysawit.hasil.repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
+import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
 
 @Repository
 @Primary
@@ -22,6 +24,13 @@ public class PostgresHasilRepository implements HasilRepository {
         HasilEntity entity = toEntity(report);
         HasilEntity savedEntity = jpaRepository.save(entity);
         return toDomain(savedEntity);
+    }
+
+    @Override
+    public List<Hasil> findAll() {
+        return jpaRepository.findAll().stream()
+                .map(this::toDomain)
+                .toList();
     }
 
     @Override
@@ -43,7 +52,8 @@ public class PostgresHasilRepository implements HasilRepository {
                 report.getWeightKg(),
                 report.getNews(),
                 report.getPhotoUrls(),
-                report.isLocked()
+                report.isLocked(),
+                report.getStatus()
         );
     }
 
@@ -55,7 +65,8 @@ public class PostgresHasilRepository implements HasilRepository {
                 entity.getWeightKg(),
                 entity.getNews(),
                 entity.getPhotoUrls(),
-                entity.isLocked()
+                entity.isLocked(),
+                entity.getStatus() == null ? HasilStatus.SUBMITTED : entity.getStatus()
         );
     }
 }

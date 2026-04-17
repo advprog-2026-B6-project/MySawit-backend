@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.exception.DailySubmissionLimitException;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
+import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
 import id.ac.ui.cs.advprog.mysawit.hasil.repository.HasilRepository;
 
 @Service
@@ -55,9 +56,15 @@ public class HasilServiceImpl implements HasilService {
                 kilogram,
                 news,
                 photoUrls,
-                true
+                true,
+                HasilStatus.SUBMITTED
         );
         return hasilRepository.save(report);
+    }
+
+    @Override
+    public List<Hasil> findAll() {
+        return hasilRepository.findAll();
     }
 
     @Override

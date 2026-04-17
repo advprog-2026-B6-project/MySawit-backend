@@ -11,6 +11,7 @@ public class RegisterRequest {
     private String password;
     private String role; 
     private String certificationNumber;
+    private String mandorUsername;
 
     public String getFullname() {
         return fullname;
@@ -50,5 +51,13 @@ public class RegisterRequest {
 
     public void setCertificationNumber(String certificationNumber) {
         this.certificationNumber = certificationNumber;
+    }
+
+    public String getMandorUsername() {
+        return mandorUsername;
+    }
+
+    public void setMandorUsername(String mandorUsername) {
+        this.mandorUsername = mandorUsername;
     }
 }

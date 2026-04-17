@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.exception.DailySubmissionLimitException;
+import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
 import id.ac.ui.cs.advprog.mysawit.hasil.repository.InMemoryHasilRepository;
 
 class HasilServiceTest {
@@ -35,6 +36,7 @@ class HasilServiceTest {
         assertEquals("worker-1", report.getWorkerId());
         assertEquals(120.5, report.getWeightKg());
         assertTrue(report.isLocked());
+        assertEquals(HasilStatus.SUBMITTED, report.getStatus());
     }
 
     @Test

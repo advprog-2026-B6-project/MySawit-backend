@@ -67,7 +67,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = new User(request.getFullname(), request.getUsername(),
-                passwordEncoder.encode(request.getPassword()), role, request.getCertificationNumber());
+            passwordEncoder.encode(request.getPassword()), role, request.getCertificationNumber(),
+            request.getMandorUsername());
         userRepository.save(user);
     }
 }

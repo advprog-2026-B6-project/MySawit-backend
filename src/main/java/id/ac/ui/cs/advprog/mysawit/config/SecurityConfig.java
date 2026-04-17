@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/kebun/**").permitAll() // sementara
                         .requestMatchers("/admin/**").permitAll() // sementara
-                        .requestMatchers("/hasil-reports/**").permitAll() // sementara
+                        .requestMatchers("/hasil-reports/**").authenticated() // ganti permitall kalau err
                         .requestMatchers("/api/admin/wages/**").permitAll() // sementara
                         .anyRequest().authenticated());
 

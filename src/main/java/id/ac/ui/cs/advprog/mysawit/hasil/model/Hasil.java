@@ -11,9 +11,10 @@ public class Hasil {
     private final String news;
     private final List<String> photoUrls;
     private final boolean locked;
+    private final HasilStatus status;
 
     public Hasil(String id, String workerId, LocalDate hasilDate, double weightKg,
-                         String news, List<String> photoUrls, boolean locked) {
+                 String news, List<String> photoUrls, boolean locked, HasilStatus status) {
         this.id = id;
         this.workerId = workerId;
         this.hasilDate = hasilDate;
@@ -21,6 +22,7 @@ public class Hasil {
         this.news = news;
         this.photoUrls = List.copyOf(photoUrls);
         this.locked = locked;
+        this.status = status;
     }
 
     public String getId() {
@@ -49,6 +51,10 @@ public class Hasil {
 
     public boolean isLocked() {
         return locked;
+    }
+
+    public HasilStatus getStatus() {
+        return status;
     }
 }
 
