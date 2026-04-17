@@ -33,6 +33,10 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/kebun/**").permitAll() // sementara
+                        .requestMatchers("/admin/**").permitAll() // sementara
+                        .requestMatchers("/hasil-reports/**").authenticated() // ganti permitall kalau err
+                        .requestMatchers("/api/admin/wages/**").permitAll() // sementara
                         .requestMatchers("/users/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated());
