@@ -21,7 +21,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-        CustomUserDetailsService userDetailsService) {
+            CustomUserDetailsService userDetailsService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userDetailsService = userDetailsService;
     }
@@ -37,6 +37,8 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").permitAll() // sementara
                         .requestMatchers("/hasil-reports/**").authenticated() // ganti permitall kalau err
                         .requestMatchers("/api/admin/wages/**").permitAll() // sementara
+                        .requestMatchers("/users/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
