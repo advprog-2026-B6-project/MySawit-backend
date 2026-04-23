@@ -1,12 +1,14 @@
 package id.ac.ui.cs.advprog.mysawit.hasil.repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
+import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
 
 @Repository
 @Primary
@@ -25,6 +27,13 @@ public class PostgresHasilRepository implements HasilRepository {
     }
 
     @Override
+    public List<Hasil> findAll() {
+        return jpaRepository.findAll().stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
     public Optional<Hasil> findByWorkerIdAndDate(String workerId, LocalDate hasilDate) {
         return jpaRepository.findByWorkerIdAndHasilDate(workerId, hasilDate)
                 .map(this::toDomain);
@@ -36,26 +45,19 @@ public class PostgresHasilRepository implements HasilRepository {
     }
 
     private HasilEntity toEntity(Hasil report) {
-        return new HasilEntity(
-                report.getId(),
-                report.getWorkerId(),
-                report.getHasilDate(),
-                report.getWeightKg(),
-                report.getNews(),
-                report.getPhotoUrls(),
-                report.isLocked()
-        );
+        return HasilEntity.from(report);
     }
 
     private Hasil toDomain(HasilEntity entity) {
-        return new Hasil(
-                entity.getId(),
-                entity.getWorkerId(),
-                entity.getHasilDate(),
-                entity.getWeightKg(),
-                entity.getNews(),
-                entity.getPhotoUrls(),
-                entity.isLocked()
+        return Hasil.of(
+            entity.getId(),
+            entity.getWorkerId(),
+            entity.getHasilDate(),
+            entity.getWeightKg(),
+            entity.getNews(),
+            entity.getPhotoUrls(),
+            entity.isLocked(),
+            entity.getStatus() == null ? HasilStatus.SUBMITTED : entity.getStatus()
         );
     }
 }

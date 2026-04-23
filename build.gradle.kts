@@ -35,9 +35,9 @@ repositories {
 
 dependencies {
     // 1. Core Web & MVC
-    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind")
 
     // 2. Database & JPA
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -53,6 +53,8 @@ dependencies {
     // 4. Tools (Lombok & DevTools)
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
+    testCompileOnly("org.projectlombok:lombok")
+    testAnnotationProcessor("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 

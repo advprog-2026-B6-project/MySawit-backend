@@ -33,10 +33,21 @@ public class PostgresKebunSawitRepository implements KebunSawitRepository {
     }
 
     @Override
+    public Optional<KebunSawit> findById(String id) {
+        return jpaRepository.findById(id)
+                .map(this::toDomain);
+    }
+
+    @Override
     public List<KebunSawit> findAll() {
         return jpaRepository.findAll().stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteById(String id) {
+        jpaRepository.deleteById(id);
     }
 
     private KebunSawitEntity toEntity(KebunSawit domain) {
