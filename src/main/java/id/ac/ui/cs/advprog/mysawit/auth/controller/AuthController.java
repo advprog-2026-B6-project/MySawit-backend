@@ -1,9 +1,9 @@
-package id.ac.ui.cs.advprog.mysawit.controller;
+package id.ac.ui.cs.advprog.mysawit.auth.controller;
 
-import id.ac.ui.cs.advprog.mysawit.dto.AuthRequest;
-import id.ac.ui.cs.advprog.mysawit.dto.AuthResponse;
-import id.ac.ui.cs.advprog.mysawit.dto.RegisterRequest;
-import id.ac.ui.cs.advprog.mysawit.service.AuthService;
+import id.ac.ui.cs.advprog.mysawit.auth.dto.AuthRequest;
+import id.ac.ui.cs.advprog.mysawit.auth.dto.AuthResponse;
+import id.ac.ui.cs.advprog.mysawit.auth.dto.RegisterRequest;
+import id.ac.ui.cs.advprog.mysawit.auth.service.AuthService;
 import jakarta.validation.Valid;
 
 import java.util.HashMap;

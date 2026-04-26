@@ -1,13 +1,14 @@
-package id.ac.ui.cs.advprog.mysawit.service.impl;
+package id.ac.ui.cs.advprog.mysawit.auth.serviceimpl;
 
-import id.ac.ui.cs.advprog.mysawit.dto.AuthRequest;
-import id.ac.ui.cs.advprog.mysawit.dto.AuthResponse;
-import id.ac.ui.cs.advprog.mysawit.dto.RegisterRequest;
-import id.ac.ui.cs.advprog.mysawit.model.Role;
-import id.ac.ui.cs.advprog.mysawit.model.User;
-import id.ac.ui.cs.advprog.mysawit.repository.UserRepository;
-import id.ac.ui.cs.advprog.mysawit.security.JwtUtil;
-import id.ac.ui.cs.advprog.mysawit.service.AuthService;
+import id.ac.ui.cs.advprog.mysawit.auth.dto.AuthRequest;
+import id.ac.ui.cs.advprog.mysawit.auth.dto.AuthResponse;
+import id.ac.ui.cs.advprog.mysawit.auth.dto.RegisterRequest;
+import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
+import id.ac.ui.cs.advprog.mysawit.auth.model.User;
+import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
+import id.ac.ui.cs.advprog.mysawit.auth.security.JwtUtil;
+import id.ac.ui.cs.advprog.mysawit.auth.service.AuthService;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
