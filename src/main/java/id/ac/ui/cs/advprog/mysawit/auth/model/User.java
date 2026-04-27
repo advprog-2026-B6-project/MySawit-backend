@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.model;
+package id.ac.ui.cs.advprog.mysawit.auth.model;
 
 import jakarta.persistence.*;
 
@@ -94,3 +94,5 @@ public class User {
         this.mandorUsername = mandorUsername;
     }
 }
+
+

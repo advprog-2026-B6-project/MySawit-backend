@@ -1,13 +1,14 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
-import id.ac.ui.cs.advprog.mysawit.model.Role;
-import id.ac.ui.cs.advprog.mysawit.model.User;
+import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
+import id.ac.ui.cs.advprog.mysawit.auth.model.User;
+import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
-import id.ac.ui.cs.advprog.mysawit.repository.UserRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,7 +1,8 @@
-package id.ac.ui.cs.advprog.mysawit.controller;
+package id.ac.ui.cs.advprog.mysawit.auth.controller;
 
-import id.ac.ui.cs.advprog.mysawit.dto.UserDto;
-import id.ac.ui.cs.advprog.mysawit.service.UserService;
+import id.ac.ui.cs.advprog.mysawit.auth.dto.UserDto;
+import id.ac.ui.cs.advprog.mysawit.auth.service.UserService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

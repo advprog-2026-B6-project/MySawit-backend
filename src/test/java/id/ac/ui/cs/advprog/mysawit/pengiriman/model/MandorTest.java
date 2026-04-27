@@ -1,8 +1,9 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.model;
 
-import id.ac.ui.cs.advprog.mysawit.model.Role;
-import id.ac.ui.cs.advprog.mysawit.model.User;
 import org.junit.jupiter.api.Test;
+
+import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
+import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 
 import static org.junit.jupiter.api.Assertions.*;
 

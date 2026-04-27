@@ -1,9 +1,10 @@
-package id.ac.ui.cs.advprog.mysawit.service.impl;
+package id.ac.ui.cs.advprog.mysawit.auth.serviceimpl;
 
-import id.ac.ui.cs.advprog.mysawit.dto.UserDto;
-import id.ac.ui.cs.advprog.mysawit.model.User;
-import id.ac.ui.cs.advprog.mysawit.repository.UserRepository;
-import id.ac.ui.cs.advprog.mysawit.service.UserService;
+import id.ac.ui.cs.advprog.mysawit.auth.dto.UserDto;
+import id.ac.ui.cs.advprog.mysawit.auth.model.User;
+import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
+import id.ac.ui.cs.advprog.mysawit.auth.service.UserService;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;

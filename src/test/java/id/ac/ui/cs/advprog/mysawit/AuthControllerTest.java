@@ -1,9 +1,11 @@
 package id.ac.ui.cs.advprog.mysawit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.ac.ui.cs.advprog.mysawit.dto.AuthRequest;
-import id.ac.ui.cs.advprog.mysawit.dto.RegisterRequest;
-import id.ac.ui.cs.advprog.mysawit.repository.UserRepository;
+
+import id.ac.ui.cs.advprog.mysawit.auth.dto.AuthRequest;
+import id.ac.ui.cs.advprog.mysawit.auth.dto.RegisterRequest;
+import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

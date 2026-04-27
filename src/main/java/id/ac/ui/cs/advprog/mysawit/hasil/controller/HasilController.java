@@ -26,10 +26,10 @@ import org.springframework.web.multipart.MultipartFile;
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilTodayResponse;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilService;
+import id.ac.ui.cs.advprog.mysawit.auth.model.User;
+import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilHistoryResponse;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
-import id.ac.ui.cs.advprog.mysawit.model.User;
-import id.ac.ui.cs.advprog.mysawit.repository.UserRepository;
 
 @RestController
 @RequestMapping("/hasil-reports")

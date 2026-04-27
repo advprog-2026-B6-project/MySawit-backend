@@ -1,10 +1,11 @@
-package id.ac.ui.cs.advprog.mysawit.security;
+package id.ac.ui.cs.advprog.mysawit.auth.security;
 
-import id.ac.ui.cs.advprog.mysawit.model.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 
 import java.security.Key;
 import java.util.Date;

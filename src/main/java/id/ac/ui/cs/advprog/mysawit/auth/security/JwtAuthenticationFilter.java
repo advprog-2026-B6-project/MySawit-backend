@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.security;
+package id.ac.ui.cs.advprog.mysawit.auth.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
