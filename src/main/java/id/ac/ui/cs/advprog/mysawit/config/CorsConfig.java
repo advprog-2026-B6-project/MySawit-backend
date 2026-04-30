@@ -13,10 +13,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedOrigins(
                         "http://localhost:3000",
                         "https://my-sawit-frontend.vercel.app")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .exposedHeaders("Authorization")
-                .allowCredentials(false)
-                .maxAge(3600);
+                .allowedHeaders("Authorization", "Content-Type") // allow fe to send token     
+                .exposedHeaders("Authorization"); // allow fe to read token
     }
-}
+}  
