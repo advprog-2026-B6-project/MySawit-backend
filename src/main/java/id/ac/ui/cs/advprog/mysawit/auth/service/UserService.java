@@ -9,4 +9,8 @@ public interface UserService {
     List<UserDto> getAllUsers();
 
     Optional<UserDto> getUserById(Long id);
+
+    Optional<UserDto> getUserByUsername(String username);
+
+    boolean existsByUsername(String username);
 }

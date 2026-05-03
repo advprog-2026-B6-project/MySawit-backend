@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.auth.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,6 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthResponse {
-    private String token;
+public class LoginRequest {
+    @NotBlank
+    private String username;
+    @NotBlank
+    private String password;
 }
