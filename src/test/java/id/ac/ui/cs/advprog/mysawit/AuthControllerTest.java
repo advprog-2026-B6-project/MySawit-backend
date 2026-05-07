@@ -1,10 +1,9 @@
-package id.ac.ui.cs.advprog.mysawit.auth;
+package id.ac.ui.cs.advprog.mysawit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import id.ac.ui.cs.advprog.mysawit.auth.dto.LoginRequest;
+import id.ac.ui.cs.advprog.mysawit.auth.dto.AuthRequest;
 import id.ac.ui.cs.advprog.mysawit.auth.dto.RegisterRequest;
-import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -47,13 +46,13 @@ public class AuthControllerTest {
         reg.setFullname("Test User");
         reg.setUsername(username);
         reg.setPassword("pass123");
-        reg.setRole(Role.BURUH);
+        reg.setRole("BURUH");
 
         mvc.perform(post("/auth/register").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(reg)))
                 .andExpect(status().isOk());
 
-        LoginRequest auth = new LoginRequest();
+        AuthRequest auth = new AuthRequest();
         auth.setUsername(username);
         auth.setPassword("pass123");
 

@@ -176,22 +176,17 @@ public class HasilController {
         return authentication.getName();
     }
 
-    private Set<String> getSupervisedWorkerIds(Long mandorId) {
-        List<Long> buruhIds = hasilMandorBuruhRepository.findBuruhIdsByMandorId(mandorId);
-        if (buruhIds.isEmpty()) {
-            return new HashSet<>();
-        }
-
-        return userRepository.findAllById(buruhIds).stream()
+    private Set<String> getSupervisedWorkerIds(String mandorUsername) {
+        return userRepository.findAll().stream()
+                .filter(user -> mandorUsername.equals(user.getMandorUsername()))
                 .map(User::getUsername)
                 .collect(Collectors.toSet());
     }
 
-    private void ensureWorkerBelongsToMandor(Long mandorId, String workerId) {
-        Long buruhId = getUserIdByUsername(workerId)
-                .orElseThrow(() -> new AccessDeniedException("Worker is not managed by this mandor"));
-        boolean belongsToMandor = hasilMandorBuruhRepository
-                .existsByMandorIdAndBuruhId(mandorId, buruhId);
+    private void ensureWorkerBelongsToMandor(String mandorUsername, String workerId) {
+        boolean belongsToMandor = userRepository.findByUsername(workerId)
+                .map(user -> mandorUsername.equals(user.getMandorUsername()))
+                .orElse(false);
 
         if (!belongsToMandor) {
             throw new AccessDeniedException("Worker is not managed by this mandor");

@@ -34,16 +34,4 @@ public class UserServiceImpl implements UserService {
                 .map(u -> new UserDto(u.getId(), u.getFullname(), u.getUsername(), u.getRole(),
                         u.getCertificationNumber()));
     }
-
-    @Override
-    public Optional<UserDto> getUserByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .map(u -> new UserDto(u.getId(), u.getFullname(), u.getUsername(), u.getRole(),
-                        u.getCertificationNumber()));
-    }
-
-    @Override
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
-    }
 }

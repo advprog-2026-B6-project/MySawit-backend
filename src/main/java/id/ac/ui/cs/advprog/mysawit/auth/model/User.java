@@ -1,46 +1,98 @@
 package id.ac.ui.cs.advprog.mysawit.auth.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-// DONT add fields
-// Handling of relationships between users should be done using join tables, not here
-
-
-
-@Data
 @Entity
 @Table(name = "users")
-@NoArgsConstructor
-@AllArgsConstructor
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    @NotBlank
     private String fullname;
 
     @Column(unique = true, nullable = false)
-    @NotBlank
     private String username;
 
-    @Column(nullable = false)
-    @NotBlank
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @NotNull
     private Role role;
 
-    // if role != MANDOR:
-    //   certificationNumber = null
-    private String certificationNumber; 
+    private String certificationNumber; // cmn utk MANDOR 
+
+    private String mandorUsername;
+
+    public User() {
+    }
+
+    public User(String fullname, String username, String password, Role role, String certificationNumber) {
+        this(fullname, username, password, role, certificationNumber, null);
+    }
+    // just in case old code masih manggil constructor lama, biar ga error.
+    // udah fully implemented? hapus yang atas, keep yang bawah
+
+    public User(String fullname, String username, String password, Role role, String certificationNumber,
+                String mandorUsername) {
+        this.fullname = fullname;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.certificationNumber = certificationNumber;
+        this.mandorUsername = mandorUsername;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getFullname() {
+        return fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public String getCertificationNumber() {
+        return certificationNumber;
+    }
+
+    public void setCertificationNumber(String certificationNumber) {
+        this.certificationNumber = certificationNumber;
+    }
+
+    public String getMandorUsername() {
+        return mandorUsername;
+    }
+
+    public void setMandorUsername(String mandorUsername) {
+        this.mandorUsername = mandorUsername;
+    }
 }
+
+

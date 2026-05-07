@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.mysawit.auth.security;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,10 +25,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        return new org.springframework.security.core.userdetails.User(
-            user.getUsername(), 
-            user.getPassword(),
-            List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())));
+        GrantedAuthority auth = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
+        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
+                List.of(auth));
     }
 }
