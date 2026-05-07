@@ -13,4 +13,10 @@ public interface UserService {
     Optional<UserDto> getUserByUsername(String username);
 
     boolean existsByUsername(String username);
+
+    Optional<UserDto> deleteUserById(Long id);
+
+    Optional<UserDto> assignBuruhToMandor(String buruhUsername, String mandorUsername);
+
+    Optional<UserDto> reassignBuruhToMandor(String buruhUsername, String newMandorUsername);
 }

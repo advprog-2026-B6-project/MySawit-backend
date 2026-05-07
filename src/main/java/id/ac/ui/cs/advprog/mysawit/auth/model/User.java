@@ -43,4 +43,8 @@ public class User {
     // if role != MANDOR:
     //   certificationNumber = null
     private String certificationNumber; 
+
+    // if role != BURUH:
+    // mandorUsername = null
+    private String mandorUsername;
 }
