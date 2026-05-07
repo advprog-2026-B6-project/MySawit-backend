@@ -15,6 +15,7 @@ public class UserDto {
     private String username;
     private Role role;
     private String certificationNumber;
+    private String mandorUsername;
 
     public UserDto(User user) {
         this.id = user.getId();
@@ -22,5 +23,6 @@ public class UserDto {
         this.username = user.getUsername();
         this.role = user.getRole();
         this.certificationNumber = user.getCertificationNumber();
+        this.mandorUsername = user.getMandorUsername();
     }
 }

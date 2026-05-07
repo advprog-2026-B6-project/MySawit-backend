@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.mysawit.auth.serviceimpl;
 
 import id.ac.ui.cs.advprog.mysawit.auth.dto.UserDto;
+import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.auth.service.UserService;
@@ -52,6 +53,49 @@ public class UserServiceImpl implements UserService {
             userRepository.deleteById(id);
         }
         return dtoOpt;
+    }
+
+    @Override
+    public Optional<UserDto> assignBuruhToMandor(String buruhUsername, String mandorUsername) {
+        Optional<User> buruhOpt = userRepository.findByUsername(buruhUsername);
+        Optional<User> mandorOpt = userRepository.findByUsername(mandorUsername);
+        if (buruhOpt.isEmpty() || mandorOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        User buruh = buruhOpt.get();
+        User mandor = mandorOpt.get();
+        if (buruh.getRole() != Role.BURUH) {
+            throw new IllegalArgumentException("Target user is not a BURUH");
+        }
+        if (mandor.getRole() != Role.MANDOR) {
+            throw new IllegalArgumentException("Assigned supervisor is not a MANDOR");
+        }
+        if (buruh.getMandorUsername() != null && !buruh.getMandorUsername().isBlank()) {
+            throw new IllegalStateException("Buruh is already assigned to a Mandor");
+        }
+        buruh.setMandorUsername(mandor.getUsername());
+        userRepository.save(buruh);
+        return Optional.of(new UserDto(buruh));
+    }
+
+    @Override
+    public Optional<UserDto> reassignBuruhToMandor(String buruhUsername, String newMandorUsername) {
+        Optional<User> buruhOpt = userRepository.findByUsername(buruhUsername);
+        Optional<User> mandorOpt = userRepository.findByUsername(newMandorUsername);
+        if (buruhOpt.isEmpty() || mandorOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        User buruh = buruhOpt.get();
+        User newMandor = mandorOpt.get();
+        if (buruh.getRole() != Role.BURUH) {
+            throw new IllegalArgumentException("Target user is not a BURUH");
+        }
+        if (newMandor.getRole() != Role.MANDOR) {
+            throw new IllegalArgumentException("Assigned supervisor is not a MANDOR");
+        }
+        buruh.setMandorUsername(newMandor.getUsername());
+        userRepository.save(buruh);
+        return Optional.of(new UserDto(buruh));
     }
 
 }
