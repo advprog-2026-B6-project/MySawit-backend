@@ -78,9 +78,8 @@ public class AuthServiceImpl implements AuthService {
         User savedUser = userRepository.save(user);
         return new RegisterResponse(
                 savedUser.getId(),
-                savedUser.getUsername(),
                 savedUser.getFullname(),
-                savedUser.getRole()
-        );
+                savedUser.getUsername(),
+                savedUser.getRole());
     }
 }
