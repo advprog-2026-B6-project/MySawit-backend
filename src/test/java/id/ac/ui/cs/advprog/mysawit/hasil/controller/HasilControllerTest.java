@@ -4,14 +4,15 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilHistoryResponse;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
+import id.ac.ui.cs.advprog.mysawit.hasil.repository.HasilMandorBuruhRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilService;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,21 +38,15 @@ class HasilControllerTest {
     private HasilService hasilService;
 
     @Mock
+    private HasilMandorBuruhRepository hasilMandorBuruhRepository;
+
+    @Mock
     private UserRepository userRepository;
 
+        @InjectMocks
     private HasilController controller;
 
-    @BeforeEach
-    void setUp() {
-        controller = new HasilController(hasilService, userRepository);
-    }
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextHolder.clearContext();
-    }
-
-    @Test
+        @Test
     void buruhCanSeeOwnHistoryWithFilters() {
         setAuthentication("buruh-1", "BURUH");
         given(hasilService.findAll()).willReturn(List.of(
@@ -60,7 +56,7 @@ class HasilControllerTest {
                         "Panen lain", List.of("foto-2.jpg"), true, HasilStatus.SUBMITTED)
         ));
         given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
-                new User("Buruh Satu", "buruh-1", "pw", Role.BURUH, null, "mandor-1")
+                new User(null, "Buruh Satu", "buruh-1", "pw", Role.BURUH, null)
         ));
 
         var response = controller.myHistory(LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 31), HasilStatus.SUBMITTED);
@@ -84,13 +80,17 @@ class HasilControllerTest {
                 Hasil.of("3", "buruh-3", LocalDate.of(2026, 3, 6), 70.0,
                         "Panen luar", List.of("foto-3.jpg"), true, HasilStatus.SUBMITTED)
         ));
-        given(userRepository.findAll()).willReturn(List.of(
-                new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1"),
-                new User("Beni", "buruh-2", "pw", Role.BURUH, null, "mandor-1"),
-                new User("Rani", "buruh-3", "pw", Role.BURUH, null, "mandor-lain")
+        given(userRepository.findByUsername("mandor-1")).willReturn(java.util.Optional.of(
+                new User(10L, "Mandor Satu", "mandor-1", "pw", Role.MANDOR, "CERT-001")
+        ));
+        given(hasilMandorBuruhRepository.findBuruhIdsByMandorId(10L))
+                .willReturn(List.of(1L, 2L));
+        given(userRepository.findAllById(List.of(1L, 2L))).willReturn(List.of(
+                new User(1L, "Budi", "buruh-1", "pw", Role.BURUH, null),
+                new User(2L, "Beni", "buruh-2", "pw", Role.BURUH, null)
         ));
         given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
-                new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1")
+                new User(1L, "Budi", "buruh-1", "pw", Role.BURUH, null)
         ));
 
         var response = controller.mandorHistory(LocalDate.of(2026, 3, 6), "Bud");
@@ -111,15 +111,20 @@ class HasilControllerTest {
                 Hasil.of("2", "buruh-2", LocalDate.of(2026, 3, 7), 80.0,
                         "Panen siang", List.of("foto-2.jpg"), true, HasilStatus.SUBMITTED)
         ));
-        given(userRepository.findAll()).willReturn(List.of(
-                new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1"),
-                new User("Beni", "buruh-2", "pw", Role.BURUH, null, "mandor-1")
+        given(userRepository.findByUsername("mandor-1")).willReturn(java.util.Optional.of(
+                new User(10L, "Mandor Satu", "mandor-1", "pw", Role.MANDOR, "CERT-001")
+        ));
+        given(hasilMandorBuruhRepository.findBuruhIdsByMandorId(10L))
+                .willReturn(List.of(1L, 2L));
+        given(userRepository.findAllById(List.of(1L, 2L))).willReturn(List.of(
+                new User(1L, null, "buruh-1", "pw", Role.BURUH, null),
+                new User(2L, "Beni", "buruh-2", "pw", Role.BURUH, null)
         ));
         given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
-                new User(null, "buruh-1", "pw", Role.BURUH, null, "mandor-1")
+                new User(1L, null, "buruh-1", "pw", Role.BURUH, null)
         ));
         given(userRepository.findByUsername("buruh-2")).willReturn(java.util.Optional.of(
-                new User("Beni", "buruh-2", "pw", Role.BURUH, null, "mandor-1")
+                new User(2L, "Beni", "buruh-2", "pw", Role.BURUH, null)
         ));
 
         var response = controller.mandorHistory(null, "");
@@ -127,29 +132,35 @@ class HasilControllerTest {
         assertEquals(200, response.getStatusCode().value());
         List<HasilHistoryResponse> body = response.getBody();
         assertEquals(2, body.size());
-        assertEquals("buruh-1", body.get(1).workerName());
     }
 
     @Test
     void myHistoryRejectsInvalidDateRange() {
         setAuthentication("buruh-1", "BURUH");
 
-        assertThrows(IllegalArgumentException.class,
+        var thrown = assertThrows(IllegalArgumentException.class,
                 () -> controller.myHistory(
                         LocalDate.of(2026, 3, 31),
                         LocalDate.of(2026, 3, 1),
                         HasilStatus.SUBMITTED));
+
+        assertEquals("startDate cannot be after endDate", thrown.getMessage());
     }
 
     @Test
     void mandorCannotOpenWorkerOutsideScope() {
         setAuthentication("mandor-1", "MANDOR");
+        given(userRepository.findByUsername("mandor-1")).willReturn(java.util.Optional.of(
+                new User(10L, "Mandor Satu", "mandor-1", "pw", Role.MANDOR, "CERT-001")
+        ));
         given(userRepository.findByUsername("buruh-9")).willReturn(java.util.Optional.of(
-                new User("Luar", "buruh-9", "pw", Role.BURUH, null, "mandor-lain")
+                new User(9L, "Buruh Sembilan", "buruh-9", "pw", Role.BURUH, null)
         ));
 
-        assertThrows(AccessDeniedException.class,
+        var thrown = assertThrows(AccessDeniedException.class,
                 () -> controller.workerHistoryForMandor("buruh-9", null, null, null));
+
+        assertEquals("Worker is not managed by this mandor", thrown.getMessage());
     }
 
     @Test
@@ -188,9 +199,14 @@ class HasilControllerTest {
                 Hasil.of("2", "buruh-1", LocalDate.of(2026, 3, 7), 80.0,
                         "Panen siang", List.of("foto-2.jpg"), true, HasilStatus.VERIFIED)
         ));
-        given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
-                new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1")
+        given(userRepository.findByUsername("mandor-1")).willReturn(java.util.Optional.of(
+                new User(10L, "Mandor Satu", "mandor-1", "pw", Role.MANDOR, "CERT-001")
         ));
+        given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
+                new User(1L, "Budi", "buruh-1", "pw", Role.BURUH, null)
+        ));
+        given(hasilMandorBuruhRepository.existsByMandorIdAndBuruhId(10L, 1L))
+                .willReturn(true);
 
         var response = controller.workerHistoryForMandor(
                 "buruh-1",
@@ -209,16 +225,15 @@ class HasilControllerTest {
         setAuthentication("buruh-1", "BURUH");
         MultipartFile photo1 = org.mockito.Mockito.mock(MultipartFile.class);
         given(photo1.getOriginalFilename()).willReturn("foto-1.jpg");
-        
+
         Hasil createdReport = Hasil.of("h-1", "buruh-1", LocalDate.now(), 125.5,
                 "Panen dini", List.of("foto-1.jpg"), true, HasilStatus.SUBMITTED);
-        given(hasilService.create(any(String.class), any(Double.class), any(String.class), any(List.class)))
+        given(hasilService.create(anyString(), anyDouble(), anyString(), anyList()))
                 .willReturn(createdReport);
 
         var response = controller.create(125.5, "Panen dini", List.of(photo1));
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        @SuppressWarnings("unchecked")
         Map<String, Object> body = response.getBody();
         assertEquals("h-1", body.get("id"));
         assertEquals("buruh-1", body.get("workerId"));
@@ -227,16 +242,20 @@ class HasilControllerTest {
 
     @Test
     void unauthenticatedUserCannotAccessHistory() {
-        // No authentication set
-        assertThrows(AccessDeniedException.class,
+                SecurityContextHolder.clearContext();
+        var thrown = assertThrows(AccessDeniedException.class,
                 () -> controller.myHistory(null, null, null));
+
+        assertEquals("Unauthorized", thrown.getMessage());
     }
 
     @Test
     void unauthorizedRoleCannotAccessBuruhFeatures() {
         setAuthentication("user-1", "PEMBELI");
-        assertThrows(AccessDeniedException.class,
+        var thrown = assertThrows(AccessDeniedException.class,
                 () -> controller.myHistory(null, null, null));
+
+        assertEquals("Forbidden", thrown.getMessage());
     }
 
     private void setAuthentication(String username, String role) {

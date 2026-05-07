@@ -1,19 +1,17 @@
 package id.ac.ui.cs.advprog.mysawit.hasil.repository;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
@@ -25,15 +23,9 @@ class PostgresHasilRepositoryTest {
     @Mock
     private HasilJpaRepository jpaRepository;
 
-    private PostgresHasilRepository repository;
-
-    @BeforeEach
-    void setUp() {
-        repository = new PostgresHasilRepository(jpaRepository);
-    }
-
     @Test
     void savePersistsAndReturnsDomainModel() {
+        PostgresHasilRepository repository = new PostgresHasilRepository(jpaRepository);
         Hasil report = Hasil.of(
                 "h-1",
                 "buruh-1",
@@ -56,6 +48,7 @@ class PostgresHasilRepositoryTest {
 
     @Test
     void findAllMapsEntitiesToDomain() {
+        PostgresHasilRepository repository = new PostgresHasilRepository(jpaRepository);
         HasilEntity entity = HasilEntity.from(Hasil.of(
                 "h-2",
                 "buruh-2",
@@ -77,6 +70,7 @@ class PostgresHasilRepositoryTest {
 
     @Test
     void findByWorkerIdAndDateMapsOptionalEntityToDomain() {
+        PostgresHasilRepository repository = new PostgresHasilRepository(jpaRepository);
         HasilEntity entity = HasilEntity.from(Hasil.of(
                 "h-3",
                 "buruh-3",
@@ -98,6 +92,7 @@ class PostgresHasilRepositoryTest {
 
     @Test
     void existsByWorkerIdAndDateDelegatesToJpaRepository() {
+        PostgresHasilRepository repository = new PostgresHasilRepository(jpaRepository);
         given(jpaRepository.existsByWorkerIdAndHasilDate("buruh-4", LocalDate.of(2026, 3, 9)))
                 .willReturn(true);
 
