@@ -1,10 +1,12 @@
 package id.ac.ui.cs.advprog.mysawit.hasil.controller;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Comparator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,20 +18,21 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
-import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilTodayResponse;
-import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
-import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilService;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilHistoryResponse;
+import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilTodayResponse;
+import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
+import id.ac.ui.cs.advprog.mysawit.hasil.repository.HasilMandorBuruhRepository;
+import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilService;
 
 @RestController
 @RequestMapping("/hasil-reports")
@@ -39,10 +42,16 @@ public class HasilController {
     private static final String MANDOR_ROLE = "ROLE_MANDOR";
 
     private final HasilService hasilService;
+    private final HasilMandorBuruhRepository hasilMandorBuruhRepository;
     private final UserRepository userRepository;
 
-    public HasilController(HasilService hasilService, UserRepository userRepository) {
+    public HasilController(
+            HasilService hasilService,
+            HasilMandorBuruhRepository hasilMandorBuruhRepository,
+            UserRepository userRepository
+    ) {
         this.hasilService = hasilService;
+        this.hasilMandorBuruhRepository = hasilMandorBuruhRepository;
         this.userRepository = userRepository;
     }
 
@@ -108,8 +117,8 @@ public class HasilController {
             @RequestParam(required = false) LocalDate date,
             @RequestParam(required = false) String workerName
     ) {
-        String mandorUsername = getCurrentUsernameForRole(MANDOR_ROLE);
-        Set<String> supervisedWorkerIds = getSupervisedWorkerIds(mandorUsername);
+        User mandor = getCurrentUserForRole(MANDOR_ROLE);
+        Set<String> supervisedWorkerIds = getSupervisedWorkerIds(mandor.getId());
 
         List<HasilHistoryResponse> history = hasilService.findAll().stream()
                 .filter(report -> supervisedWorkerIds.contains(report.getWorkerId()))
@@ -128,9 +137,9 @@ public class HasilController {
             @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) HasilStatus status
     ) {
-        String mandorUsername = getCurrentUsernameForRole(MANDOR_ROLE);
+        User mandor = getCurrentUserForRole(MANDOR_ROLE);
         validateDateRange(startDate, endDate);
-        ensureWorkerBelongsToMandor(mandorUsername, workerId);
+        ensureWorkerBelongsToMandor(mandor.getId(), workerId);
 
         List<HasilHistoryResponse> history = hasilService.findAll().stream()
                 .filter(report -> workerId.equals(report.getWorkerId()))
@@ -144,6 +153,12 @@ public class HasilController {
 
     private String getCurrentBuruhUsername() {
         return getCurrentUsernameForRole(BURUH_ROLE);
+    }
+
+    private User getCurrentUserForRole(String requiredRole) {
+        String username = getCurrentUsernameForRole(requiredRole);
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new AccessDeniedException("Authenticated user is not registered"));
     }
 
     private String getCurrentUsernameForRole(String requiredRole) {
@@ -161,27 +176,30 @@ public class HasilController {
         return authentication.getName();
     }
 
-    private Set<String> getSupervisedWorkerIds(String mandorUsername) {
-        // TODO: replace logic with join table (mandor -> buruh)
+    private Set<String> getSupervisedWorkerIds(Long mandorId) {
+        List<Long> buruhIds = hasilMandorBuruhRepository.findBuruhIdsByMandorId(mandorId);
+        if (buruhIds.isEmpty()) {
+            return new HashSet<>();
+        }
 
-        // return userRepository.findAll().stream()
-        // .filter(user -> mandorUsername.equals(user.getMandorUsername()))
-        // .map(User::getUsername)
-        // .collect(Collectors.toSet());
-        return Set.of();
+        return userRepository.findAllById(buruhIds).stream()
+                .map(User::getUsername)
+                .collect(Collectors.toSet());
     }
 
-    private void ensureWorkerBelongsToMandor(String mandorUsername, String workerId) {
-        // TODO: replace logic with join table membership check
-        
-        // boolean belongsToMandor = userRepository.findByUsername(workerId)
-        // .map(user -> mandorUsername.equals(user.getMandorUsername()))
-        // .orElse(false);
-        boolean belongsToMandor = false;
+    private void ensureWorkerBelongsToMandor(Long mandorId, String workerId) {
+        Long buruhId = getUserIdByUsername(workerId)
+                .orElseThrow(() -> new AccessDeniedException("Worker is not managed by this mandor"));
+        boolean belongsToMandor = hasilMandorBuruhRepository
+                .existsByMandorIdAndBuruhId(mandorId, buruhId);
 
         if (!belongsToMandor) {
             throw new AccessDeniedException("Worker is not managed by this mandor");
         }
+    }
+
+    private Optional<Long> getUserIdByUsername(String username) {
+        return userRepository.findByUsername(username).map(User::getId);
     }
 
     private boolean matchesWorkerName(String workerId, String workerName) {
@@ -199,13 +217,8 @@ public class HasilController {
     }
 
     private boolean matchesDateRange(Hasil report, LocalDate startDate, LocalDate endDate) {
-        if (startDate != null && report.getHasilDate().isBefore(startDate)) {
-            return false;
-        }
-        if (endDate != null && report.getHasilDate().isAfter(endDate)) {
-            return false;
-        }
-        return true;
+        return (startDate == null || !report.getHasilDate().isBefore(startDate))
+                && (endDate == null || !report.getHasilDate().isAfter(endDate));
     }
 
     private Comparator<Hasil> historyComparator() {
