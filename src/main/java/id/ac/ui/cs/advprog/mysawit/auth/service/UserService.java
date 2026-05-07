@@ -13,4 +13,6 @@ public interface UserService {
     Optional<UserDto> getUserByUsername(String username);
 
     boolean existsByUsername(String username);
+
+    Optional<UserDto> deleteUserById(Long id);
 }
