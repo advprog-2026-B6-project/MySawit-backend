@@ -162,22 +162,16 @@ public class HasilController {
     }
 
     private Set<String> getSupervisedWorkerIds(String mandorUsername) {
-        // TODO: replace logic with join table (mandor -> buruh)
-
-        // return userRepository.findAll().stream()
-        // .filter(user -> mandorUsername.equals(user.getMandorUsername()))
-        // .map(User::getUsername)
-        // .collect(Collectors.toSet());
-        return Set.of();
+        return userRepository.findAll().stream()
+                .filter(user -> mandorUsername.equals(user.getMandorUsername()))
+                .map(User::getUsername)
+                .collect(Collectors.toSet());
     }
 
     private void ensureWorkerBelongsToMandor(String mandorUsername, String workerId) {
-        // TODO: replace logic with join table membership check
-        
-        // boolean belongsToMandor = userRepository.findByUsername(workerId)
-        // .map(user -> mandorUsername.equals(user.getMandorUsername()))
-        // .orElse(false);
-        boolean belongsToMandor = false;
+        boolean belongsToMandor = userRepository.findByUsername(workerId)
+                .map(user -> mandorUsername.equals(user.getMandorUsername()))
+                .orElse(false);
 
         if (!belongsToMandor) {
             throw new AccessDeniedException("Worker is not managed by this mandor");
