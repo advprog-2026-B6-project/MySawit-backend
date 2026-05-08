@@ -1,10 +1,10 @@
 package id.ac.ui.cs.advprog.mysawit.hasil.controller;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,20 +16,22 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
-import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilTodayResponse;
-import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
-import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilService;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilHistoryResponse;
+import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilTodayResponse;
+import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
+import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilService;
 
 @RestController
 @RequestMapping("/hasil-reports")
@@ -142,6 +144,42 @@ public class HasilController {
         return ResponseEntity.ok(history);
     }
 
+    @PutMapping("/mandor/{reportId}/approve")
+    public ResponseEntity<HasilHistoryResponse> approveReport(@PathVariable String reportId) {
+        String mandorUsername = getCurrentUsernameForRole(MANDOR_ROLE);
+        Hasil report = hasilService.findAll().stream()
+                .filter(candidate -> reportId.equals(candidate.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("hasil report not found"));
+        ensureWorkerBelongsToMandor(mandorUsername, report.getWorkerId());
+
+        return ResponseEntity.ok(toHistoryResponse(hasilService.approve(reportId)));
+    }
+
+    @PutMapping("/mandor/{reportId}/reject")
+    public ResponseEntity<HasilHistoryResponse> rejectReport(
+            @PathVariable String reportId,
+            @RequestBody Map<String, String> request
+    ) {
+        String mandorUsername = getCurrentUsernameForRole(MANDOR_ROLE);
+        Hasil report = hasilService.findAll().stream()
+                .filter(candidate -> reportId.equals(candidate.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("hasil report not found"));
+        ensureWorkerBelongsToMandor(mandorUsername, report.getWorkerId());
+
+        String rejectionReason = request == null ? null : request.get("rejectionReason");
+        return ResponseEntity.ok(toHistoryResponse(hasilService.reject(reportId, rejectionReason)));
+    }
+
+    @GetMapping("/pengiriman/available")
+    public ResponseEntity<List<HasilHistoryResponse>> availableForPengiriman() {
+        return ResponseEntity.ok(hasilService.findAvailableForPengiriman().stream()
+                .sorted(historyComparator())
+                .map(this::toHistoryResponse)
+                .toList());
+    }
+
     private String getCurrentBuruhUsername() {
         return getCurrentUsernameForRole(BURUH_ROLE);
     }
@@ -221,7 +259,9 @@ public class HasilController {
                 report.getNews(),
                 report.getStatus().name(),
                 report.isLocked(),
-                report.getPhotoUrls()
+                report.getPhotoUrls(),
+                report.getRejectionReason(),
+                report.isVisibleForPengiriman()
         );
     }
 }
