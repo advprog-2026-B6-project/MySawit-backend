@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,6 +41,9 @@ class PengirimanServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PayrollRequestSender payrollRequestSender;
 
     @InjectMocks
     private PengirimanServiceImpl pengirimanService;
@@ -282,6 +286,7 @@ class PengirimanServiceImplTest {
 
         assertEquals(StatusPengiriman.DISETUJUI, result.getStatus());
         assertNotNull(result.getWaktuDisetujui());
+        verify(payrollRequestSender).sendPayrollRequest(eq(result));
     }
 
     @Test

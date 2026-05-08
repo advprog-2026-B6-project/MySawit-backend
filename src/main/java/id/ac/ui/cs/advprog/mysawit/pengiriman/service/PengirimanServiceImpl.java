@@ -20,13 +20,16 @@ public class PengirimanServiceImpl implements PengirimanService {
     private final PengirimanRepository pengirimanRepository;
     private final SupirTrukRepository supirTrukRepository;
     private final UserRepository userRepository;
+    private final PayrollRequestSender payrollRequestSender;
 
     public PengirimanServiceImpl(PengirimanRepository pengirimanRepository,
                                   SupirTrukRepository supirTrukRepository,
-                                  UserRepository userRepository) {
+                                  UserRepository userRepository,
+                                  PayrollRequestSender payrollRequestSender) {
         this.pengirimanRepository = pengirimanRepository;
         this.supirTrukRepository = supirTrukRepository;
         this.userRepository = userRepository;
+        this.payrollRequestSender = payrollRequestSender;
     }
 
     @Override
@@ -169,7 +172,9 @@ public class PengirimanServiceImpl implements PengirimanService {
         }
 
         pengiriman.setStatus(StatusPengiriman.DISETUJUI);
-        return pengirimanRepository.save(pengiriman);
+        Pengiriman savedPengiriman = pengirimanRepository.save(pengiriman);
+        payrollRequestSender.sendPayrollRequest(savedPengiriman);
+        return savedPengiriman;
     }
 
     @Override
