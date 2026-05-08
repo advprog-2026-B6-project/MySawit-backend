@@ -17,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -142,6 +144,42 @@ public class HasilController {
         return ResponseEntity.ok(history);
     }
 
+    @PutMapping("/mandor/{reportId}/approve")
+    public ResponseEntity<HasilHistoryResponse> approveReport(@PathVariable String reportId) {
+        User mandor = getCurrentUserForRole(MANDOR_ROLE);
+        Hasil report = hasilService.findAll().stream()
+                .filter(candidate -> reportId.equals(candidate.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("hasil report not found"));
+        ensureWorkerBelongsToMandor(mandor.getId(), report.getWorkerId());
+
+        return ResponseEntity.ok(toHistoryResponse(hasilService.approve(reportId)));
+    }
+
+    @PutMapping("/mandor/{reportId}/reject")
+    public ResponseEntity<HasilHistoryResponse> rejectReport(
+            @PathVariable String reportId,
+            @RequestBody Map<String, String> request
+    ) {
+        User mandor = getCurrentUserForRole(MANDOR_ROLE);
+        Hasil report = hasilService.findAll().stream()
+                .filter(candidate -> reportId.equals(candidate.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("hasil report not found"));
+        ensureWorkerBelongsToMandor(mandor.getId(), report.getWorkerId());
+
+        String rejectionReason = request == null ? null : request.get("rejectionReason");
+        return ResponseEntity.ok(toHistoryResponse(hasilService.reject(reportId, rejectionReason)));
+    }
+
+    @GetMapping("/pengiriman/available")
+    public ResponseEntity<List<HasilHistoryResponse>> availableForPengiriman() {
+        return ResponseEntity.ok(hasilService.findAvailableForPengiriman().stream()
+                .sorted(historyComparator())
+                .map(this::toHistoryResponse)
+                .toList());
+    }
+
     private String getCurrentBuruhUsername() {
         return getCurrentUsernameForRole(BURUH_ROLE);
     }
@@ -161,6 +199,11 @@ public class HasilController {
         return authentication.getName();
     }
 
+    private Set<String> getSupervisedWorkerIds(Long mandorId) {
+        List<Long> buruhIds = hasilMandorBuruhRepository.findBuruhIdsByMandorId(mandorId);
+        return userRepository.findAllById(buruhIds).stream()
+                .map(User::getUsername)
+                .collect(Collectors.toSet());
     private Set<String> getSupervisedWorkerIds(String mandorUsername) {
         // TODO: replace logic with join table (mandor -> buruh)
 
@@ -171,6 +214,11 @@ public class HasilController {
         return Set.of();
     }
 
+    private void ensureWorkerBelongsToMandor(Long mandorId, String workerId) {
+        boolean belongsToMandor = getUserIdByUsername(workerId)
+                .map(buruhId -> hasilMandorBuruhRepository.existsByMandorIdAndBuruhId(
+                        mandorId, buruhId))
+                .orElse(false);
     private void ensureWorkerBelongsToMandor(String mandorUsername, String workerId) {
         // TODO: replace logic with join table membership check
         
@@ -227,7 +275,9 @@ public class HasilController {
                 report.getNews(),
                 report.getStatus().name(),
                 report.isLocked(),
-                report.getPhotoUrls()
+                report.getPhotoUrls(),
+                report.getRejectionReason(),
+                report.isVisibleForPengiriman()
         );
     }
 }

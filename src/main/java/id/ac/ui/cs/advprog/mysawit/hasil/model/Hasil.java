@@ -14,13 +14,32 @@ public class Hasil {
                 data.news(),
                 List.copyOf(data.photoUrls()),
                 data.locked(),
-                data.status()
+                data.status(),
+                data.rejectionReason(),
+                data.visibleForPengiriman()
         );
     }
 
     public static Hasil of(String id, String workerId, java.time.LocalDate hasilDate, double weightKg,
                            String news, List<String> photoUrls, boolean locked, HasilStatus status) {
-        return new Hasil(new HasilData(id, workerId, hasilDate, weightKg, news, photoUrls, locked, status));
+        return of(id, workerId, hasilDate, weightKg, news, photoUrls, locked, status, null, false);
+    }
+
+    public static Hasil of(String id, String workerId, java.time.LocalDate hasilDate, double weightKg,
+                           String news, List<String> photoUrls, boolean locked, HasilStatus status,
+                           String rejectionReason, boolean visibleForPengiriman) {
+        return new Hasil(new HasilData(id, workerId, hasilDate, weightKg, news, photoUrls, locked, status,
+                rejectionReason, visibleForPengiriman));
+    }
+
+    public Hasil approveForPengiriman() {
+        return of(getId(), getWorkerId(), getHasilDate(), getWeightKg(), getNews(), getPhotoUrls(),
+                isLocked(), HasilStatus.VERIFIED, null, true);
+    }
+
+    public Hasil reject(String rejectionReason) {
+        return of(getId(), getWorkerId(), getHasilDate(), getWeightKg(), getNews(), getPhotoUrls(),
+                isLocked(), HasilStatus.REJECTED, rejectionReason, false);
     }
 
     public String getId() {
@@ -53,6 +72,14 @@ public class Hasil {
 
     public HasilStatus getStatus() {
         return data.status();
+    }
+
+    public String getRejectionReason() {
+        return data.rejectionReason();
+    }
+
+    public boolean isVisibleForPengiriman() {
+        return data.visibleForPengiriman();
     }
 }
 

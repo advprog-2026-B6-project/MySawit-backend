@@ -48,6 +48,12 @@ public class HasilEntity {
     @Column(nullable = false)
     private HasilStatus status;
 
+    @Column(length = 1000)
+    private String rejectionReason;
+
+    @Column(nullable = false)
+    private boolean visibleForPengiriman;
+
     public HasilEntity() {
         // constructor kosong buat JPA/Hibernate supaya bisa 
         // bikin entity ini saat ambil data dari db
@@ -63,6 +69,8 @@ public class HasilEntity {
         entity.photoUrls = new ArrayList<>(report.getPhotoUrls());
         entity.locked = report.isLocked();
         entity.status = report.getStatus();
+        entity.rejectionReason = report.getRejectionReason();
+        entity.visibleForPengiriman = report.isVisibleForPengiriman();
         return entity;
     }
 
@@ -96,5 +104,13 @@ public class HasilEntity {
 
     public HasilStatus getStatus() {
         return status;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public boolean isVisibleForPengiriman() {
+        return visibleForPengiriman;
     }
 }
