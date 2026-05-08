@@ -57,6 +57,7 @@ public class WageSettingControllerTest {
         ResponseEntity<WageSetting> response = wageSettingController.updateWages(request);
 
         assertEquals(200, response.getStatusCode().value());
-        assertEquals(new BigDecimal("200"), response.getBody().getUpahMandorPerKg()); // Just testing that body mapping succeeds
+        assertEquals(new BigDecimal("200"),
+                response.getBody().getUpahMandorPerKg()); // Just testing that body mapping succeeds
     }
 }
