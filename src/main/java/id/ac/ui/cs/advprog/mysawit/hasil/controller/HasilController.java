@@ -3,7 +3,6 @@ package id.ac.ui.cs.advprog.mysawit.hasil.controller;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +19,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -151,6 +152,42 @@ public class HasilController {
         return ResponseEntity.ok(history);
     }
 
+    @PutMapping("/mandor/{reportId}/approve")
+    public ResponseEntity<HasilHistoryResponse> approveReport(@PathVariable String reportId) {
+        User mandor = getCurrentUserForRole(MANDOR_ROLE);
+        Hasil report = hasilService.findAll().stream()
+                .filter(candidate -> reportId.equals(candidate.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("hasil report not found"));
+        ensureWorkerBelongsToMandor(mandor.getId(), report.getWorkerId());
+
+        return ResponseEntity.ok(toHistoryResponse(hasilService.approve(reportId)));
+    }
+
+    @PutMapping("/mandor/{reportId}/reject")
+    public ResponseEntity<HasilHistoryResponse> rejectReport(
+            @PathVariable String reportId,
+            @RequestBody Map<String, String> request
+    ) {
+        User mandor = getCurrentUserForRole(MANDOR_ROLE);
+        Hasil report = hasilService.findAll().stream()
+                .filter(candidate -> reportId.equals(candidate.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("hasil report not found"));
+        ensureWorkerBelongsToMandor(mandor.getId(), report.getWorkerId());
+
+        String rejectionReason = request == null ? null : request.get("rejectionReason");
+        return ResponseEntity.ok(toHistoryResponse(hasilService.reject(reportId, rejectionReason)));
+    }
+
+    @GetMapping("/pengiriman/available")
+    public ResponseEntity<List<HasilHistoryResponse>> availableForPengiriman() {
+        return ResponseEntity.ok(hasilService.findAvailableForPengiriman().stream()
+                .sorted(historyComparator())
+                .map(this::toHistoryResponse)
+                .toList());
+    }
+
     private String getCurrentBuruhUsername() {
         return getCurrentUsernameForRole(BURUH_ROLE);
     }
@@ -176,16 +213,17 @@ public class HasilController {
         return authentication.getName();
     }
 
-    private Set<String> getSupervisedWorkerIds(String mandorUsername) {
-        return userRepository.findAll().stream()
-                .filter(user -> mandorUsername.equals(user.getMandorUsername()))
+    private Set<String> getSupervisedWorkerIds(Long mandorId) {
+        List<Long> buruhIds = hasilMandorBuruhRepository.findBuruhIdsByMandorId(mandorId);
+        return userRepository.findAllById(buruhIds).stream()
                 .map(User::getUsername)
                 .collect(Collectors.toSet());
     }
 
-    private void ensureWorkerBelongsToMandor(String mandorUsername, String workerId) {
-        boolean belongsToMandor = userRepository.findByUsername(workerId)
-                .map(user -> mandorUsername.equals(user.getMandorUsername()))
+    private void ensureWorkerBelongsToMandor(Long mandorId, String workerId) {
+        boolean belongsToMandor = getUserIdByUsername(workerId)
+                .map(buruhId -> hasilMandorBuruhRepository.existsByMandorIdAndBuruhId(
+                        mandorId, buruhId))
                 .orElse(false);
 
         if (!belongsToMandor) {
@@ -235,7 +273,9 @@ public class HasilController {
                 report.getNews(),
                 report.getStatus().name(),
                 report.isLocked(),
-                report.getPhotoUrls()
+                report.getPhotoUrls(),
+                report.getRejectionReason(),
+                report.isVisibleForPengiriman()
         );
     }
 }
