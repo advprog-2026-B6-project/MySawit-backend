@@ -13,7 +13,9 @@ public class BuruhWageStrategy implements WageCalculationStrategy {
 
     @Override
     public BigDecimal calculate(BigDecimal totalKg, WageSetting wageSetting) {
-        if (totalKg == null || totalKg.compareTo(BigDecimal.ZERO) <= 0) return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        if (totalKg == null || totalKg.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
         BigDecimal rate = wageSetting.getUpahBuruhPerKg() != null ? wageSetting.getUpahBuruhPerKg() : BigDecimal.ZERO;
         return totalKg.multiply(rate).multiply(WAGE_MULTIPLIER).setScale(2, RoundingMode.HALF_UP);
     }

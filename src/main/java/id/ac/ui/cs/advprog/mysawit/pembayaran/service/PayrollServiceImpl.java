@@ -7,6 +7,7 @@ import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollResponse;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.Payroll;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.WageSetting;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.repository.PayrollRepository;
+import id.ac.ui.cs.advprog.mysawit.pembayaran.model.strategy.WageCalculationStrategy;
 
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,7 @@ public class PayrollServiceImpl implements PayrollService {
     private final PayrollRepository payrollRepository;
     private final UserRepository userRepository;
     private final WageSettingService wageSettingService;
-    private final Map<String, id.ac.ui.cs.advprog.mysawit.pembayaran.model.strategy.WageCalculationStrategy> wageStrategies;
+    private final Map<String, WageCalculationStrategy> wageStrategies;
 
     // 90% logic meaning multiplier is 0.9
     private static final BigDecimal WAGE_MULTIPLIER = new BigDecimal("0.90");
@@ -33,7 +34,7 @@ public class PayrollServiceImpl implements PayrollService {
     public PayrollServiceImpl(PayrollRepository payrollRepository,
                               UserRepository userRepository,
                               WageSettingService wageSettingService,
-                              Map<String, id.ac.ui.cs.advprog.mysawit.pembayaran.model.strategy.WageCalculationStrategy> wageStrategies) {
+                              Map<String, WageCalculationStrategy> wageStrategies) {
         this.payrollRepository = payrollRepository;
         this.userRepository = userRepository;
         this.wageSettingService = wageSettingService;
@@ -43,7 +44,7 @@ public class PayrollServiceImpl implements PayrollService {
     @Override
     public java.math.BigDecimal calculateWage(String roleStr, BigDecimal totalKg) {
         WageSetting wageSetting = wageSettingService.getWageSetting();
-        id.ac.ui.cs.advprog.mysawit.pembayaran.model.strategy.WageCalculationStrategy strategy = wageStrategies.get(roleStr);
+        WageCalculationStrategy strategy = wageStrategies.get(roleStr);
         if (strategy == null) {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }

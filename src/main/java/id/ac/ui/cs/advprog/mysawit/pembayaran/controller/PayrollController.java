@@ -53,7 +53,8 @@ public class PayrollController {
 
     @PostMapping("/admin/payroll/{id}/reject")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<PayrollResponse> rejectPayroll(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+    public ResponseEntity<PayrollResponse> rejectPayroll(
+            @PathVariable Long id, @RequestBody Map<String, String> payload) {
         String reason = payload.getOrDefault("reason", "No reason provided");
         return ResponseEntity.ok(payrollService.rejectPayroll(id, reason));
     }
