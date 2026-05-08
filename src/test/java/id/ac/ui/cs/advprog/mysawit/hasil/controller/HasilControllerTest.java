@@ -13,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -220,7 +219,6 @@ class HasilControllerTest {
         var response = controller.create(125.5, "Panen dini", List.of(photo1));
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        @SuppressWarnings("unchecked")
         Map<String, Object> body = response.getBody();
         assertEquals("h-1", body.get("id"));
         assertEquals("buruh-1", body.get("workerId"));
@@ -233,14 +231,9 @@ class HasilControllerTest {
         Hasil submitted = Hasil.of("h-1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
                 "Panen pagi", List.of("foto-1.jpg"), true, HasilStatus.SUBMITTED);
         Hasil approved = submitted.approveForPengiriman();
-        given(userRepository.findByUsername("mandor-1")).willReturn(java.util.Optional.of(
-                new User(10L, "Mandor Satu", "mandor-1", "pw", Role.MANDOR, "CERT-001", null)
-        ));
         given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
-                new User(1L, "Budi", "buruh-1", "pw", Role.BURUH, null, null)
+                new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1")
         ));
-        given(hasilMandorBuruhRepository.existsByMandorIdAndBuruhId(10L, 1L))
-                .willReturn(true);
         given(hasilService.findAll()).willReturn(List.of(submitted));
         given(hasilService.approve("h-1")).willReturn(approved);
 
@@ -258,14 +251,9 @@ class HasilControllerTest {
         Hasil submitted = Hasil.of("h-1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
                 "Panen pagi", List.of("foto-1.jpg"), true, HasilStatus.SUBMITTED);
         Hasil rejected = submitted.reject("Foto kurang jelas");
-        given(userRepository.findByUsername("mandor-1")).willReturn(java.util.Optional.of(
-                new User(10L, "Mandor Satu", "mandor-1", "pw", Role.MANDOR, "CERT-001", null)
-        ));
         given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
-                new User(1L, "Budi", "buruh-1", "pw", Role.BURUH, null, null)
+                new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1")
         ));
-        given(hasilMandorBuruhRepository.existsByMandorIdAndBuruhId(10L, 1L))
-                .willReturn(true);
         given(hasilService.findAll()).willReturn(List.of(submitted));
         given(hasilService.reject("h-1", "Foto kurang jelas")).willReturn(rejected);
 
