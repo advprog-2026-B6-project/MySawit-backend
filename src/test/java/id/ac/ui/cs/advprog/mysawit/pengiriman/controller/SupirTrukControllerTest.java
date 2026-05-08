@@ -173,4 +173,29 @@ class SupirTrukControllerTest {
 
     assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
+
+    @Test
+    void testGetAlasanPenolakanPengirimanSuccess() {
+    UUID pengirimanId = UUID.randomUUID();
+        when(supirTrukService.getSupirTrukById(supirTrukId)).thenReturn(supirTruk);
+    when(pengirimanService.getAlasanPenolakan(pengirimanId, supirTrukId))
+                .thenReturn("Tidak sesuai");
+
+    ResponseEntity<?> response = supirTrukController.getAlasanPenolakanPengiriman(supirTrukId, pengirimanId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    void testGetAlasanPenolakanPengirimanError() {
+    UUID pengirimanId = UUID.randomUUID();
+        when(supirTrukService.getSupirTrukById(supirTrukId)).thenReturn(supirTruk);
+    when(pengirimanService.getAlasanPenolakan(pengirimanId, supirTrukId))
+                .thenThrow(new IllegalArgumentException("Pengiriman tidak berstatus ditolak"));
+
+    ResponseEntity<?> response = supirTrukController.getAlasanPenolakanPengiriman(supirTrukId, pengirimanId);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
 }

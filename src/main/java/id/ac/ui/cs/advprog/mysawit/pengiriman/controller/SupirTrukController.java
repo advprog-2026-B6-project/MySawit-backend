@@ -91,6 +91,21 @@ public class SupirTrukController {
         }
     }
 
+    @GetMapping("/{supirId}/pengiriman/{pengirimanId}/alasan-penolakan")
+    public ResponseEntity<ApiResponse<String>> getAlasanPenolakanPengiriman(
+            @PathVariable UUID supirId,
+            @PathVariable UUID pengirimanId) {
+        try {
+            supirTrukService.getSupirTrukById(supirId);
+            String alasan = pengirimanService.getAlasanPenolakan(pengirimanId, supirId);
+            return ResponseEntity.ok(
+                    ApiResponse.success("Alasan penolakan berhasil diambil", alasan));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SupirTruk>> tambahSupirTruk(@RequestBody SupirTruk supirTruk) {
         SupirTruk savedSupir = supirTrukService.tambahSupirTruk(supirTruk);

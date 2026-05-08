@@ -16,6 +16,7 @@ public interface PengirimanService {
     List<Pengiriman> getRiwayatPengirimanSupir(UUID supirTrukId,
                                                java.time.LocalDate tanggalMulai,
                                                java.time.LocalDate tanggalSelesai);
+    String getAlasanPenolakan(UUID pengirimanId, UUID supirTrukId);
     List<Pengiriman> getDaftarPengirimanBerlangsung();
     Pengiriman getPengirimanById(UUID id);
     List<Pengiriman> getAllPengiriman();

@@ -474,6 +474,63 @@ class PengirimanServiceImplTest {
     }
 
     @Test
+    void testGetAlasanPenolakanSuccess() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
+        pengiriman.setAlasanPenolakan("Tidak sesuai");
+        pengiriman.setStatus(StatusPengiriman.DITOLAK);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        String alasan = pengirimanService.getAlasanPenolakan(pengirimanId, supirTrukId);
+
+        assertEquals("Tidak sesuai", alasan);
+    }
+
+    @Test
+    void testGetAlasanPenolakanBukanSupir() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
+        pengiriman.setAlasanPenolakan("Tidak sesuai");
+        pengiriman.setStatus(StatusPengiriman.DITOLAK);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.getAlasanPenolakan(pengirimanId, UUID.randomUUID()));
+
+        assertTrue(exception.getMessage().contains("Hanya supir"));
+    }
+
+    @Test
+    void testGetAlasanPenolakanStatusBukanDitolak() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.getAlasanPenolakan(pengirimanId, supirTrukId));
+
+        assertTrue(exception.getMessage().contains("tidak berstatus"));
+    }
+
+    @Test
+    void testGetAlasanPenolakanTidakTersedia() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.DITOLAK);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.getAlasanPenolakan(pengirimanId, supirTrukId));
+
+        assertTrue(exception.getMessage().contains("tidak tersedia"));
+    }
+
+    @Test
     void testGetPengirimanByIdSuccess() {
         Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
         UUID pengirimanId = pengiriman.getId();

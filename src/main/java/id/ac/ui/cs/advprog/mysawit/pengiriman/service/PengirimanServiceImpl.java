@@ -126,6 +126,26 @@ public class PengirimanServiceImpl implements PengirimanService {
     }
 
     @Override
+    public String getAlasanPenolakan(UUID pengirimanId, UUID supirTrukId) {
+        Pengiriman pengiriman = pengirimanRepository.findById(pengirimanId)
+                .orElseThrow(() -> new IllegalArgumentException("Pengiriman tidak ditemukan"));
+
+        if (!pengiriman.getSupirTrukId().equals(supirTrukId)) {
+            throw new IllegalArgumentException("Hanya supir yang ditugaskan yang dapat melihat alasan penolakan");
+        }
+
+        if (pengiriman.getStatus() != StatusPengiriman.DITOLAK) {
+            throw new IllegalArgumentException("Pengiriman tidak berstatus ditolak");
+        }
+
+        if (pengiriman.getAlasanPenolakan() == null || pengiriman.getAlasanPenolakan().isBlank()) {
+            throw new IllegalArgumentException("Alasan penolakan tidak tersedia");
+        }
+
+        return pengiriman.getAlasanPenolakan();
+    }
+
+    @Override
     public Pengiriman setujuiPengiriman(UUID pengirimanId, Long mandorId) {
         Pengiriman pengiriman = pengirimanRepository.findById(pengirimanId)
                 .orElseThrow(() -> new IllegalArgumentException("Pengiriman tidak ditemukan"));
