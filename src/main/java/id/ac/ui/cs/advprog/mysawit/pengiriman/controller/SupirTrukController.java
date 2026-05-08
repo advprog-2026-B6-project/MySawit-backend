@@ -7,13 +7,16 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.service.PengirimanService;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.SupirTrukService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,6 +66,25 @@ public class SupirTrukController {
             List<Pengiriman> pengirimanList = pengirimanService.getDaftarPengirimanSupir(id);
             return ResponseEntity.ok(
                     ApiResponse.success("Daftar pengiriman supir berhasil diambil", pengirimanList));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}/pengiriman/riwayat")
+    public ResponseEntity<ApiResponse<List<Pengiriman>>> getRiwayatPengirimanSupir(
+            @PathVariable UUID id,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tanggalMulai,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tanggalSelesai) {
+        try {
+            supirTrukService.getSupirTrukById(id);
+            List<Pengiriman> pengirimanList = pengirimanService.getRiwayatPengirimanSupir(
+                    id, tanggalMulai, tanggalSelesai);
+            return ResponseEntity.ok(
+                    ApiResponse.success("Riwayat pengiriman supir berhasil diambil", pengirimanList));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(e.getMessage()));

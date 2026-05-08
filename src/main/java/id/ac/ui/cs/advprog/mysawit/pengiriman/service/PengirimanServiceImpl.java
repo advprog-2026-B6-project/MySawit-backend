@@ -10,6 +10,7 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
 import id.ac.ui.cs.advprog.mysawit.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -111,6 +112,17 @@ public class PengirimanServiceImpl implements PengirimanService {
     @Override
     public List<Pengiriman> getDaftarPengirimanSupir(UUID supirTrukId) {
         return pengirimanRepository.findBySupirTrukId(supirTrukId);
+    }
+
+    @Override
+    public List<Pengiriman> getRiwayatPengirimanSupir(UUID supirTrukId,
+                                                      LocalDate tanggalMulai,
+                                                      LocalDate tanggalSelesai) {
+        if (tanggalMulai != null && tanggalSelesai != null && tanggalMulai.isAfter(tanggalSelesai)) {
+            throw new IllegalArgumentException("Tanggal mulai tidak boleh setelah tanggal selesai");
+        }
+
+        return pengirimanRepository.findRiwayatSupir(supirTrukId, tanggalMulai, tanggalSelesai);
     }
 
     @Override

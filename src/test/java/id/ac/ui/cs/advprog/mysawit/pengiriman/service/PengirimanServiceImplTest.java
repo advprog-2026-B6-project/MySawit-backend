@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -444,6 +445,32 @@ class PengirimanServiceImplTest {
                 pengirimanService.tolakPengiriman(pengirimanId, mandorId, "Alasan"));
 
         assertTrue(exception.getMessage().contains("Mandor tidak berhak"));
+    }
+
+    @Test
+    void testGetRiwayatPengirimanSupir() {
+    Pengiriman pengiriman1 = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
+    Pengiriman pengiriman2 = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik B");
+
+    when(pengirimanRepository.findRiwayatSupir(supirTrukId,
+        LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 3)))
+        .thenReturn(Arrays.asList(pengiriman1, pengiriman2));
+
+    List<Pengiriman> result = pengirimanService.getRiwayatPengirimanSupir(
+        supirTrukId, LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 3));
+
+    assertEquals(2, result.size());
+    verify(pengirimanRepository).findRiwayatSupir(supirTrukId,
+        LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 3));
+    }
+
+    @Test
+    void testGetRiwayatPengirimanSupirTanggalInvalid() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        pengirimanService.getRiwayatPengirimanSupir(
+            supirTrukId, LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1)));
+
+    assertTrue(exception.getMessage().contains("Tanggal mulai"));
     }
 
     @Test

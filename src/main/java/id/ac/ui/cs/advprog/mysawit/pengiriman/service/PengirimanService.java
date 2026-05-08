@@ -13,6 +13,9 @@ public interface PengirimanService {
     Pengiriman setujuiPengiriman(UUID pengirimanId, Long mandorId);
     Pengiriman tolakPengiriman(UUID pengirimanId, Long mandorId, String alasanPenolakan);
     List<Pengiriman> getDaftarPengirimanSupir(UUID supirTrukId);
+    List<Pengiriman> getRiwayatPengirimanSupir(UUID supirTrukId,
+                                               java.time.LocalDate tanggalMulai,
+                                               java.time.LocalDate tanggalSelesai);
     List<Pengiriman> getDaftarPengirimanBerlangsung();
     Pengiriman getPengirimanById(UUID id);
     List<Pengiriman> getAllPengiriman();

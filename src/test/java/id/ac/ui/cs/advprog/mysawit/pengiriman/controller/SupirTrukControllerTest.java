@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -138,5 +139,38 @@ class SupirTrukControllerTest {
         ResponseEntity<?> response = supirTrukController.getPengirimanSupirTruk(supirTrukId);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void testGetRiwayatPengirimanSupirSuccess() {
+    Pengiriman pengiriman = Pengiriman.builder()
+        .supirTrukId(supirTrukId)
+        .mandorId(1L)
+        .muatanKg(100)
+        .tujuan("Jakarta")
+        .build();
+    when(supirTrukService.getSupirTrukById(supirTrukId)).thenReturn(supirTruk);
+    when(pengirimanService.getRiwayatPengirimanSupir(supirTrukId,
+        LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 3)))
+        .thenReturn(List.of(pengiriman));
+
+    ResponseEntity<?> response = supirTrukController.getRiwayatPengirimanSupir(
+        supirTrukId, LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 3));
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertNotNull(response.getBody());
+    }
+
+    @Test
+    void testGetRiwayatPengirimanSupirTanggalInvalid() {
+    when(supirTrukService.getSupirTrukById(supirTrukId)).thenReturn(supirTruk);
+    when(pengirimanService.getRiwayatPengirimanSupir(supirTrukId,
+        LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1)))
+        .thenThrow(new IllegalArgumentException("Tanggal mulai tidak boleh setelah tanggal selesai"));
+
+    ResponseEntity<?> response = supirTrukController.getRiwayatPengirimanSupir(
+        supirTrukId, LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1));
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 }
