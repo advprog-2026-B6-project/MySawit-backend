@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -533,6 +534,36 @@ class PengirimanServiceImplTest {
                 pengirimanService.getAlasanPenolakan(pengirimanId, supirTrukId));
 
         assertTrue(exception.getMessage().contains("tidak tersedia"));
+    }
+
+    @Test
+    void testGetPengirimanDisetujuiWithFilter() {
+        Pengiriman pengiriman1 = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
+        pengiriman1.setStatus(StatusPengiriman.DISETUJUI);
+        pengiriman1.setWaktuDisetujui(LocalDateTime.of(2026, 5, 2, 10, 0));
+
+        Pengiriman pengiriman2 = createPengiriman(supirTrukId, 2L, 300.0, "Pabrik B");
+        pengiriman2.setStatus(StatusPengiriman.DISETUJUI);
+        pengiriman2.setWaktuDisetujui(LocalDateTime.of(2026, 5, 4, 10, 0));
+
+        when(pengirimanRepository.findAll()).thenReturn(Arrays.asList(pengiriman1, pengiriman2));
+    when(userRepository.findById(mandorId)).thenReturn(Optional.of(mandorUser));
+
+        List<id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovedPengirimanResponse> result =
+                pengirimanService.getPengirimanDisetujui("Ahmad",
+                        LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 3));
+
+        assertEquals(1, result.size());
+        assertEquals(mandorId, result.get(0).getMandorId());
+    }
+
+    @Test
+    void testGetPengirimanDisetujuiTanggalInvalid() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.getPengirimanDisetujui("Ahmad",
+                        LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1)));
+
+        assertTrue(exception.getMessage().contains("Tanggal mulai"));
     }
 
     @Test

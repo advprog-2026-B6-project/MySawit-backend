@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
 import id.ac.ui.cs.advprog.mysawit.model.Role;
 import id.ac.ui.cs.advprog.mysawit.model.User;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovedPengirimanResponse;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class PengirimanServiceImpl implements PengirimanService {
@@ -146,6 +148,54 @@ public class PengirimanServiceImpl implements PengirimanService {
         }
 
         return pengiriman.getAlasanPenolakan();
+    }
+
+    @Override
+    public List<ApprovedPengirimanResponse> getPengirimanDisetujui(String mandorName,
+                                                                   LocalDate tanggalMulai,
+                                                                   LocalDate tanggalSelesai) {
+        if (tanggalMulai != null && tanggalSelesai != null && tanggalMulai.isAfter(tanggalSelesai)) {
+            throw new IllegalArgumentException("Tanggal mulai tidak boleh setelah tanggal selesai");
+        }
+
+        String normalizedMandorName = mandorName == null ? null : mandorName.trim().toLowerCase();
+
+        return pengirimanRepository.findAll().stream()
+                .filter(p -> p.getStatus() == StatusPengiriman.DISETUJUI)
+                .filter(p -> p.getWaktuDisetujui() != null)
+                .filter(p -> {
+                    if (tanggalMulai == null && tanggalSelesai == null) {
+                        return true;
+                    }
+                    LocalDate tanggal = p.getWaktuDisetujui().toLocalDate();
+                    boolean afterStart = tanggalMulai == null || !tanggal.isBefore(tanggalMulai);
+                    boolean beforeEnd = tanggalSelesai == null || !tanggal.isAfter(tanggalSelesai);
+                    return afterStart && beforeEnd;
+                })
+                .map(p -> buildApprovedResponse(p, normalizedMandorName))
+                .filter(response -> response != null)
+                .collect(Collectors.toList());
+    }
+
+    private ApprovedPengirimanResponse buildApprovedResponse(Pengiriman pengiriman, String normalizedMandorName) {
+    String mandorName = userRepository.findById(pengiriman.getMandorId())
+        .map(User::getFullname)
+                .orElse("Tidak diketahui");
+
+        if (normalizedMandorName != null && !mandorName.toLowerCase().contains(normalizedMandorName)) {
+            return null;
+        }
+
+        return new ApprovedPengirimanResponse(
+                pengiriman.getId(),
+                pengiriman.getSupirTrukId(),
+                pengiriman.getMandorId(),
+                mandorName,
+                pengiriman.getMuatanKg(),
+                pengiriman.getTujuan(),
+                pengiriman.getWaktuDisetujui(),
+                pengiriman.getStatus()
+        );
     }
 
     @Override

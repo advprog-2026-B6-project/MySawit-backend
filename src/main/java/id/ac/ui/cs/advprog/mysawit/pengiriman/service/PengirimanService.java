@@ -17,6 +17,10 @@ public interface PengirimanService {
                                                java.time.LocalDate tanggalMulai,
                                                java.time.LocalDate tanggalSelesai);
     String getAlasanPenolakan(UUID pengirimanId, UUID supirTrukId);
+    List<id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovedPengirimanResponse> getPengirimanDisetujui(
+        String mandorName,
+        java.time.LocalDate tanggalMulai,
+        java.time.LocalDate tanggalSelesai);
     List<Pengiriman> getDaftarPengirimanBerlangsung();
     Pengiriman getPengirimanById(UUID id);
     List<Pengiriman> getAllPengiriman();
