@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.exception.DailySubmissionLimitException;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
+import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
 import id.ac.ui.cs.advprog.mysawit.hasil.repository.HasilRepository;
 
 @Service
@@ -48,16 +49,22 @@ public class HasilServiceImpl implements HasilService {
             throw new DailySubmissionLimitException("Buruh hanya bisa submit 1 kali per hari");
         }
 
-        Hasil report = new Hasil(
-                UUID.randomUUID().toString(),
-                workerId,
-                today,
-                kilogram,
-                news,
-                photoUrls,
-                true
+        Hasil report = Hasil.of(
+            UUID.randomUUID().toString(),
+            workerId,
+            today,
+            kilogram,
+            news,
+            photoUrls,
+            true,
+            HasilStatus.SUBMITTED
         );
         return hasilRepository.save(report);
+    }
+
+    @Override
+    public List<Hasil> findAll() {
+        return hasilRepository.findAll();
     }
 
     @Override

@@ -37,7 +37,6 @@ dependencies {
     // 1. Core Web & MVC
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("com.fasterxml.jackson.core:jackson-databind")
 
     // 2. Database & JPA
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -62,6 +61,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

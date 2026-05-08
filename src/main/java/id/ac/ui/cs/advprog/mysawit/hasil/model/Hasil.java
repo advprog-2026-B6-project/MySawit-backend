@@ -1,54 +1,58 @@
 package id.ac.ui.cs.advprog.mysawit.hasil.model;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public class Hasil {
-    private final String id;
-    private final String workerId;
-    private final LocalDate hasilDate;
-    private final double weightKg;
-    private final String news;
-    private final List<String> photoUrls;
-    private final boolean locked;
+    private final HasilData data;
 
-    public Hasil(String id, String workerId, LocalDate hasilDate, double weightKg,
-                         String news, List<String> photoUrls, boolean locked) {
-        this.id = id;
-        this.workerId = workerId;
-        this.hasilDate = hasilDate;
-        this.weightKg = weightKg;
-        this.news = news;
-        this.photoUrls = List.copyOf(photoUrls);
-        this.locked = locked;
+    public Hasil(HasilData data) {
+        this.data = new HasilData(
+                data.id(),
+                data.workerId(),
+                data.hasilDate(),
+                data.weightKg(),
+                data.news(),
+                List.copyOf(data.photoUrls()),
+                data.locked(),
+                data.status()
+        );
+    }
+
+    public static Hasil of(String id, String workerId, java.time.LocalDate hasilDate, double weightKg,
+                           String news, List<String> photoUrls, boolean locked, HasilStatus status) {
+        return new Hasil(new HasilData(id, workerId, hasilDate, weightKg, news, photoUrls, locked, status));
     }
 
     public String getId() {
-        return id;
+        return data.id();
     }
 
     public String getWorkerId() {
-        return workerId;
+        return data.workerId();
     }
 
-    public LocalDate getHasilDate() {
-        return hasilDate;
+    public java.time.LocalDate getHasilDate() {
+        return data.hasilDate();
     }
 
     public double getWeightKg() {
-        return weightKg;
+        return data.weightKg();
     }
 
     public String getNews() {
-        return news;
+        return data.news();
     }
 
     public List<String> getPhotoUrls() {
-        return photoUrls;
+        return data.photoUrls();
     }
 
     public boolean isLocked() {
-        return locked;
+        return data.locked();
+    }
+
+    public HasilStatus getStatus() {
+        return data.status();
     }
 }
 

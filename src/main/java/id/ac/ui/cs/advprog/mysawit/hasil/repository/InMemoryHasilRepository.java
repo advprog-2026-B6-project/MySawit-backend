@@ -4,6 +4,8 @@ import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +20,11 @@ public class InMemoryHasilRepository implements HasilRepository {
         reportsById.put(report.getId(), report);
         reportIdByWorkerAndDate.put(buildWorkerDateKey(report.getWorkerId(), report.getHasilDate()), report.getId());
         return report;
+    }
+
+    @Override
+    public List<Hasil> findAll() {
+        return new ArrayList<>(reportsById.values());
     }
 
     @Override

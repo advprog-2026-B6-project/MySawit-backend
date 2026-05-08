@@ -28,7 +28,17 @@ public class InMemoryKebunSawitRepository implements KebunSawitRepository {
     }
 
     @Override
+    public Optional<KebunSawit> findById(String id) {
+        return Optional.ofNullable(kebunRepository.get(id));
+    }
+
+    @Override
     public List<KebunSawit> findAll() {
         return new ArrayList<>(kebunRepository.values());
+    }
+
+    @Override
+    public void deleteById(String id) {
+        kebunRepository.remove(id);
     }
 }

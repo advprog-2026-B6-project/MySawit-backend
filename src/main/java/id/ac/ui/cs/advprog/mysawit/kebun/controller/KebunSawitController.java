@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.controller;
 
+import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
 import id.ac.ui.cs.advprog.mysawit.kebun.service.KebunSawitService;
 import org.springframework.http.HttpStatus;
@@ -44,5 +45,45 @@ public class KebunSawitController {
                 .<ResponseEntity<Object>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "Kebun tidak ditemukan: " + kodeUnik)));
+    }
+
+    @GetMapping("/detail/{id}")
+    public ResponseEntity<Object> getDetail(
+            @PathVariable String id,
+            @RequestParam(required = false, defaultValue = "") String searchSupir) {
+        try {
+            KebunDetailResponse detail = service.getDetail(id, searchSupir);
+            return ResponseEntity.ok(detail);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> update(@PathVariable String id, @RequestBody KebunSawit kebun) {
+        try {
+            KebunSawit updated = service.update(id, kebun);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("tidak ditemukan")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            }
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> delete(@PathVariable String id) {
+        try {
+            service.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("tidak ditemukan")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            }
+            if (e.getMessage().contains("masih memiliki Mandor")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
+            }
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

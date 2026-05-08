@@ -12,6 +12,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+
+import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
+import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
 
 @Entity
 @Table(name = "hasil_reports")
@@ -38,19 +43,27 @@ public class HasilEntity {
 
     @Column(nullable = false)
     private boolean locked;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private HasilStatus status;
 
     public HasilEntity() {
+        // constructor kosong buat JPA/Hibernate supaya bisa 
+        // bikin entity ini saat ambil data dari db
     }
 
-    public HasilEntity(String id, String workerId, LocalDate hasilDate, double weightKg, String news,
-                       List<String> photoUrls, boolean locked) {
-        this.id = id;
-        this.workerId = workerId;
-        this.hasilDate = hasilDate;
-        this.weightKg = weightKg;
-        this.news = news;
-        this.photoUrls = new ArrayList<>(photoUrls);
-        this.locked = locked;
+    public static HasilEntity from(Hasil report) {
+        HasilEntity entity = new HasilEntity();
+        entity.id = report.getId();
+        entity.workerId = report.getWorkerId();
+        entity.hasilDate = report.getHasilDate();
+        entity.weightKg = report.getWeightKg();
+        entity.news = report.getNews();
+        entity.photoUrls = new ArrayList<>(report.getPhotoUrls());
+        entity.locked = report.isLocked();
+        entity.status = report.getStatus();
+        return entity;
     }
 
     public String getId() {
@@ -79,5 +92,9 @@ public class HasilEntity {
 
     public boolean isLocked() {
         return locked;
+    }
+
+    public HasilStatus getStatus() {
+        return status;
     }
 }
