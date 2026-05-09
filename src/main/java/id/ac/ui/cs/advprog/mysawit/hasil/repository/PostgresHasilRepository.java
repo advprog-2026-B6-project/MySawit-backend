@@ -27,6 +27,11 @@ public class PostgresHasilRepository implements HasilRepository {
     }
 
     @Override
+    public Optional<Hasil> findById(String id) {
+        return jpaRepository.findById(id).map(this::toDomain);
+    }
+
+    @Override
     public List<Hasil> findAll() {
         return jpaRepository.findAll().stream()
                 .map(this::toDomain)
@@ -57,7 +62,9 @@ public class PostgresHasilRepository implements HasilRepository {
             entity.getNews(),
             entity.getPhotoUrls(),
             entity.isLocked(),
-            entity.getStatus() == null ? HasilStatus.SUBMITTED : entity.getStatus()
+            entity.getStatus() == null ? HasilStatus.SUBMITTED : entity.getStatus(),
+            entity.getRejectionReason(),
+            entity.isVisibleForPengiriman()
         );
     }
 }

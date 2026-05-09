@@ -1,12 +1,13 @@
 package id.ac.ui.cs.advprog.mysawit.pembayaran.service;
 
-import id.ac.ui.cs.advprog.mysawit.model.User;
+import id.ac.ui.cs.advprog.mysawit.auth.model.User;
+import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollCreateRequest;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollResponse;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.Payroll;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.WageSetting;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.repository.PayrollRepository;
-import id.ac.ui.cs.advprog.mysawit.repository.UserRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
