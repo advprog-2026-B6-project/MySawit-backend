@@ -2,6 +2,8 @@ package id.ac.ui.cs.advprog.mysawit.auth.controller;
 
 import id.ac.ui.cs.advprog.mysawit.auth.dto.UserDto;
 import id.ac.ui.cs.advprog.mysawit.auth.service.UserService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -45,7 +47,10 @@ public class AdminController {
             @PathVariable String mandorUsername) {
         try {
             Optional<UserDto> result = userService.assignBuruhToMandor(buruhUsername, mandorUsername);
-            return result.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+            if (result.isPresent()) {
+                return ResponseEntity.status(HttpStatus.OK).body(result.get());
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (IllegalStateException e) {
@@ -58,7 +63,10 @@ public class AdminController {
             @PathVariable String newMandorUsername) {
         try {
             Optional<UserDto> result = userService.reassignBuruhToMandor(buruhUsername, newMandorUsername);
-            return result.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+            if (result.isPresent()) {
+                return ResponseEntity.status(HttpStatus.OK).body(result.get());
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
