@@ -84,3 +84,7 @@ sonar {
         property("sonar.organization", "advprog-2026-6-project")
     }
 }
+
+dependencyLocking {
+    lockAllConfigurations()
+}
