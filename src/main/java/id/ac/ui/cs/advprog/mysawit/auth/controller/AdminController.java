@@ -41,26 +41,26 @@ public class AdminController {
     }
 
     @PostMapping("/assign/{buruhUsername}/{mandorUsername}")
-    public ResponseEntity<?> assignBuruhToMandor(@PathVariable String buruhUsername,
+    public ResponseEntity<UserDto> assignBuruhToMandor(@PathVariable String buruhUsername,
             @PathVariable String mandorUsername) {
         try {
             Optional<UserDto> result = userService.assignBuruhToMandor(buruhUsername, mandorUsername);
             return result.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         } catch (IllegalStateException e) {
-            return ResponseEntity.status(409).body(e.getMessage());
+            return ResponseEntity.status(409).build();
         }
     }
 
     @PostMapping("/reassign/{buruhUsername}/{newMandorUsername}")
-    public ResponseEntity<?> reassignBuruh(@PathVariable String buruhUsername,
+    public ResponseEntity<UserDto> reassignBuruh(@PathVariable String buruhUsername,
             @PathVariable String newMandorUsername) {
         try {
             Optional<UserDto> result = userService.reassignBuruhToMandor(buruhUsername, newMandorUsername);
             return result.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 }
