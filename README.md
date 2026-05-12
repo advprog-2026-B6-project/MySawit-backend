@@ -23,7 +23,7 @@ Manajemen Pengiriman Diagram:
 ![Component Diagram](/img/pengiriman/component.png)
 
 Manajemen Pembayaran Diagram: 
-![]()
+![Component Diagram Pemnbayaran](img/pembayaran/componentDiagram.png)
 
 ## Individual Code Diagram
 Autentikasi Diagram:
@@ -43,4 +43,6 @@ Manajemen Pengiriman Diagram:
 
 
 Manajemen Pembayaran Diagram: 
-![]()
+![Code Diagram Layered Architecture & Data Flow](/img/pembayaran/codeDiagramArchitecture.png)
+![Code Diagram Strategy Pattern](/img/pembayaran/codeDiagramStrategyPattern.png)
+![Code Diagram State Pattern](/img/pembayaran/codeDiagramStatePattern.png)
