@@ -28,7 +28,7 @@ Risiko lain ada pada penyimpanan bukti foto dan monitoring sistem. Jika file tid
 
 ## Individual Component Diagram
 Autentikasi Diagram:
-![]()
+![Component Diagram Auth](/img/auth/component_diagram_auth.png)
 
 Manajemen Kebun Diagram:
 ![Component Diagram](/img/kebun/component-diagram.png)
@@ -44,7 +44,7 @@ Manajemen Pembayaran Diagram:
 
 ## Individual Code Diagram
 Autentikasi Diagram:
-![]()
+![Code Diagram](/img/auth/code_diagram_auth.png)
 
 Manajemen Kebun Diagram: 
 ![Code Diagram](/img/kebun/code-diagram.png)
