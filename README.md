@@ -20,7 +20,7 @@ Manajemen Hasil Diagram:
 ![]()
 
 Manajemen Pengiriman Diagram: 
-![]()
+![Component Diagram](/img/pengiriman/component.png)
 
 Manajemen Pembayaran Diagram: 
 ![]()
@@ -36,7 +36,11 @@ Manajemen Hasil Diagram:
 ![]()
 
 Manajemen Pengiriman Diagram: 
-![]()
+![Code Diagram API](/img/pengiriman/apijs.png)
+![Code Diagram Mandor](/img/pengiriman/mandorTab.png)
+![Code Diagram Pengiriman API](/img/pengiriman/pengirimanAPI.png)
+![Code Diagram Controller Supir Truk](/img/pengiriman/supirTrukController.png)
+
 
 Manajemen Pembayaran Diagram: 
 ![]()
