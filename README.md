@@ -14,7 +14,7 @@ Autentikasi Diagram:
 ![]()
 
 Manajemen Kebun Diagram:
-![]()
+![Component Diagram](/img/kebun/component-diagram.png)
 
 Manajemen Hasil Diagram: 
 ![Component Diagram](/img/hasil/componentdiagram.png)
@@ -30,7 +30,7 @@ Autentikasi Diagram:
 ![]()
 
 Manajemen Kebun Diagram: 
-![]()
+![Code Diagram](/img/kebun/code-diagram.png)
 
 Manajemen Hasil Diagram: 
 ![Code Diagram](/img/hasil/codediagram.png)
