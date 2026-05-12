@@ -11,7 +11,8 @@
 
 ## Individual Component Diagram
 Autentikasi Diagram:
-![]()
+![Component Diagram Auth](/img/auth/component_diagram_auth.png)
+
 
 Manajemen Kebun Diagram:
 ![]()
@@ -27,7 +28,7 @@ Manajemen Pembayaran Diagram:
 
 ## Individual Code Diagram
 Autentikasi Diagram:
-![]()
+![Code Diagram Auth](/img/auth/code_diagram_auth.png)
 
 Manajemen Kebun Diagram: 
 ![]()
