@@ -17,7 +17,7 @@ Manajemen Kebun Diagram:
 ![]()
 
 Manajemen Hasil Diagram: 
-![]()
+![Component Diagram](/img/hasil/componentdiagram.png)
 
 Manajemen Pengiriman Diagram: 
 ![Component Diagram](/img/pengiriman/component.png)
@@ -33,7 +33,7 @@ Manajemen Kebun Diagram:
 ![]()
 
 Manajemen Hasil Diagram: 
-![]()
+![Code Diagram](/img/hasil/codediagram.png)
 
 Manajemen Pengiriman Diagram: 
 ![Code Diagram API](/img/pengiriman/apijs.png)
