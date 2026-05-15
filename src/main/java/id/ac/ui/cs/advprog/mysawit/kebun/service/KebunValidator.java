@@ -13,22 +13,26 @@ public class KebunValidator {
 
     private final KebunSawitRepository repository;
     private final KebunGeometry geometry;
+    private final KebunOverlapChecker overlapChecker;
 
-    public KebunValidator(KebunSawitRepository repository, KebunGeometry geometry) {
+    public KebunValidator(KebunSawitRepository repository,
+                          KebunGeometry geometry,
+                          KebunOverlapChecker overlapChecker) {
         this.repository = repository;
         this.geometry = geometry;
+        this.overlapChecker = overlapChecker;
     }
 
     public void validateCreate(KebunSawit kebun) {
         validateKodeUnik(kebun);
         rejectDuplicateKode(kebun);
         validateKebunShape(kebun);
-        rejectOverlap(kebun, null);
+        overlapChecker.rejectOverlap(kebun, null);
     }
 
     public void validateUpdate(String id, KebunSawit kebun) {
         validateKebunShape(kebun);
-        rejectOverlap(kebun, id);
+        overlapChecker.rejectOverlap(kebun, id);
     }
 
     private void validateKodeUnik(KebunSawit kebun) {
@@ -59,17 +63,4 @@ public class KebunValidator {
         }
     }
 
-    private void rejectOverlap(KebunSawit kebun, String ignoredKebunId) {
-        for (KebunSawit existing : repository.findAll()) {
-            if (ignoredKebunId != null && ignoredKebunId.equals(existing.getId())) {
-                continue;
-            }
-
-            if (OverlapValidator.isOverlapping(kebun.getKoordinatAsList(), existing.getKoordinatAsList())) {
-                throw new KebunValidationException(
-                        "Kebun overlap dengan kebun: " + existing.getNamaKebun()
-                                + " (" + existing.getKodeUnik() + ")");
-            }
-        }
-    }
 }
