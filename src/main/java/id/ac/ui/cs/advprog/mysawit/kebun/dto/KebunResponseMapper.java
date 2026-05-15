@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.dto;
 
+import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
 import org.springframework.stereotype.Component;
 
@@ -12,20 +13,20 @@ public class KebunResponseMapper {
         KebunSawit kebun = new KebunSawit();
         kebun.setNamaKebun(request.getNamaKebun());
         kebun.setKodeUnik(request.getKodeUnik());
-        kebun.setKiriAtas(request.getKiriAtas());
-        kebun.setKiriBawah(request.getKiriBawah());
-        kebun.setKananAtas(request.getKananAtas());
-        kebun.setKananBawah(request.getKananBawah());
+        kebun.setKiriAtas(toCoordinate(request.getKiriAtas()));
+        kebun.setKiriBawah(toCoordinate(request.getKiriBawah()));
+        kebun.setKananAtas(toCoordinate(request.getKananAtas()));
+        kebun.setKananBawah(toCoordinate(request.getKananBawah()));
         return kebun;
     }
 
     public KebunSawit toDomain(UpdateKebunRequest request) {
         KebunSawit kebun = new KebunSawit();
         kebun.setNamaKebun(request.getNamaKebun());
-        kebun.setKiriAtas(request.getKiriAtas());
-        kebun.setKiriBawah(request.getKiriBawah());
-        kebun.setKananAtas(request.getKananAtas());
-        kebun.setKananBawah(request.getKananBawah());
+        kebun.setKiriAtas(toCoordinate(request.getKiriAtas()));
+        kebun.setKiriBawah(toCoordinate(request.getKiriBawah()));
+        kebun.setKananAtas(toCoordinate(request.getKananAtas()));
+        kebun.setKananBawah(toCoordinate(request.getKananBawah()));
         return kebun;
     }
 
@@ -45,5 +46,9 @@ public class KebunResponseMapper {
                 mandorInfo,
                 supirList
         );
+    }
+
+    private Coordinate toCoordinate(CoordinateRequest request) {
+        return new Coordinate(request.getX(), request.getY());
     }
 }

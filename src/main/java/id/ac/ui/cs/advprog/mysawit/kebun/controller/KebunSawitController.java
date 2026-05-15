@@ -6,6 +6,7 @@ import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunResponseMapper;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.UpdateKebunRequest;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
 import id.ac.ui.cs.advprog.mysawit.kebun.service.KebunSawitService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class KebunSawitController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@RequestBody CreateKebunRequest request) {
+    public ResponseEntity<Object> create(@Valid @RequestBody CreateKebunRequest request) {
         KebunSawit kebun = mapper.toDomain(request);
         KebunSawit created = service.create(kebun);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -55,8 +56,9 @@ public class KebunSawitController {
         KebunDetailResponse detail = service.getDetail(id, searchSupir);
         return ResponseEntity.ok(detail);
     }
+
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable String id, @RequestBody UpdateKebunRequest request) {
+    public ResponseEntity<Object> update(@PathVariable String id, @Valid @RequestBody UpdateKebunRequest request) {
         KebunSawit kebun = mapper.toDomain(request);
         KebunSawit updated = service.update(id, kebun);
         return ResponseEntity.ok(updated);

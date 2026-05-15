@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.dto;
 
-import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -17,15 +17,19 @@ public class UpdateKebunRequest {
     @NotBlank(message = "Nama kebun harus diisi")
     private String namaKebun;
 
+    @Valid
     @NotNull(message = "Koordinat kiri atas harus diisi")
-    private Coordinate kiriAtas;
+    private CoordinateRequest kiriAtas;
 
+    @Valid
     @NotNull(message = "Koordinat kiri bawah harus diisi")
-    private Coordinate kiriBawah;
+    private CoordinateRequest kiriBawah;
 
+    @Valid
     @NotNull(message = "Koordinat kanan atas harus diisi")
-    private Coordinate kananAtas;
+    private CoordinateRequest kananAtas;
 
+    @Valid
     @NotNull(message = "Koordinat kanan bawah harus diisi")
-    private Coordinate kananBawah;
+    private CoordinateRequest kananBawah;
 }
