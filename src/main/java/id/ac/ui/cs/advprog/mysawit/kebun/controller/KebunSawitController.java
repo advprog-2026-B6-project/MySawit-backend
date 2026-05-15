@@ -25,13 +25,9 @@ public class KebunSawitController {
 
     @PostMapping
     public ResponseEntity<Object> create(@RequestBody CreateKebunRequest request) {
-        try {
-            KebunSawit kebun = toKebunSawit(request);
-            KebunSawit created = service.create(kebun);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        KebunSawit kebun = toKebunSawit(request);
+        KebunSawit created = service.create(kebun);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping
@@ -53,41 +49,20 @@ public class KebunSawitController {
     public ResponseEntity<Object> getDetail(
             @PathVariable String id,
             @RequestParam(required = false, defaultValue = "") String searchSupir) {
-        try {
-            KebunDetailResponse detail = service.getDetail(id, searchSupir);
-            return ResponseEntity.ok(detail);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
-        }
+        KebunDetailResponse detail = service.getDetail(id, searchSupir);
+        return ResponseEntity.ok(detail);
     }
     @PutMapping("/{id}")
     public ResponseEntity<Object> update(@PathVariable String id, @RequestBody UpdateKebunRequest request) {
-        try {
-            KebunSawit kebun = toKebunSawit(request);
-            KebunSawit updated = service.update(id, kebun);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("tidak ditemukan")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
-            }
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        KebunSawit kebun = toKebunSawit(request);
+        KebunSawit updated = service.update(id, kebun);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> delete(@PathVariable String id) {
-        try {
-            service.delete(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("tidak ditemukan")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
-            }
-            if (e.getMessage().contains("masih memiliki Mandor")) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
-            }
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     private KebunSawit toKebunSawit(CreateKebunRequest request) {

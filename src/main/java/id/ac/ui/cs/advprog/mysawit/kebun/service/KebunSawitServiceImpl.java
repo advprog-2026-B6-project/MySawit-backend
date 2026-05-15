@@ -3,6 +3,9 @@ package id.ac.ui.cs.advprog.mysawit.kebun.service;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.MandorInfo;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.SupirInfo;
+import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunConflictException;
+import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunNotFoundException;
+import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunValidationException;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorJpaRepository;
@@ -41,31 +44,31 @@ public class KebunSawitServiceImpl implements KebunSawitService {
     public KebunSawit create(KebunSawit kebun) {
         // Validasi format kodeUnik (XX-0000)
         if (kebun.getKodeUnik() == null || !kebun.getKodeUnik().matches(kodeUnixRegex)) {
-            throw new IllegalArgumentException(
+            throw new KebunValidationException(
                     "Format kode unik tidak valid. Gunakan format: XX-0000 (contoh: KB-0001)");
         }
 
         // Cek kodeUnik sudah ada atau belum
         if (repository.findByKodeUnik(kebun.getKodeUnik()).isPresent()) {
-            throw new IllegalArgumentException(
+            throw new KebunConflictException(
                     "Kode unik kebun sudah digunakan: " + kebun.getKodeUnik());
         }
 
         // Validasi nama kebun tidak null
         if (kebun.getNamaKebun() == null) {
-            throw new IllegalArgumentException("Nama kebun tidak boleh null");
+            throw new KebunValidationException("Nama kebun tidak boleh null");
         }
 
         // Validasi 4 koordinat tidak null
         if (kebun.getKiriAtas() == null || kebun.getKiriBawah() == null
                 || kebun.getKananAtas() == null || kebun.getKananBawah() == null) {
-            throw new IllegalArgumentException("Semua 4 koordinat harus diisi");
+            throw new KebunValidationException("Semua 4 koordinat harus diisi");
         }
 
         // Validasi 4 koordinat membentuk persegi
         if (!isValidSquare(kebun.getKiriAtas(), kebun.getKiriBawah(), 
                            kebun.getKananAtas(), kebun.getKananBawah())) {
-            throw new IllegalArgumentException("Keempat koordinat yang dimasukkan tidak membentuk persegi sempurna");
+            throw new KebunValidationException("Keempat koordinat yang dimasukkan tidak membentuk persegi sempurna");
         }
 
         // Hitung luas berdasarkan koordinat (distSq mengembalikan luas dalam meter persegi)
@@ -78,7 +81,7 @@ public class KebunSawitServiceImpl implements KebunSawitService {
             if (OverlapValidator.isOverlapping(
                     kebun.getKoordinatAsList(),
                     existing.getKoordinatAsList())) {
-                throw new IllegalArgumentException(
+                throw new KebunValidationException(
                         "Kebun overlap dengan kebun: " + existing.getNamaKebun()
                                 + " (" + existing.getKodeUnik() + ")");
             }
@@ -109,23 +112,23 @@ public class KebunSawitServiceImpl implements KebunSawitService {
     @Override
     public KebunSawit update(String id, KebunSawit updatedKebun) {
         KebunSawit existing = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Kebun tidak ditemukan dengan id: " + id));
+                .orElseThrow(() -> new KebunNotFoundException("Kebun tidak ditemukan dengan id: " + id));
 
         // Validasi nama kebun tidak null
         if (updatedKebun.getNamaKebun() == null) {
-            throw new IllegalArgumentException("Nama kebun tidak boleh null");
+            throw new KebunValidationException("Nama kebun tidak boleh null");
         }
 
         // Validasi 4 koordinat tidak null
         if (updatedKebun.getKiriAtas() == null || updatedKebun.getKiriBawah() == null
                 || updatedKebun.getKananAtas() == null || updatedKebun.getKananBawah() == null) {
-            throw new IllegalArgumentException("Semua 4 koordinat harus diisi");
+            throw new KebunValidationException("Semua 4 koordinat harus diisi");
         }
 
         // Validasi koordinat membentuk persegi
         if (!isValidSquare(updatedKebun.getKiriAtas(), updatedKebun.getKiriBawah(),
                            updatedKebun.getKananAtas(), updatedKebun.getKananBawah())) {
-            throw new IllegalArgumentException("Keempat koordinat yang dimasukkan tidak membentuk persegi sempurna");
+            throw new KebunValidationException("Keempat koordinat yang dimasukkan tidak membentuk persegi sempurna");
         }
 
         // Hitung luas berdasarkan koordinat baru
@@ -138,7 +141,7 @@ public class KebunSawitServiceImpl implements KebunSawitService {
             if (OverlapValidator.isOverlapping(
                     updatedKebun.getKoordinatAsList(),
                     other.getKoordinatAsList())) {
-                throw new IllegalArgumentException(
+                throw new KebunValidationException(
                         "Kebun overlap dengan kebun: " + other.getNamaKebun()
                                 + " (" + other.getKodeUnik() + ")");
             }
@@ -158,11 +161,11 @@ public class KebunSawitServiceImpl implements KebunSawitService {
     @Override
     public void delete(String id) {
         repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Kebun tidak ditemukan dengan id: " + id));
+                .orElseThrow(() -> new KebunNotFoundException("Kebun tidak ditemukan dengan id: " + id));
 
         // Cek apakah kebun masih memiliki Mandor yang ditugaskan
         if (kebunMandorRepository.existsByKebunId(id)) {
-            throw new IllegalArgumentException(
+            throw new KebunConflictException(
                     "Tidak dapat menghapus kebun yang masih memiliki Mandor yang ditugaskan");
         }
 
@@ -172,7 +175,7 @@ public class KebunSawitServiceImpl implements KebunSawitService {
     @Override
     public KebunDetailResponse getDetail(String kebunId, String searchSupirNama) {
         KebunSawit kebun = repository.findById(kebunId)
-                .orElseThrow(() -> new IllegalArgumentException("Kebun tidak ditemukan dengan id: " + kebunId));
+                .orElseThrow(() -> new KebunNotFoundException("Kebun tidak ditemukan dengan id: " + kebunId));
 
         // Resolve Mandor info
         MandorInfo mandorInfo = kebunMandorRepository.findByKebunId(kebunId)

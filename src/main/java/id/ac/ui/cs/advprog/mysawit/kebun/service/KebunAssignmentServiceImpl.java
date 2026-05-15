@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.service;
 
+import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunConflictException;
+import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunNotFoundException;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorEntity;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorJpaRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSawitRepository;
@@ -31,28 +33,28 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
     public void assignMandor(String kebunId, Long mandorId) {
         // Validate kebun exists
         kebunRepository.findById(kebunId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new KebunNotFoundException(
                         "Kebun tidak ditemukan dengan id: " + kebunId));
 
         // Validate user exists and is a MANDOR
         UserSnapshot user = userReader.findUserById(mandorId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new KebunNotFoundException(
                         "User tidak ditemukan dengan id: " + mandorId));
 
         if (!"MANDOR".equals(user.getRole())) {
-            throw new IllegalArgumentException(
+            throw new KebunConflictException(
                     "User dengan id " + mandorId + " bukan Mandor (role: " + user.getRole() + ")");
         }
 
         // Check kebun doesn't already have a mandor
         if (kebunMandorRepository.existsByKebunId(kebunId)) {
-            throw new IllegalArgumentException(
+            throw new KebunConflictException(
                     "Kebun sudah memiliki Mandor yang ditugaskan");
         }
 
         // Check mandor isn't already assigned to another kebun
         if (kebunMandorRepository.existsByMandorId(mandorId)) {
-            throw new IllegalArgumentException(
+            throw new KebunConflictException(
                     "Mandor sudah ditugaskan ke kebun lain");
         }
 
@@ -67,25 +69,25 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
     public void reassignMandor(Long mandorId, String fromKebunId, String toKebunId) {
         // Validate both kebuns exist
         kebunRepository.findById(fromKebunId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new KebunNotFoundException(
                         "Kebun asal tidak ditemukan dengan id: " + fromKebunId));
         kebunRepository.findById(toKebunId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new KebunNotFoundException(
                         "Kebun tujuan tidak ditemukan dengan id: " + toKebunId));
 
         // Validate mandor is currently at fromKebun
         KebunMandorEntity currentAssignment = kebunMandorRepository.findByMandorId(mandorId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new KebunConflictException(
                         "Mandor belum ditugaskan ke kebun manapun"));
 
         if (!currentAssignment.getKebunId().equals(fromKebunId)) {
-            throw new IllegalArgumentException(
+            throw new KebunConflictException(
                     "Mandor tidak ditugaskan di kebun asal yang disebutkan");
         }
 
         // Validate toKebun doesn't already have a mandor
         if (kebunMandorRepository.existsByKebunId(toKebunId)) {
-            throw new IllegalArgumentException(
+            throw new KebunConflictException(
                     "Kebun tujuan sudah memiliki Mandor yang ditugaskan");
         }
 
@@ -103,22 +105,22 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
     public void assignSupir(String kebunId, Long supirId) {
         // Validate kebun exists
         kebunRepository.findById(kebunId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new KebunNotFoundException(
                         "Kebun tidak ditemukan dengan id: " + kebunId));
 
         // Validate user exists and is a SUPIR
         UserSnapshot user = userReader.findUserById(supirId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new KebunNotFoundException(
                         "User tidak ditemukan dengan id: " + supirId));
 
         if (!"SUPIR".equals(user.getRole())) {
-            throw new IllegalArgumentException(
+            throw new KebunConflictException(
                     "User dengan id " + supirId + " bukan Supir Truk (role: " + user.getRole() + ")");
         }
 
         // Check supir isn't already assigned somewhere
         if (kebunSupirRepository.existsBySupirId(supirId)) {
-            throw new IllegalArgumentException(
+            throw new KebunConflictException(
                     "Supir Truk sudah ditugaskan ke kebun lain");
         }
 
@@ -133,19 +135,19 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
     public void reassignSupir(Long supirId, String fromKebunId, String toKebunId) {
         // Validate both kebuns exist
         kebunRepository.findById(fromKebunId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new KebunNotFoundException(
                         "Kebun asal tidak ditemukan dengan id: " + fromKebunId));
         kebunRepository.findById(toKebunId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new KebunNotFoundException(
                         "Kebun tujuan tidak ditemukan dengan id: " + toKebunId));
 
         // Validate supir is currently at fromKebun
         KebunSupirEntity currentAssignment = kebunSupirRepository.findBySupirId(supirId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new KebunConflictException(
                         "Supir Truk belum ditugaskan ke kebun manapun"));
 
         if (!currentAssignment.getKebunId().equals(fromKebunId)) {
-            throw new IllegalArgumentException(
+            throw new KebunConflictException(
                     "Supir Truk tidak ditugaskan di kebun asal yang disebutkan");
         }
 
