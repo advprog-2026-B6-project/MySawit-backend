@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.service;
 
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorJpaRepository;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirJpaRepository;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunAssignmentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -9,23 +8,20 @@ import java.util.Optional;
 @Service
 public class KebunPlacementGuardImpl implements KebunPlacementGuard {
 
-    private final KebunMandorJpaRepository kebunMandorRepository;
-    private final KebunSupirJpaRepository kebunSupirRepository;
+    private final KebunAssignmentRepository assignmentRepository;
 
-    public KebunPlacementGuardImpl(KebunMandorJpaRepository kebunMandorRepository,
-                                   KebunSupirJpaRepository kebunSupirRepository) {
-        this.kebunMandorRepository = kebunMandorRepository;
-        this.kebunSupirRepository = kebunSupirRepository;
+    public KebunPlacementGuardImpl(KebunAssignmentRepository assignmentRepository) {
+        this.assignmentRepository = assignmentRepository;
     }
 
     @Override
     public boolean isMandorPlaced(Long mandorId) {
-        return kebunMandorRepository.existsByMandorId(mandorId);
+        return assignmentRepository.mandorIsAssigned(mandorId);
     }
 
     @Override
     public boolean isSupirPlaced(Long supirId) {
-        return kebunSupirRepository.existsBySupirId(supirId);
+        return assignmentRepository.supirIsAssigned(supirId);
     }
 
     @Override
@@ -42,13 +38,11 @@ public class KebunPlacementGuardImpl implements KebunPlacementGuard {
 
     @Override
     public Optional<String> getKebunIdByMandorId(Long mandorId) {
-        return kebunMandorRepository.findByMandorId(mandorId)
-                .map(entity -> entity.getKebunId());
+        return assignmentRepository.findKebunIdByMandorId(mandorId);
     }
 
     @Override
     public Optional<String> getKebunIdBySupirId(Long supirId) {
-        return kebunSupirRepository.findBySupirId(supirId)
-                .map(entity -> entity.getKebunId());
+        return assignmentRepository.findKebunIdBySupirId(supirId);
     }
 }

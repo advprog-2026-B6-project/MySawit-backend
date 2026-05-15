@@ -6,9 +6,7 @@ import id.ac.ui.cs.advprog.mysawit.kebun.dto.SupirInfo;
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunConflictException;
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunNotFoundException;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorJpaRepository;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirEntity;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirJpaRepository;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunAssignmentRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSawitRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,27 +14,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class KebunSawitServiceImpl implements KebunSawitService {
 
     private final KebunSawitRepository repository;
-    private final KebunMandorJpaRepository kebunMandorRepository;
-    private final KebunSupirJpaRepository kebunSupirRepository;
+    private final KebunAssignmentRepository assignmentRepository;
     private final KebunUserReader userReader;
     private final KebunGeometry geometry;
     private final KebunValidator validator;
 
     public KebunSawitServiceImpl(KebunSawitRepository repository,
-                                 KebunMandorJpaRepository kebunMandorRepository,
-                                 KebunSupirJpaRepository kebunSupirRepository,
+                                 KebunAssignmentRepository assignmentRepository,
                                  KebunUserReader userReader,
                                  KebunGeometry geometry,
                                  KebunValidator validator) {
         this.repository = repository;
-        this.kebunMandorRepository = kebunMandorRepository;
-        this.kebunSupirRepository = kebunSupirRepository;
+        this.assignmentRepository = assignmentRepository;
         this.userReader = userReader;
         this.geometry = geometry;
         this.validator = validator;
@@ -90,7 +84,7 @@ public class KebunSawitServiceImpl implements KebunSawitService {
                 .orElseThrow(() -> new KebunNotFoundException("Kebun tidak ditemukan dengan id: " + id));
 
         // Cek apakah kebun masih memiliki Mandor yang ditugaskan
-        if (kebunMandorRepository.existsByKebunId(id)) {
+        if (assignmentRepository.kebunHasMandor(id)) {
             throw new KebunConflictException(
                     "Tidak dapat menghapus kebun yang masih memiliki Mandor yang ditugaskan");
         }
@@ -104,8 +98,8 @@ public class KebunSawitServiceImpl implements KebunSawitService {
                 .orElseThrow(() -> new KebunNotFoundException("Kebun tidak ditemukan dengan id: " + kebunId));
 
         // Resolve Mandor info
-        MandorInfo mandorInfo = kebunMandorRepository.findByKebunId(kebunId)
-                .flatMap(assignment -> userReader.findUserById(assignment.getMandorId()))
+        MandorInfo mandorInfo = assignmentRepository.findMandorIdByKebunId(kebunId)
+                .flatMap(userReader::findUserById)
                 .map(snapshot -> new MandorInfo(
                         snapshot.getId(),
                         snapshot.getFullname(),
@@ -113,10 +107,7 @@ public class KebunSawitServiceImpl implements KebunSawitService {
                 .orElse(null);
 
         // Resolve Supir list
-        List<KebunSupirEntity> supirAssignments = kebunSupirRepository.findAllByKebunId(kebunId);
-        List<Long> supirIds = supirAssignments.stream()
-                .map(KebunSupirEntity::getSupirId)
-                .collect(Collectors.toList());
+        List<Long> supirIds = assignmentRepository.findSupirIdsByKebunId(kebunId);
 
         List<SupirInfo> supirList;
         if (supirIds.isEmpty()) {
@@ -124,7 +115,7 @@ public class KebunSawitServiceImpl implements KebunSawitService {
         } else {
             supirList = userReader.findUsersByIds(supirIds).stream()
                     .map(snapshot -> new SupirInfo(snapshot.getId(), snapshot.getFullname()))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         // Apply search filter on supir names
@@ -133,7 +124,7 @@ public class KebunSawitServiceImpl implements KebunSawitService {
             supirList = supirList.stream()
                     .filter(s -> s.getFullname() != null
                             && s.getFullname().toLowerCase().contains(lowerSearch))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         return new KebunDetailResponse(

@@ -3,10 +3,7 @@ package id.ac.ui.cs.advprog.mysawit.kebun.service;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorEntity;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorJpaRepository;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirEntity;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirJpaRepository;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunAssignmentRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSawitRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -29,10 +26,7 @@ class KebunSawitServiceImplTest {
     private KebunSawitRepository repository;
 
     @Mock
-    private KebunMandorJpaRepository kebunMandorRepository;
-
-    @Mock
-    private KebunSupirJpaRepository kebunSupirRepository;
+    private KebunAssignmentRepository assignmentRepository;
 
     @Mock
     private KebunUserReader userReader;
@@ -45,8 +39,7 @@ class KebunSawitServiceImplTest {
         KebunValidator validator = new KebunValidator(repository, geometry);
         service = new KebunSawitServiceImpl(
                 repository,
-                kebunMandorRepository,
-                kebunSupirRepository,
+                assignmentRepository,
                 userReader,
                 geometry,
                 validator);
@@ -312,7 +305,7 @@ class KebunSawitServiceImplTest {
         void delete_noMandor_shouldSucceed() {
             KebunSawit existing = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(existing));
-            when(kebunMandorRepository.existsByKebunId("id-1")).thenReturn(false);
+            when(assignmentRepository.kebunHasMandor("id-1")).thenReturn(false);
 
             assertDoesNotThrow(() -> service.delete("id-1"));
             verify(repository).deleteById("id-1");
@@ -322,7 +315,7 @@ class KebunSawitServiceImplTest {
         void delete_withMandorAssigned_shouldThrow() {
             KebunSawit existing = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(existing));
-            when(kebunMandorRepository.existsByKebunId("id-1")).thenReturn(true);
+            when(assignmentRepository.kebunHasMandor("id-1")).thenReturn(true);
 
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                     () -> service.delete("id-1"));
@@ -334,12 +327,12 @@ class KebunSawitServiceImplTest {
         void delete_withSupirButNoMandor_currentlySucceeds() {
             KebunSawit existing = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(existing));
-            when(kebunMandorRepository.existsByKebunId("id-1")).thenReturn(false);
+            when(assignmentRepository.kebunHasMandor("id-1")).thenReturn(false);
 
             assertDoesNotThrow(() -> service.delete("id-1"));
 
             verify(repository).deleteById("id-1");
-            verify(kebunSupirRepository, never()).existsByKebunId(anyString());
+            verify(assignmentRepository, never()).findSupirIdsByKebunId(anyString());
         }
 
         @Test
@@ -398,14 +391,11 @@ class KebunSawitServiceImplTest {
             KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
 
-            KebunMandorEntity mandorAssignment = new KebunMandorEntity("ma-1", "id-1", 10L);
-            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.of(mandorAssignment));
+            when(assignmentRepository.findMandorIdByKebunId("id-1")).thenReturn(Optional.of(10L));
             when(userReader.findUserById(10L)).thenReturn(Optional.of(
                     new UserSnapshot(10L, "Pak Mandor", "mandor1", "MANDOR", "CERT-001")));
 
-            KebunSupirEntity supir1 = new KebunSupirEntity("sa-1", "id-1", 20L);
-            KebunSupirEntity supir2 = new KebunSupirEntity("sa-2", "id-1", 21L);
-            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of(supir1, supir2));
+            when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L, 21L));
             when(userReader.findUsersByIds(List.of(20L, 21L))).thenReturn(List.of(
                     new UserSnapshot(20L, "Supir Andi", "supir1", "SUPIR", null),
                     new UserSnapshot(21L, "Supir Budi", "supir2", "SUPIR", null)));
@@ -423,8 +413,8 @@ class KebunSawitServiceImplTest {
         void getDetail_noMandor_shouldReturnNullMandor() {
             KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
-            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.empty());
-            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of());
+            when(assignmentRepository.findMandorIdByKebunId("id-1")).thenReturn(Optional.empty());
+            when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of());
 
             KebunDetailResponse detail = service.getDetail("id-1", null);
 
@@ -436,11 +426,9 @@ class KebunSawitServiceImplTest {
         void getDetail_filterSupirByName_shouldReturnFiltered() {
             KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
-            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.empty());
+            when(assignmentRepository.findMandorIdByKebunId("id-1")).thenReturn(Optional.empty());
 
-            KebunSupirEntity supir1 = new KebunSupirEntity("sa-1", "id-1", 20L);
-            KebunSupirEntity supir2 = new KebunSupirEntity("sa-2", "id-1", 21L);
-            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of(supir1, supir2));
+            when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L, 21L));
             when(userReader.findUsersByIds(List.of(20L, 21L))).thenReturn(List.of(
                     new UserSnapshot(20L, "Andi Supir", "supir1", "SUPIR", null),
                     new UserSnapshot(21L, "Budi Driver", "supir2", "SUPIR", null)));
@@ -455,10 +443,9 @@ class KebunSawitServiceImplTest {
         void getDetail_filterSupirByName_handlesNullFullname() {
             KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
-            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.empty());
+            when(assignmentRepository.findMandorIdByKebunId("id-1")).thenReturn(Optional.empty());
 
-            KebunSupirEntity supir1 = new KebunSupirEntity("sa-1", "id-1", 20L);
-            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of(supir1));
+            when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L));
             when(userReader.findUsersByIds(List.of(20L))).thenReturn(List.of(
                     new UserSnapshot(20L, null, "supir1", "SUPIR", null)));
 
@@ -470,10 +457,9 @@ class KebunSawitServiceImplTest {
         void getDetail_filterSupirByEmptyString_returnsAll() {
             KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
-            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.empty());
+            when(assignmentRepository.findMandorIdByKebunId("id-1")).thenReturn(Optional.empty());
 
-            KebunSupirEntity supir1 = new KebunSupirEntity("sa-1", "id-1", 20L);
-            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of(supir1));
+            when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L));
             when(userReader.findUsersByIds(List.of(20L))).thenReturn(List.of(
                     new UserSnapshot(20L, "Andi Supir", "supir1", "SUPIR", null)));
 

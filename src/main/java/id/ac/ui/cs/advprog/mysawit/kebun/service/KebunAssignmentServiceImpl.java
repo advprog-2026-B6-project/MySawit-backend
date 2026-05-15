@@ -2,11 +2,8 @@ package id.ac.ui.cs.advprog.mysawit.kebun.service;
 
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunConflictException;
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunNotFoundException;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorEntity;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorJpaRepository;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunAssignmentRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSawitRepository;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirEntity;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,17 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class KebunAssignmentServiceImpl implements KebunAssignmentService {
 
     private final KebunSawitRepository kebunRepository;
-    private final KebunMandorJpaRepository kebunMandorRepository;
-    private final KebunSupirJpaRepository kebunSupirRepository;
+    private final KebunAssignmentRepository assignmentRepository;
     private final KebunUserReader userReader;
 
     public KebunAssignmentServiceImpl(KebunSawitRepository kebunRepository,
-                                      KebunMandorJpaRepository kebunMandorRepository,
-                                      KebunSupirJpaRepository kebunSupirRepository,
+                                      KebunAssignmentRepository assignmentRepository,
                                       KebunUserReader userReader) {
         this.kebunRepository = kebunRepository;
-        this.kebunMandorRepository = kebunMandorRepository;
-        this.kebunSupirRepository = kebunSupirRepository;
+        this.assignmentRepository = assignmentRepository;
         this.userReader = userReader;
     }
 
@@ -47,21 +41,18 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
         }
 
         // Check kebun doesn't already have a mandor
-        if (kebunMandorRepository.existsByKebunId(kebunId)) {
+        if (assignmentRepository.kebunHasMandor(kebunId)) {
             throw new KebunConflictException(
                     "Kebun sudah memiliki Mandor yang ditugaskan");
         }
 
         // Check mandor isn't already assigned to another kebun
-        if (kebunMandorRepository.existsByMandorId(mandorId)) {
+        if (assignmentRepository.mandorIsAssigned(mandorId)) {
             throw new KebunConflictException(
                     "Mandor sudah ditugaskan ke kebun lain");
         }
 
-        KebunMandorEntity assignment = new KebunMandorEntity();
-        assignment.setKebunId(kebunId);
-        assignment.setMandorId(mandorId);
-        kebunMandorRepository.save(assignment);
+        assignmentRepository.assignMandor(kebunId, mandorId);
     }
 
     @Override
@@ -76,28 +67,22 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
                         "Kebun tujuan tidak ditemukan dengan id: " + toKebunId));
 
         // Validate mandor is currently at fromKebun
-        KebunMandorEntity currentAssignment = kebunMandorRepository.findByMandorId(mandorId)
+        String currentKebunId = assignmentRepository.findKebunIdByMandorId(mandorId)
                 .orElseThrow(() -> new KebunConflictException(
                         "Mandor belum ditugaskan ke kebun manapun"));
 
-        if (!currentAssignment.getKebunId().equals(fromKebunId)) {
+        if (!currentKebunId.equals(fromKebunId)) {
             throw new KebunConflictException(
                     "Mandor tidak ditugaskan di kebun asal yang disebutkan");
         }
 
         // Validate toKebun doesn't already have a mandor
-        if (kebunMandorRepository.existsByKebunId(toKebunId)) {
+        if (assignmentRepository.kebunHasMandor(toKebunId)) {
             throw new KebunConflictException(
                     "Kebun tujuan sudah memiliki Mandor yang ditugaskan");
         }
 
-        // Atomic swap: delete old + create new
-        kebunMandorRepository.delete(currentAssignment);
-
-        KebunMandorEntity newAssignment = new KebunMandorEntity();
-        newAssignment.setKebunId(toKebunId);
-        newAssignment.setMandorId(mandorId);
-        kebunMandorRepository.save(newAssignment);
+        assignmentRepository.moveMandor(mandorId, fromKebunId, toKebunId);
     }
 
     @Override
@@ -119,15 +104,12 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
         }
 
         // Check supir isn't already assigned somewhere
-        if (kebunSupirRepository.existsBySupirId(supirId)) {
+        if (assignmentRepository.supirIsAssigned(supirId)) {
             throw new KebunConflictException(
                     "Supir Truk sudah ditugaskan ke kebun lain");
         }
 
-        KebunSupirEntity assignment = new KebunSupirEntity();
-        assignment.setKebunId(kebunId);
-        assignment.setSupirId(supirId);
-        kebunSupirRepository.save(assignment);
+        assignmentRepository.assignSupir(kebunId, supirId);
     }
 
     @Override
@@ -142,21 +124,15 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
                         "Kebun tujuan tidak ditemukan dengan id: " + toKebunId));
 
         // Validate supir is currently at fromKebun
-        KebunSupirEntity currentAssignment = kebunSupirRepository.findBySupirId(supirId)
+        String currentKebunId = assignmentRepository.findKebunIdBySupirId(supirId)
                 .orElseThrow(() -> new KebunConflictException(
                         "Supir Truk belum ditugaskan ke kebun manapun"));
 
-        if (!currentAssignment.getKebunId().equals(fromKebunId)) {
+        if (!currentKebunId.equals(fromKebunId)) {
             throw new KebunConflictException(
                     "Supir Truk tidak ditugaskan di kebun asal yang disebutkan");
         }
 
-        // Atomic swap: delete old + create new
-        kebunSupirRepository.delete(currentAssignment);
-
-        KebunSupirEntity newAssignment = new KebunSupirEntity();
-        newAssignment.setKebunId(toKebunId);
-        newAssignment.setSupirId(supirId);
-        kebunSupirRepository.save(newAssignment);
+        assignmentRepository.moveSupir(supirId, fromKebunId, toKebunId);
     }
 }
