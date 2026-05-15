@@ -8,10 +8,10 @@ import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorJpaRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirEntity;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirJpaRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSawitRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -37,8 +37,20 @@ class KebunSawitServiceImplTest {
     @Mock
     private KebunUserReader userReader;
 
-    @InjectMocks
     private KebunSawitServiceImpl service;
+
+    @BeforeEach
+    void setUp() {
+        KebunGeometry geometry = new KebunGeometry();
+        KebunValidator validator = new KebunValidator(repository, geometry);
+        service = new KebunSawitServiceImpl(
+                repository,
+                kebunMandorRepository,
+                kebunSupirRepository,
+                userReader,
+                geometry,
+                validator);
+    }
 
     private KebunSawit createValidKebun(String id, String kode, double x, double y, double size) {
         KebunSawit kebun = new KebunSawit();

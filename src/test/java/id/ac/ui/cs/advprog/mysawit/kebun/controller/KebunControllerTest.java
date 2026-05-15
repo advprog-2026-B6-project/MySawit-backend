@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.MandorInfo;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.SupirInfo;
+import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunConflictException;
+import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunNotFoundException;
+import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunValidationException;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
 import id.ac.ui.cs.advprog.mysawit.kebun.service.KebunAssignmentService;
@@ -51,7 +54,9 @@ class KebunControllerTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        mockMvc = MockMvcBuilders.standaloneSetup(kebunSawitController, kebunAssignmentController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(kebunSawitController, kebunAssignmentController)
+                .setControllerAdvice(new KebunExceptionHandler())
+                .build();
     }
 
     private KebunSawit createValidKebun() {
@@ -67,9 +72,7 @@ class KebunControllerTest {
         return kebun;
     }
 
-    // =====================================================================
     // CRUD CONTROLLER TESTS
-    // =====================================================================
     @Nested
     class CrudTests {
         @Test
@@ -86,7 +89,7 @@ class KebunControllerTest {
 
         @Test
         void createKebun_invalid_returns400() throws Exception {
-            when(kebunService.create(any())).thenThrow(new IllegalArgumentException("Format kode unik tidak valid"));
+            when(kebunService.create(any())).thenThrow(new KebunValidationException("Format kode unik tidak valid"));
 
             mockMvc.perform(post("/kebun")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -139,7 +142,7 @@ class KebunControllerTest {
         @Test
         void update_notFound_returns404() throws Exception {
             when(kebunService.update(eq("nonexistent"), any()))
-                    .thenThrow(new IllegalArgumentException("Kebun tidak ditemukan dengan id: nonexistent"));
+                    .thenThrow(new KebunNotFoundException("Kebun tidak ditemukan dengan id: nonexistent"));
 
             mockMvc.perform(put("/kebun/nonexistent")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -150,7 +153,7 @@ class KebunControllerTest {
         @Test
         void update_overlap_returns400() throws Exception {
             when(kebunService.update(eq("test-id"), any()))
-                    .thenThrow(new IllegalArgumentException("Kebun overlap dengan kebun: X"));
+                    .thenThrow(new KebunValidationException("Kebun overlap dengan kebun: X"));
 
             mockMvc.perform(put("/kebun/test-id")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -168,7 +171,7 @@ class KebunControllerTest {
 
         @Test
         void delete_notFound_returns404() throws Exception {
-            doThrow(new IllegalArgumentException("Kebun tidak ditemukan dengan id: test-id"))
+            doThrow(new KebunNotFoundException("Kebun tidak ditemukan dengan id: test-id"))
                     .when(kebunService).delete("test-id");
 
             mockMvc.perform(delete("/kebun/test-id"))
@@ -177,7 +180,7 @@ class KebunControllerTest {
 
         @Test
         void delete_mandorBound_returns409() throws Exception {
-            doThrow(new IllegalArgumentException("Tidak dapat menghapus kebun yang masih memiliki Mandor"))
+            doThrow(new KebunConflictException("Tidak dapat menghapus kebun yang masih memiliki Mandor"))
                     .when(kebunService).delete("test-id");
 
             mockMvc.perform(delete("/kebun/test-id"))
@@ -185,9 +188,7 @@ class KebunControllerTest {
         }
     }
 
-    // =====================================================================
     // DETAIL VIEW TESTS
-    // =====================================================================
     @Nested
     class DetailTests {
         @Test
@@ -210,7 +211,7 @@ class KebunControllerTest {
         @Test
         void getDetail_notFound_returns404() throws Exception {
             when(kebunService.getDetail(eq("nonexistent"), any()))
-                    .thenThrow(new IllegalArgumentException("Kebun tidak ditemukan"));
+                    .thenThrow(new KebunNotFoundException("Kebun tidak ditemukan"));
 
             mockMvc.perform(get("/kebun/detail/nonexistent"))
                     .andExpect(status().isNotFound());
@@ -232,10 +233,8 @@ class KebunControllerTest {
                     .andExpect(jsonPath("$.supirList").isArray());
         }
     }
-
-    // =====================================================================
+    
     // ASSIGNMENT CONTROLLER TESTS
-    // =====================================================================
     @Nested
     class AssignmentTests {
         @Test
@@ -251,7 +250,7 @@ class KebunControllerTest {
 
         @Test
         void assignMandor_kebunNotFound_returns404() throws Exception {
-            doThrow(new IllegalArgumentException("Kebun tidak ditemukan"))
+            doThrow(new KebunNotFoundException("Kebun tidak ditemukan"))
                     .when(assignmentService).assignMandor("nonexistent", 10L);
 
             mockMvc.perform(post("/kebun/nonexistent/mandor")
@@ -262,7 +261,7 @@ class KebunControllerTest {
 
         @Test
         void assignMandor_alreadyAssigned_returns409() throws Exception {
-            doThrow(new IllegalArgumentException("Kebun sudah memiliki Mandor yang ditugaskan"))
+            doThrow(new KebunConflictException("Kebun sudah memiliki Mandor yang ditugaskan"))
                     .when(assignmentService).assignMandor("kebun-1", 10L);
 
             mockMvc.perform(post("/kebun/kebun-1/mandor")

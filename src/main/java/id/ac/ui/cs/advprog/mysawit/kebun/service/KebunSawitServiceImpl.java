@@ -5,9 +5,7 @@ import id.ac.ui.cs.advprog.mysawit.kebun.dto.MandorInfo;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.SupirInfo;
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunConflictException;
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunNotFoundException;
-import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunValidationException;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
-import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorJpaRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirEntity;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirJpaRepository;
@@ -23,74 +21,32 @@ import java.util.stream.Collectors;
 @Service
 public class KebunSawitServiceImpl implements KebunSawitService {
 
-    private static final String kodeUnixRegex = "^[A-Z]{2}-\\d{4}$";
-
     private final KebunSawitRepository repository;
     private final KebunMandorJpaRepository kebunMandorRepository;
     private final KebunSupirJpaRepository kebunSupirRepository;
     private final KebunUserReader userReader;
+    private final KebunGeometry geometry;
+    private final KebunValidator validator;
 
     public KebunSawitServiceImpl(KebunSawitRepository repository,
                                  KebunMandorJpaRepository kebunMandorRepository,
                                  KebunSupirJpaRepository kebunSupirRepository,
-                                 KebunUserReader userReader) {
+                                 KebunUserReader userReader,
+                                 KebunGeometry geometry,
+                                 KebunValidator validator) {
         this.repository = repository;
         this.kebunMandorRepository = kebunMandorRepository;
         this.kebunSupirRepository = kebunSupirRepository;
         this.userReader = userReader;
+        this.geometry = geometry;
+        this.validator = validator;
     }
 
     @Override
     public KebunSawit create(KebunSawit kebun) {
-        // Validasi format kodeUnik (XX-0000)
-        if (kebun.getKodeUnik() == null || !kebun.getKodeUnik().matches(kodeUnixRegex)) {
-            throw new KebunValidationException(
-                    "Format kode unik tidak valid. Gunakan format: XX-0000 (contoh: KB-0001)");
-        }
-
-        // Cek kodeUnik sudah ada atau belum
-        if (repository.findByKodeUnik(kebun.getKodeUnik()).isPresent()) {
-            throw new KebunConflictException(
-                    "Kode unik kebun sudah digunakan: " + kebun.getKodeUnik());
-        }
-
-        // Validasi nama kebun tidak null
-        if (kebun.getNamaKebun() == null) {
-            throw new KebunValidationException("Nama kebun tidak boleh null");
-        }
-
-        // Validasi 4 koordinat tidak null
-        if (kebun.getKiriAtas() == null || kebun.getKiriBawah() == null
-                || kebun.getKananAtas() == null || kebun.getKananBawah() == null) {
-            throw new KebunValidationException("Semua 4 koordinat harus diisi");
-        }
-
-        // Validasi 4 koordinat membentuk persegi
-        if (!isValidSquare(kebun.getKiriAtas(), kebun.getKiriBawah(), 
-                           kebun.getKananAtas(), kebun.getKananBawah())) {
-            throw new KebunValidationException("Keempat koordinat yang dimasukkan tidak membentuk persegi sempurna");
-        }
-
-        // Hitung luas berdasarkan koordinat (distSq mengembalikan luas dalam meter persegi)
-        double luasMeterPersegi = distSq(kebun.getKiriAtas(), kebun.getKiriBawah());
-        double luasHektare = luasMeterPersegi / 10000.0;
-        kebun.setLuasHektare(luasHektare);
-
-        // Cek overlap dengan semua kebun yang sudah ada
-        for (KebunSawit existing : repository.findAll()) {
-            if (OverlapValidator.isOverlapping(
-                    kebun.getKoordinatAsList(),
-                    existing.getKoordinatAsList())) {
-                throw new KebunValidationException(
-                        "Kebun overlap dengan kebun: " + existing.getNamaKebun()
-                                + " (" + existing.getKodeUnik() + ")");
-            }
-        }
-
-        // Generate UUID
+        validator.validateCreate(kebun);
+        kebun.setLuasHektare(geometry.calculateHectares(kebun));
         kebun.setId(UUID.randomUUID().toString());
-
-        // Simpan
         return repository.save(kebun);
     }
 
@@ -114,38 +70,8 @@ public class KebunSawitServiceImpl implements KebunSawitService {
         KebunSawit existing = repository.findById(id)
                 .orElseThrow(() -> new KebunNotFoundException("Kebun tidak ditemukan dengan id: " + id));
 
-        // Validasi nama kebun tidak null
-        if (updatedKebun.getNamaKebun() == null) {
-            throw new KebunValidationException("Nama kebun tidak boleh null");
-        }
-
-        // Validasi 4 koordinat tidak null
-        if (updatedKebun.getKiriAtas() == null || updatedKebun.getKiriBawah() == null
-                || updatedKebun.getKananAtas() == null || updatedKebun.getKananBawah() == null) {
-            throw new KebunValidationException("Semua 4 koordinat harus diisi");
-        }
-
-        // Validasi koordinat membentuk persegi
-        if (!isValidSquare(updatedKebun.getKiriAtas(), updatedKebun.getKiriBawah(),
-                           updatedKebun.getKananAtas(), updatedKebun.getKananBawah())) {
-            throw new KebunValidationException("Keempat koordinat yang dimasukkan tidak membentuk persegi sempurna");
-        }
-
-        // Hitung luas berdasarkan koordinat baru
-        double luasMeterPersegi = distSq(updatedKebun.getKiriAtas(), updatedKebun.getKiriBawah());
-        double luasHektare = luasMeterPersegi / 10000.0;
-
-        // Cek overlap dengan semua kebun lain (kecuali diri sendiri)
-        for (KebunSawit other : repository.findAll()) {
-            if (other.getId().equals(id)) continue;
-            if (OverlapValidator.isOverlapping(
-                    updatedKebun.getKoordinatAsList(),
-                    other.getKoordinatAsList())) {
-                throw new KebunValidationException(
-                        "Kebun overlap dengan kebun: " + other.getNamaKebun()
-                                + " (" + other.getKodeUnik() + ")");
-            }
-        }
+        validator.validateUpdate(id, updatedKebun);
+        double luasHektare = geometry.calculateHectares(updatedKebun);
 
         // Lock kodeUnik: always keep original
         existing.setNamaKebun(updatedKebun.getNamaKebun());
@@ -222,29 +148,5 @@ public class KebunSawitServiceImpl implements KebunSawitService {
                 mandorInfo,
                 supirList
         );
-    }
-
-    private boolean isValidSquare(Coordinate kiriAtas, Coordinate kiriBawah, 
-                                  Coordinate kananAtas, Coordinate kananBawah) {
-        // Hitung kuadrat jarak dari 4 sisi yang bersebelahan
-        double sisiKiri = distSq(kiriAtas, kiriBawah);
-        double sisiKanan = distSq(kananAtas, kananBawah);
-        double sisiAtas = distSq(kiriAtas, kananAtas);
-        double sisiBawah = distSq(kiriBawah, kananBawah);
-
-        // Persegi valid jika: 
-        // 1. Jaraknya lebih dari 0 (bukan titik yang menumpuk di koordinat yang sama)
-        // 2. Keempat sisinya sama panjang
-        return sisiKiri > 0 && 
-               sisiKiri == sisiKanan && 
-               sisiKanan == sisiAtas && 
-               sisiAtas == sisiBawah;
-    }
-
-    // Menghitung kuadrat jarak
-    private double distSq(Coordinate p1, Coordinate p2) {
-        double dx = p1.getX() - p2.getX();
-        double dy = p1.getY() - p2.getY();
-        return (dx * dx) + (dy * dy);
     }
 }
