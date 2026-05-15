@@ -47,7 +47,18 @@ public class PostgresKebunSawitRepository implements KebunSawitRepository {
     }
 
     @Override
+    public List<KebunSawit> search(String searchNama, String searchKode) {
+        return jpaRepository.search(normalizeSearch(searchNama), normalizeSearch(searchKode)).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public void deleteById(String id) {
         jpaRepository.deleteById(id);
+    }
+
+    private String normalizeSearch(String searchValue) {
+        return searchValue == null ? "" : searchValue;
     }
 }

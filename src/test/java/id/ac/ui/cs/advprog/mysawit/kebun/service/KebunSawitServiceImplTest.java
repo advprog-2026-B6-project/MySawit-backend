@@ -361,7 +361,7 @@ class KebunSawitServiceImplTest {
         void findAll_noFilter_returnsAll() {
             KebunSawit k1 = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             KebunSawit k2 = createValidKebun("id-2", "KB-0002", 500, 0, 200);
-            when(repository.findAll()).thenReturn(List.of(k1, k2));
+            when(repository.search("", "")).thenReturn(List.of(k1, k2));
 
             List<KebunSawit> result = service.findAll("", "");
             assertEquals(2, result.size());
@@ -373,7 +373,7 @@ class KebunSawitServiceImplTest {
             k1.setNamaKebun("Kebun Utara");
             KebunSawit k2 = createValidKebun("id-2", "KB-0002", 500, 0, 200);
             k2.setNamaKebun("Kebun Selatan");
-            when(repository.findAll()).thenReturn(List.of(k1, k2));
+            when(repository.search("Utara", "")).thenReturn(List.of(k1));
 
             List<KebunSawit> result = service.findAll("Utara", "");
             assertEquals(1, result.size());
@@ -383,8 +383,7 @@ class KebunSawitServiceImplTest {
         @Test
         void findAll_filterByKode_returnsFiltered() {
             KebunSawit k1 = createValidKebun("id-1", "KB-0001", 0, 0, 200);
-            KebunSawit k2 = createValidKebun("id-2", "KB-0002", 500, 0, 200);
-            when(repository.findAll()).thenReturn(List.of(k1, k2));
+            when(repository.search("", "0001")).thenReturn(List.of(k1));
 
             List<KebunSawit> result = service.findAll("", "0001");
             assertEquals(1, result.size());
@@ -479,7 +478,7 @@ class KebunSawitServiceImplTest {
         @Test
         void findAll_nullFilters_returnsAll() {
             KebunSawit k1 = createValidKebun("id-1", "KB-0001", 0, 0, 200);
-            when(repository.findAll()).thenReturn(List.of(k1));
+            when(repository.search(null, null)).thenReturn(List.of(k1));
             List<KebunSawit> result = service.findAll(null, null);
             assertEquals(1, result.size());
         }

@@ -16,11 +16,6 @@ public class KebunSearchService {
     }
 
     public List<KebunSawit> findAll(String searchNama, String searchKode) {
-        return repository.findAll().stream()
-                .filter(k -> searchNama == null || searchNama.isEmpty()
-                        || k.getNamaKebun().toLowerCase().contains(searchNama.toLowerCase()))
-                .filter(k -> searchKode == null || searchKode.isEmpty()
-                        || k.getKodeUnik().toLowerCase().contains(searchKode.toLowerCase()))
-                .toList();
+        return repository.search(searchNama, searchKode);
     }
 }

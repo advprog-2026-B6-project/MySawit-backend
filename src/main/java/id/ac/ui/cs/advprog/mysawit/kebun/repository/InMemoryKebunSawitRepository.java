@@ -40,7 +40,22 @@ public class InMemoryKebunSawitRepository implements KebunSawitRepository {
     }
 
     @Override
+    public List<KebunSawit> search(String searchNama, String searchKode) {
+        String normalizedNama = normalizeSearch(searchNama);
+        String normalizedKode = normalizeSearch(searchKode);
+
+        return kebunRepository.values().stream()
+                .filter(kebun -> kebun.getNamaKebun().toLowerCase().contains(normalizedNama))
+                .filter(kebun -> kebun.getKodeUnik().toLowerCase().contains(normalizedKode))
+                .toList();
+    }
+
+    @Override
     public void deleteById(String id) {
         kebunRepository.remove(id);
+    }
+
+    private String normalizeSearch(String searchValue) {
+        return searchValue == null ? "" : searchValue.toLowerCase();
     }
 }
