@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.repository;
 
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
+@Profile("test")
 public class InMemoryKebunSawitRepository implements KebunSawitRepository {
 
     private final Map<String, KebunSawit> kebunRepository = new ConcurrentHashMap<>();
