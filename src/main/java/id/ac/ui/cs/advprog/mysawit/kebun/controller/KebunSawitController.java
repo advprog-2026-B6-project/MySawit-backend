@@ -61,7 +61,8 @@ public class KebunSawitController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<KebunResponse> update(@PathVariable String id, @Valid @RequestBody UpdateKebunRequest request) {
+    public ResponseEntity<KebunResponse> update(@PathVariable String id, 
+            @Valid @RequestBody UpdateKebunRequest request) {
         KebunSawit kebun = mapper.toDomain(request);
         KebunSawit updated = kebunService.update(id, kebun);
         return ResponseEntity.ok(mapper.toResponse(updated));
