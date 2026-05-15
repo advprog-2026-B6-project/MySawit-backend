@@ -16,6 +16,8 @@ import id.ac.ui.cs.advprog.mysawit.kebun.service.KebunSawitService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -28,6 +30,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -384,33 +387,20 @@ class KebunControllerTest {
                     .andExpect(status().isConflict());
         }
 
-        @Test
-        void assignMandor_missingMandorId_returns400() throws Exception {
-            mockMvc.perform(post("/kebun/kebun-1/mandor")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content("{}"))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(assignmentService, never()).assignMandor(anyString(), anyLong());
+        static Stream<String> invalidMandorIdPayloads() {
+            return Stream.of(
+                    "{}",                          // missing mandorId
+                    "{\"mandorId\":null}",          // null mandorId
+                    "{\"mandorId\":\"not-a-number\"}" // wrong type mandorId
+            );
         }
 
-        @Test
-        void assignMandor_nullMandorId_returns400() throws Exception {
+        @ParameterizedTest
+        @MethodSource("invalidMandorIdPayloads")
+        void assignMandor_invalidMandorId_returns400(String body) throws Exception {
             mockMvc.perform(post("/kebun/kebun-1/mandor")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\"mandorId\":null}"))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(assignmentService, never()).assignMandor(anyString(), anyLong());
-        }
-
-        @Test
-        void assignMandor_wrongTypeMandorId_returns400() throws Exception {
-            mockMvc.perform(post("/kebun/kebun-1/mandor")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\"mandorId\":\"not-a-number\"}"))
+                            .content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").exists());
 
