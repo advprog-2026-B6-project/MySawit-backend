@@ -37,12 +37,18 @@ class KebunSawitServiceImplTest {
     void setUp() {
         KebunGeometry geometry = new KebunGeometry();
         KebunValidator validator = new KebunValidator(repository, geometry);
+        KebunSearchService searchService = new KebunSearchService(repository);
+        KebunDetailAssembler detailAssembler = new KebunDetailAssembler(
+                repository,
+                assignmentRepository,
+                userReader);
         service = new KebunSawitServiceImpl(
                 repository,
                 assignmentRepository,
-                userReader,
                 geometry,
-                validator);
+                validator,
+                searchService,
+                detailAssembler);
     }
 
     private KebunSawit createValidKebun(String id, String kode, double x, double y, double size) {

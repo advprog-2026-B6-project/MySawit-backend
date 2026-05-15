@@ -1,8 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.service;
 
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
-import id.ac.ui.cs.advprog.mysawit.kebun.dto.MandorInfo;
-import id.ac.ui.cs.advprog.mysawit.kebun.dto.SupirInfo;
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunConflictException;
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunNotFoundException;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
@@ -10,7 +8,6 @@ import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunAssignmentRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSawitRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,20 +17,23 @@ public class KebunSawitServiceImpl implements KebunSawitService {
 
     private final KebunSawitRepository repository;
     private final KebunAssignmentRepository assignmentRepository;
-    private final KebunUserReader userReader;
     private final KebunGeometry geometry;
     private final KebunValidator validator;
+    private final KebunSearchService searchService;
+    private final KebunDetailAssembler detailAssembler;
 
     public KebunSawitServiceImpl(KebunSawitRepository repository,
                                  KebunAssignmentRepository assignmentRepository,
-                                 KebunUserReader userReader,
                                  KebunGeometry geometry,
-                                 KebunValidator validator) {
+                                 KebunValidator validator,
+                                 KebunSearchService searchService,
+                                 KebunDetailAssembler detailAssembler) {
         this.repository = repository;
         this.assignmentRepository = assignmentRepository;
-        this.userReader = userReader;
         this.geometry = geometry;
         this.validator = validator;
+        this.searchService = searchService;
+        this.detailAssembler = detailAssembler;
     }
 
     @Override
@@ -46,12 +46,7 @@ public class KebunSawitServiceImpl implements KebunSawitService {
 
     @Override
     public List<KebunSawit> findAll(String searchNama, String searchKode) {
-        return repository.findAll().stream()
-                .filter(k -> searchNama == null || searchNama.isEmpty()
-                        || k.getNamaKebun().toLowerCase().contains(searchNama.toLowerCase()))
-                .filter(k -> searchKode == null || searchKode.isEmpty()
-                        || k.getKodeUnik().toLowerCase().contains(searchKode.toLowerCase()))
-                .toList();
+        return searchService.findAll(searchNama, searchKode);
     }
 
     @Override
@@ -94,50 +89,6 @@ public class KebunSawitServiceImpl implements KebunSawitService {
 
     @Override
     public KebunDetailResponse getDetail(String kebunId, String searchSupirNama) {
-        KebunSawit kebun = repository.findById(kebunId)
-                .orElseThrow(() -> new KebunNotFoundException("Kebun tidak ditemukan dengan id: " + kebunId));
-
-        // Resolve Mandor info
-        MandorInfo mandorInfo = assignmentRepository.findMandorIdByKebunId(kebunId)
-                .flatMap(userReader::findUserById)
-                .map(snapshot -> new MandorInfo(
-                        snapshot.getId(),
-                        snapshot.getFullname(),
-                        snapshot.getCertificationNumber()))
-                .orElse(null);
-
-        // Resolve Supir list
-        List<Long> supirIds = assignmentRepository.findSupirIdsByKebunId(kebunId);
-
-        List<SupirInfo> supirList;
-        if (supirIds.isEmpty()) {
-            supirList = new ArrayList<>();
-        } else {
-            supirList = userReader.findUsersByIds(supirIds).stream()
-                    .map(snapshot -> new SupirInfo(snapshot.getId(), snapshot.getFullname()))
-                    .toList();
-        }
-
-        // Apply search filter on supir names
-        if (searchSupirNama != null && !searchSupirNama.isEmpty()) {
-            String lowerSearch = searchSupirNama.toLowerCase();
-            supirList = supirList.stream()
-                    .filter(s -> s.getFullname() != null
-                            && s.getFullname().toLowerCase().contains(lowerSearch))
-                    .toList();
-        }
-
-        return new KebunDetailResponse(
-                kebun.getId(),
-                kebun.getNamaKebun(),
-                kebun.getKodeUnik(),
-                kebun.getLuasHektare(),
-                kebun.getKiriAtas(),
-                kebun.getKiriBawah(),
-                kebun.getKananAtas(),
-                kebun.getKananBawah(),
-                mandorInfo,
-                supirList
-        );
+        return detailAssembler.getDetail(kebunId, searchSupirNama);
     }
 }
