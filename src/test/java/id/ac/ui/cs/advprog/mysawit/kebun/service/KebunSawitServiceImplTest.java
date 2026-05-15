@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.service;
 
+import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
@@ -76,7 +77,7 @@ class KebunSawitServiceImplTest {
         return kebun;
     }
 
-    // CREATE TESTS (existing from 25% milestone, ensure no regression)
+    // CREATE TESTS
     @Nested
     class CreateTests {
         @Test
@@ -399,12 +400,12 @@ class KebunSawitServiceImplTest {
 
             when(assignmentRepository.findMandorIdByKebunId("id-1")).thenReturn(Optional.of(10L));
             when(userReader.findUserById(10L)).thenReturn(Optional.of(
-                    new UserSnapshot(10L, "Pak Mandor", "mandor1", "MANDOR", "CERT-001")));
+                    new UserSnapshot(10L, "Pak Mandor", "mandor1", Role.MANDOR, "CERT-001")));
 
             when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L, 21L));
             when(userReader.findUsersByIds(List.of(20L, 21L))).thenReturn(List.of(
-                    new UserSnapshot(20L, "Supir Andi", "supir1", "SUPIR", null),
-                    new UserSnapshot(21L, "Supir Budi", "supir2", "SUPIR", null)));
+                    new UserSnapshot(20L, "Supir Andi", "supir1", Role.SUPIR, null),
+                    new UserSnapshot(21L, "Supir Budi", "supir2", Role.SUPIR, null)));
 
             KebunDetailResponse detail = service.getDetail("id-1", null);
 
@@ -436,8 +437,8 @@ class KebunSawitServiceImplTest {
 
             when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L, 21L));
             when(userReader.findUsersByIds(List.of(20L, 21L))).thenReturn(List.of(
-                    new UserSnapshot(20L, "Andi Supir", "supir1", "SUPIR", null),
-                    new UserSnapshot(21L, "Budi Driver", "supir2", "SUPIR", null)));
+                    new UserSnapshot(20L, "Andi Supir", "supir1", Role.SUPIR, null),
+                    new UserSnapshot(21L, "Budi Driver", "supir2", Role.SUPIR, null)));
 
             KebunDetailResponse detail = service.getDetail("id-1", "Andi");
 
@@ -453,7 +454,7 @@ class KebunSawitServiceImplTest {
 
             when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L));
             when(userReader.findUsersByIds(List.of(20L))).thenReturn(List.of(
-                    new UserSnapshot(20L, null, "supir1", "SUPIR", null)));
+                    new UserSnapshot(20L, null, "supir1", Role.SUPIR, null)));
 
             KebunDetailResponse detail = service.getDetail("id-1", "Andi");
             assertTrue(detail.getSupirList().isEmpty());
@@ -467,7 +468,7 @@ class KebunSawitServiceImplTest {
 
             when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L));
             when(userReader.findUsersByIds(List.of(20L))).thenReturn(List.of(
-                    new UserSnapshot(20L, "Andi Supir", "supir1", "SUPIR", null)));
+                    new UserSnapshot(20L, "Andi Supir", "supir1", Role.SUPIR, null)));
 
             KebunDetailResponse detail = service.getDetail("id-1", "");
             assertEquals(1, detail.getSupirList().size());

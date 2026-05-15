@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.service;
 
+import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunConflictException;
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunNotFoundException;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunAssignmentRepository;
@@ -25,28 +26,14 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
     @Override
     @Transactional
     public void assignMandor(String kebunId, Long mandorId) {
-        // Validate kebun exists
-        kebunRepository.findById(kebunId)
-                .orElseThrow(() -> new KebunNotFoundException(
-                        "Kebun tidak ditemukan dengan id: " + kebunId));
+        requireKebunExists(kebunId, "Kebun tidak ditemukan dengan id: " + kebunId);
+        requireUserWithRole(mandorId, Role.MANDOR, "Mandor");
 
-        // Validate user exists and is a MANDOR
-        UserSnapshot user = userReader.findUserById(mandorId)
-                .orElseThrow(() -> new KebunNotFoundException(
-                        "User tidak ditemukan dengan id: " + mandorId));
-
-        if (!"MANDOR".equals(user.getRole())) {
-            throw new KebunConflictException(
-                    "User dengan id " + mandorId + " bukan Mandor (role: " + user.getRole() + ")");
-        }
-
-        // Check kebun doesn't already have a mandor
         if (assignmentRepository.kebunHasMandor(kebunId)) {
             throw new KebunConflictException(
                     "Kebun sudah memiliki Mandor yang ditugaskan");
         }
 
-        // Check mandor isn't already assigned to another kebun
         if (assignmentRepository.mandorIsAssigned(mandorId)) {
             throw new KebunConflictException(
                     "Mandor sudah ditugaskan ke kebun lain");
@@ -58,15 +45,9 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
     @Override
     @Transactional
     public void reassignMandor(Long mandorId, String fromKebunId, String toKebunId) {
-        // Validate both kebuns exist
-        kebunRepository.findById(fromKebunId)
-                .orElseThrow(() -> new KebunNotFoundException(
-                        "Kebun asal tidak ditemukan dengan id: " + fromKebunId));
-        kebunRepository.findById(toKebunId)
-                .orElseThrow(() -> new KebunNotFoundException(
-                        "Kebun tujuan tidak ditemukan dengan id: " + toKebunId));
+        requireKebunExists(fromKebunId, "Kebun asal tidak ditemukan dengan id: " + fromKebunId);
+        requireKebunExists(toKebunId, "Kebun tujuan tidak ditemukan dengan id: " + toKebunId);
 
-        // Validate mandor is currently at fromKebun
         String currentKebunId = assignmentRepository.findKebunIdByMandorId(mandorId)
                 .orElseThrow(() -> new KebunConflictException(
                         "Mandor belum ditugaskan ke kebun manapun"));
@@ -76,7 +57,6 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
                     "Mandor tidak ditugaskan di kebun asal yang disebutkan");
         }
 
-        // Validate toKebun doesn't already have a mandor
         if (assignmentRepository.kebunHasMandor(toKebunId)) {
             throw new KebunConflictException(
                     "Kebun tujuan sudah memiliki Mandor yang ditugaskan");
@@ -88,22 +68,9 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
     @Override
     @Transactional
     public void assignSupir(String kebunId, Long supirId) {
-        // Validate kebun exists
-        kebunRepository.findById(kebunId)
-                .orElseThrow(() -> new KebunNotFoundException(
-                        "Kebun tidak ditemukan dengan id: " + kebunId));
+        requireKebunExists(kebunId, "Kebun tidak ditemukan dengan id: " + kebunId);
+        requireUserWithRole(supirId, Role.SUPIR, "Supir Truk");
 
-        // Validate user exists and is a SUPIR
-        UserSnapshot user = userReader.findUserById(supirId)
-                .orElseThrow(() -> new KebunNotFoundException(
-                        "User tidak ditemukan dengan id: " + supirId));
-
-        if (!"SUPIR".equals(user.getRole())) {
-            throw new KebunConflictException(
-                    "User dengan id " + supirId + " bukan Supir Truk (role: " + user.getRole() + ")");
-        }
-
-        // Check supir isn't already assigned somewhere
         if (assignmentRepository.supirIsAssigned(supirId)) {
             throw new KebunConflictException(
                     "Supir Truk sudah ditugaskan ke kebun lain");
@@ -115,15 +82,9 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
     @Override
     @Transactional
     public void reassignSupir(Long supirId, String fromKebunId, String toKebunId) {
-        // Validate both kebuns exist
-        kebunRepository.findById(fromKebunId)
-                .orElseThrow(() -> new KebunNotFoundException(
-                        "Kebun asal tidak ditemukan dengan id: " + fromKebunId));
-        kebunRepository.findById(toKebunId)
-                .orElseThrow(() -> new KebunNotFoundException(
-                        "Kebun tujuan tidak ditemukan dengan id: " + toKebunId));
+        requireKebunExists(fromKebunId, "Kebun asal tidak ditemukan dengan id: " + fromKebunId);
+        requireKebunExists(toKebunId, "Kebun tujuan tidak ditemukan dengan id: " + toKebunId);
 
-        // Validate supir is currently at fromKebun
         String currentKebunId = assignmentRepository.findKebunIdBySupirId(supirId)
                 .orElseThrow(() -> new KebunConflictException(
                         "Supir Truk belum ditugaskan ke kebun manapun"));
@@ -134,5 +95,23 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
         }
 
         assignmentRepository.moveSupir(supirId, fromKebunId, toKebunId);
+    }
+
+    private void requireKebunExists(String kebunId, String message) {
+        kebunRepository.findById(kebunId)
+                .orElseThrow(() -> new KebunNotFoundException(message));
+    }
+
+    private void requireUserWithRole(Long userId, Role expectedRole, String roleLabel) {
+        UserSnapshot user = userReader.findUserById(userId)
+                .orElseThrow(() -> new KebunNotFoundException(
+                        "User tidak ditemukan dengan id: " + userId));
+
+        if (user.getRole() != expectedRole) {
+            throw new KebunConflictException(
+                    "User dengan id " + userId
+                            + " bukan " + roleLabel
+                            + " (role: " + user.getRole() + ")");
+        }
     }
 }
