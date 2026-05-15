@@ -1,14 +1,14 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.repository;
 
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Primary
+@Profile("!test")
 public class PostgresKebunSawitRepository implements KebunSawitRepository {
 
     private final KebunSawitJpaRepository jpaRepository;
