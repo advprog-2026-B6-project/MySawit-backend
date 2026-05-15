@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunResponseMapper;
@@ -77,6 +78,24 @@ class KebunControllerTest {
         return kebun;
     }
 
+    private String validKebunJson() throws Exception {
+        return objectMapper.writeValueAsString(createValidKebun());
+    }
+
+    private String validKebunJsonWithout(String fieldName) throws Exception {
+        Map<String, Object> body = objectMapper.convertValue(createValidKebun(), new TypeReference<>() {});
+        body.remove(fieldName);
+        return objectMapper.writeValueAsString(body);
+    }
+
+    private String kebunJsonWithCoordinateMissing(String coordinateName, String coordinateField) throws Exception {
+        Map<String, Object> body = objectMapper.convertValue(createValidKebun(), new TypeReference<>() {});
+        Map<String, Object> coordinate = objectMapper.convertValue(body.get(coordinateName), new TypeReference<>() {});
+        coordinate.remove(coordinateField);
+        body.put(coordinateName, coordinate);
+        return objectMapper.writeValueAsString(body);
+    }
+
     // CRUD CONTROLLER TESTS
     @Nested
     class CrudTests {
@@ -93,14 +112,58 @@ class KebunControllerTest {
         }
 
         @Test
-        void createKebun_invalid_returns400() throws Exception {
+        void createKebun_serviceValidationError_returns400() throws Exception {
             when(kebunService.create(any())).thenThrow(new KebunValidationException("Format kode unik tidak valid"));
 
             mockMvc.perform(post("/kebun")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("{}"))
+                            .content(validKebunJson()))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").exists());
+        }
+
+        @Test
+        void createKebun_missingNama_returns400AndDoesNotCallService() throws Exception {
+            mockMvc.perform(post("/kebun")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(validKebunJsonWithout("namaKebun")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(kebunService, never()).create(any());
+        }
+
+        @Test
+        void createKebun_missingCoordinate_returns400AndDoesNotCallService() throws Exception {
+            mockMvc.perform(post("/kebun")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(validKebunJsonWithout("kiriAtas")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(kebunService, never()).create(any());
+        }
+
+        @Test
+        void createKebun_coordinateMissingX_returns400AndDoesNotCallService() throws Exception {
+            mockMvc.perform(post("/kebun")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(kebunJsonWithCoordinateMissing("kiriAtas", "x")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(kebunService, never()).create(any());
+        }
+
+        @Test
+        void createKebun_coordinateMissingY_returns400AndDoesNotCallService() throws Exception {
+            mockMvc.perform(post("/kebun")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(kebunJsonWithCoordinateMissing("kiriAtas", "y")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(kebunService, never()).create(any());
         }
 
         @Test
@@ -128,7 +191,8 @@ class KebunControllerTest {
             when(kebunService.findByKodeUnik("KB-9999")).thenReturn(Optional.empty());
 
             mockMvc.perform(get("/kebun/KB-9999"))
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.error").exists());
         }
 
         @Test
@@ -151,7 +215,7 @@ class KebunControllerTest {
 
             mockMvc.perform(put("/kebun/nonexistent")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("{}"))
+                            .content(validKebunJson()))
                     .andExpect(status().isNotFound());
         }
 
@@ -162,8 +226,52 @@ class KebunControllerTest {
 
             mockMvc.perform(put("/kebun/test-id")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("{}"))
+                            .content(validKebunJson()))
                     .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void updateKebun_missingNama_returns400AndDoesNotCallService() throws Exception {
+            mockMvc.perform(put("/kebun/test-id")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(validKebunJsonWithout("namaKebun")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(kebunService, never()).update(anyString(), any());
+        }
+
+        @Test
+        void updateKebun_missingCoordinate_returns400AndDoesNotCallService() throws Exception {
+            mockMvc.perform(put("/kebun/test-id")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(validKebunJsonWithout("kiriAtas")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(kebunService, never()).update(anyString(), any());
+        }
+
+        @Test
+        void updateKebun_coordinateMissingX_returns400AndDoesNotCallService() throws Exception {
+            mockMvc.perform(put("/kebun/test-id")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(kebunJsonWithCoordinateMissing("kiriAtas", "x")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(kebunService, never()).update(anyString(), any());
+        }
+
+        @Test
+        void updateKebun_coordinateMissingY_returns400AndDoesNotCallService() throws Exception {
+            mockMvc.perform(put("/kebun/test-id")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(kebunJsonWithCoordinateMissing("kiriAtas", "y")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(kebunService, never()).update(anyString(), any());
         }
 
         @Test
