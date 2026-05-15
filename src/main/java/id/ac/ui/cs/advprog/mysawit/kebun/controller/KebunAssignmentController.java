@@ -1,8 +1,16 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.controller;
 
+import id.ac.ui.cs.advprog.mysawit.kebun.dto.AssignMandorRequest;
+import id.ac.ui.cs.advprog.mysawit.kebun.dto.AssignSupirRequest;
+import id.ac.ui.cs.advprog.mysawit.kebun.dto.ReassignMandorRequest;
+import id.ac.ui.cs.advprog.mysawit.kebun.dto.ReassignSupirRequest;
 import id.ac.ui.cs.advprog.mysawit.kebun.service.KebunAssignmentService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -23,12 +31,9 @@ public class KebunAssignmentController {
     @PostMapping("/{kebunId}/mandor")
     public ResponseEntity<Object> assignMandor(
             @PathVariable String kebunId,
-            @RequestBody Map<String, Long> body) {
+            @Valid @RequestBody AssignMandorRequest request) {
         try {
-            Long mandorId = body.get("mandorId");
-            if (mandorId == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "mandorId harus diisi"));
-            }
+            Long mandorId = request.getMandorId();
             assignmentService.assignMandor(kebunId, mandorId);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("message", "Mandor berhasil ditugaskan ke kebun"));
@@ -41,18 +46,12 @@ public class KebunAssignmentController {
     }
 
     @PutMapping("/mandor/reassign")
-    public ResponseEntity<Object> reassignMandor(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<Object> reassignMandor(@Valid @RequestBody ReassignMandorRequest request) {
         try {
-            Long mandorId = ((Number) body.get("mandorId")).longValue();
-            String fromKebunId = (String) body.get("fromKebunId");
-            String toKebunId = (String) body.get("toKebunId");
-
-            if (mandorId == null || fromKebunId == null || toKebunId == null) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "mandorId, fromKebunId, dan toKebunId harus diisi"));
-            }
-
-            assignmentService.reassignMandor(mandorId, fromKebunId, toKebunId);
+            assignmentService.reassignMandor(
+                    request.getMandorId(),
+                    request.getFromKebunId(),
+                    request.getToKebunId());
             return ResponseEntity.ok(Map.of("message", "Mandor berhasil dipindahkan ke kebun baru"));
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("tidak ditemukan")) {
@@ -67,12 +66,9 @@ public class KebunAssignmentController {
     @PostMapping("/{kebunId}/supir")
     public ResponseEntity<Object> assignSupir(
             @PathVariable String kebunId,
-            @RequestBody Map<String, Long> body) {
+            @Valid @RequestBody AssignSupirRequest request) {
         try {
-            Long supirId = body.get("supirId");
-            if (supirId == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "supirId harus diisi"));
-            }
+            Long supirId = request.getSupirId();
             assignmentService.assignSupir(kebunId, supirId);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("message", "Supir Truk berhasil ditugaskan ke kebun"));
@@ -85,18 +81,12 @@ public class KebunAssignmentController {
     }
 
     @PutMapping("/supir/reassign")
-    public ResponseEntity<Object> reassignSupir(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<Object> reassignSupir(@Valid @RequestBody ReassignSupirRequest request) {
         try {
-            Long supirId = ((Number) body.get("supirId")).longValue();
-            String fromKebunId = (String) body.get("fromKebunId");
-            String toKebunId = (String) body.get("toKebunId");
-
-            if (supirId == null || fromKebunId == null || toKebunId == null) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "supirId, fromKebunId, dan toKebunId harus diisi"));
-            }
-
-            assignmentService.reassignSupir(supirId, fromKebunId, toKebunId);
+            assignmentService.reassignSupir(
+                    request.getSupirId(),
+                    request.getFromKebunId(),
+                    request.getToKebunId());
             return ResponseEntity.ok(Map.of("message", "Supir Truk berhasil dipindahkan ke kebun baru"));
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("tidak ditemukan")) {
@@ -104,5 +94,19 @@ public class KebunAssignmentController {
             }
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidRequest(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(FieldError::getDefaultMessage)
+                .orElse("Request tidak valid");
+        return ResponseEntity.badRequest().body(Map.of("error", message));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleUnreadableRequest() {
+        return ResponseEntity.badRequest().body(Map.of("error", "Request tidak valid"));
     }
 }

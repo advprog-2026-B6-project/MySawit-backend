@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.controller;
 
+import id.ac.ui.cs.advprog.mysawit.kebun.dto.CreateKebunRequest;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
+import id.ac.ui.cs.advprog.mysawit.kebun.dto.UpdateKebunRequest;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
 import id.ac.ui.cs.advprog.mysawit.kebun.service.KebunSawitService;
 import org.springframework.http.HttpStatus;
@@ -22,8 +24,9 @@ public class KebunSawitController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@RequestBody KebunSawit kebun) {
+    public ResponseEntity<Object> create(@RequestBody CreateKebunRequest request) {
         try {
+            KebunSawit kebun = toKebunSawit(request);
             KebunSawit created = service.create(kebun);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalArgumentException e) {
@@ -58,8 +61,9 @@ public class KebunSawitController {
         }
     }
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable String id, @RequestBody KebunSawit kebun) {
+    public ResponseEntity<Object> update(@PathVariable String id, @RequestBody UpdateKebunRequest request) {
         try {
+            KebunSawit kebun = toKebunSawit(request);
             KebunSawit updated = service.update(id, kebun);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
@@ -84,5 +88,26 @@ public class KebunSawitController {
             }
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    private KebunSawit toKebunSawit(CreateKebunRequest request) {
+        KebunSawit kebun = new KebunSawit();
+        kebun.setNamaKebun(request.getNamaKebun());
+        kebun.setKodeUnik(request.getKodeUnik());
+        kebun.setKiriAtas(request.getKiriAtas());
+        kebun.setKiriBawah(request.getKiriBawah());
+        kebun.setKananAtas(request.getKananAtas());
+        kebun.setKananBawah(request.getKananBawah());
+        return kebun;
+    }
+
+    private KebunSawit toKebunSawit(UpdateKebunRequest request) {
+        KebunSawit kebun = new KebunSawit();
+        kebun.setNamaKebun(request.getNamaKebun());
+        kebun.setKiriAtas(request.getKiriAtas());
+        kebun.setKiriBawah(request.getKiriBawah());
+        kebun.setKananAtas(request.getKananAtas());
+        kebun.setKananBawah(request.getKananBawah());
+        return kebun;
     }
 }
