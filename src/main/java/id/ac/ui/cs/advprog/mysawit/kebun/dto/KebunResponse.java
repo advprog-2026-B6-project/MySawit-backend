@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.dto;
 
+import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,8 +15,8 @@ public class KebunResponse {
     private String namaKebun;
     private String kodeUnik;
     private Double luasHektare;
-    private CoordinateResponse kiriAtas;
-    private CoordinateResponse kiriBawah;
-    private CoordinateResponse kananAtas;
-    private CoordinateResponse kananBawah;
+    private Coordinate kiriAtas;
+    private Coordinate kiriBawah;
+    private Coordinate kananAtas;
+    private Coordinate kananBawah;
 }

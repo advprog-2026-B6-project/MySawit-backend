@@ -36,10 +36,10 @@ public class KebunResponseMapper {
                 kebun.getNamaKebun(),
                 kebun.getKodeUnik(),
                 kebun.getLuasHektare(),
-                toCoordinateResponse(kebun.getKiriAtas()),
-                toCoordinateResponse(kebun.getKiriBawah()),
-                toCoordinateResponse(kebun.getKananAtas()),
-                toCoordinateResponse(kebun.getKananBawah())
+                kebun.getKiriAtas(),
+                kebun.getKiriBawah(),
+                kebun.getKananAtas(),
+                kebun.getKananBawah()
         );
     }
 
@@ -69,12 +69,5 @@ public class KebunResponseMapper {
 
     private Coordinate toCoordinate(CoordinateRequest request) {
         return new Coordinate(request.getX(), request.getY());
-    }
-
-    private CoordinateResponse toCoordinateResponse(Coordinate coordinate) {
-        if (coordinate == null) {
-            return null;
-        }
-        return new CoordinateResponse(coordinate.getX(), coordinate.getY());
     }
 }
