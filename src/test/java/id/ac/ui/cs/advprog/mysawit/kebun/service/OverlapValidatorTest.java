@@ -130,6 +130,35 @@ class OverlapValidatorTest {
         assertTrue(OverlapValidator.isOverlapping(a, b));
     }
 
+    @Test
+    void testNegativeCoordinatesOverlap_shouldOverlap() {
+        List<Coordinate> a = square(-200, -200, 150);
+        List<Coordinate> b = square(-100, -100, 150);
+
+        assertTrue(OverlapValidator.isOverlapping(a, b));
+    }
+
+    @Test
+    void testNegativeCoordinatesNoOverlap_shouldNotOverlap() {
+        List<Coordinate> a = square(-300, -300, 100);
+        List<Coordinate> b = square(-100, -100, 100);
+
+        assertFalse(OverlapValidator.isOverlapping(a, b));
+    }
+
+    @Test
+    void testZeroWidthPolygon_shouldNotOverlapOrBeRejectedByHigherValidator() {
+        List<Coordinate> zeroWidth = List.of(
+                new Coordinate(0, 0),
+                new Coordinate(0, 100),
+                new Coordinate(0, 100),
+                new Coordinate(0, 0)
+        );
+        List<Coordinate> square = square(0, 0, 100);
+
+        assertFalse(OverlapValidator.isOverlapping(zeroWidth, square));
+    }
+
     // === 15. Private constructor coverage ===
     @Test
     void testConstructorIsPrivate() throws Exception {

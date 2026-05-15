@@ -276,7 +276,32 @@ class KebunControllerTest {
             mockMvc.perform(post("/kebun/kebun-1/mandor")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(assignmentService, never()).assignMandor(anyString(), anyLong());
+        }
+
+        @Test
+        void assignMandor_nullMandorId_returns400() throws Exception {
+            mockMvc.perform(post("/kebun/kebun-1/mandor")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"mandorId\":null}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(assignmentService, never()).assignMandor(anyString(), anyLong());
+        }
+
+        @Test
+        void assignMandor_wrongTypeMandorId_returns400() throws Exception {
+            mockMvc.perform(post("/kebun/kebun-1/mandor")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"mandorId\":\"not-a-number\"}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(assignmentService, never()).assignMandor(anyString(), anyLong());
         }
 
         @Test
@@ -296,6 +321,37 @@ class KebunControllerTest {
         }
 
         @Test
+        void reassignMandor_missingMandorId_returns400() throws Exception {
+            Map<String, Object> body = Map.of(
+                    "fromKebunId", "kebun-1",
+                    "toKebunId", "kebun-2");
+
+            mockMvc.perform(put("/kebun/mandor/reassign")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(body)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(assignmentService, never()).reassignMandor(anyLong(), anyString(), anyString());
+        }
+
+        @Test
+        void reassignMandor_wrongTypeMandorId_returns400() throws Exception {
+            Map<String, Object> body = Map.of(
+                    "mandorId", "not-a-number",
+                    "fromKebunId", "kebun-1",
+                    "toKebunId", "kebun-2");
+
+            mockMvc.perform(put("/kebun/mandor/reassign")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(body)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(assignmentService, never()).reassignMandor(anyLong(), anyString(), anyString());
+        }
+
+        @Test
         void assignSupir_success_returns201() throws Exception {
             doNothing().when(assignmentService).assignSupir("kebun-1", 20L);
 
@@ -303,6 +359,28 @@ class KebunControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(Map.of("supirId", 20))))
                     .andExpect(status().isCreated());
+        }
+
+        @Test
+        void assignSupir_nullSupirId_returns400() throws Exception {
+            mockMvc.perform(post("/kebun/kebun-1/supir")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"supirId\":null}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(assignmentService, never()).assignSupir(anyString(), anyLong());
+        }
+
+        @Test
+        void assignSupir_wrongTypeSupirId_returns400() throws Exception {
+            mockMvc.perform(post("/kebun/kebun-1/supir")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"supirId\":\"not-a-number\"}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(assignmentService, never()).assignSupir(anyString(), anyLong());
         }
 
         @Test
@@ -318,6 +396,37 @@ class KebunControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(body)))
                     .andExpect(status().isOk());
+        }
+
+        @Test
+        void reassignSupir_missingSupirId_returns400() throws Exception {
+            Map<String, Object> body = Map.of(
+                    "fromKebunId", "kebun-1",
+                    "toKebunId", "kebun-2");
+
+            mockMvc.perform(put("/kebun/supir/reassign")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(body)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(assignmentService, never()).reassignSupir(anyLong(), anyString(), anyString());
+        }
+
+        @Test
+        void reassignSupir_wrongTypeSupirId_returns400() throws Exception {
+            Map<String, Object> body = Map.of(
+                    "supirId", "not-a-number",
+                    "fromKebunId", "kebun-1",
+                    "toKebunId", "kebun-2");
+
+            mockMvc.perform(put("/kebun/supir/reassign")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(body)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error").exists());
+
+            verify(assignmentService, never()).reassignSupir(anyLong(), anyString(), anyString());
         }
     }
 }

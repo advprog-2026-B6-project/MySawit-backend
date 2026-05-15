@@ -53,6 +53,18 @@ class KebunSawitServiceImplTest {
         return kebun;
     }
 
+    private KebunSawit createRhombusKebun(String id, String kode) {
+        KebunSawit kebun = new KebunSawit();
+        kebun.setId(id);
+        kebun.setNamaKebun("Kebun " + kode);
+        kebun.setKodeUnik(kode);
+        kebun.setKiriAtas(new Coordinate(0, 80));
+        kebun.setKiriBawah(new Coordinate(60, 0));
+        kebun.setKananAtas(new Coordinate(100, 80));
+        kebun.setKananBawah(new Coordinate(160, 0));
+        return kebun;
+    }
+
     // CREATE TESTS (existing from 25% milestone, ensure no regression)
     @Nested
     class CreateTests {
@@ -108,6 +120,27 @@ class KebunSawitServiceImplTest {
             when(repository.findAll()).thenReturn(List.of(existing));
 
             assertThrows(IllegalArgumentException.class, () -> service.create(newKebun));
+        }
+
+        @Test
+        void create_rhombusCoordinates_shouldThrow() {
+            KebunSawit kebun = createRhombusKebun(null, "KB-0001");
+            when(repository.findByKodeUnik("KB-0001")).thenReturn(Optional.empty());
+
+            assertThrows(IllegalArgumentException.class, () -> service.create(kebun));
+        }
+
+        @Test
+        void create_validAxisAlignedSquare_shouldSucceed() {
+            KebunSawit kebun = createValidKebun(null, "KB-0001", -100, -100, 200);
+            when(repository.findByKodeUnik("KB-0001")).thenReturn(Optional.empty());
+            when(repository.findAll()).thenReturn(List.of());
+            when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+            KebunSawit result = service.create(kebun);
+
+            assertNotNull(result.getId());
+            assertEquals(4.0, result.getLuasHektare(), 0.001);
         }
     }
 
@@ -231,6 +264,33 @@ class KebunSawitServiceImplTest {
 
             assertThrows(IllegalArgumentException.class, () -> service.update("id-1", updated));
         }
+
+        @Test
+        void update_rhombusCoordinates_shouldThrow() {
+            KebunSawit existing = createValidKebun("id-1", "KB-0001", 0, 0, 200);
+            KebunSawit updated = createRhombusKebun(null, "KB-0001");
+
+            when(repository.findById("id-1")).thenReturn(Optional.of(existing));
+
+            assertThrows(IllegalArgumentException.class, () -> service.update("id-1", updated));
+        }
+
+        @Test
+        void update_validAxisAlignedSquare_shouldSucceed() {
+            KebunSawit existing = createValidKebun("id-1", "KB-0001", 0, 0, 200);
+            KebunSawit updated = createValidKebun(null, "KB-0001", -100, -100, 200);
+            updated.setNamaKebun("Kebun Repositioned");
+
+            when(repository.findById("id-1")).thenReturn(Optional.of(existing));
+            when(repository.findAll()).thenReturn(List.of(existing));
+            when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+            KebunSawit result = service.update("id-1", updated);
+
+            assertEquals("Kebun Repositioned", result.getNamaKebun());
+            assertEquals(4.0, result.getLuasHektare(), 0.001);
+            assertEquals(-100, result.getKiriBawah().getX(), 0.001);
+        }
     }
 
     // DELETE TESTS
@@ -256,6 +316,18 @@ class KebunSawitServiceImplTest {
                     () -> service.delete("id-1"));
             assertTrue(ex.getMessage().contains("masih memiliki Mandor"));
             verify(repository, never()).deleteById(any());
+        }
+
+        @Test
+        void delete_withSupirButNoMandor_currentlySucceeds() {
+            KebunSawit existing = createValidKebun("id-1", "KB-0001", 0, 0, 200);
+            when(repository.findById("id-1")).thenReturn(Optional.of(existing));
+            when(kebunMandorRepository.existsByKebunId("id-1")).thenReturn(false);
+
+            assertDoesNotThrow(() -> service.delete("id-1"));
+
+            verify(repository).deleteById("id-1");
+            verify(kebunSupirRepository, never()).existsByKebunId(anyString());
         }
 
         @Test
