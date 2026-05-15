@@ -30,6 +30,25 @@ public class KebunResponseMapper {
         return kebun;
     }
 
+    public KebunResponse toResponse(KebunSawit kebun) {
+        return new KebunResponse(
+                kebun.getId(),
+                kebun.getNamaKebun(),
+                kebun.getKodeUnik(),
+                kebun.getLuasHektare(),
+                toCoordinateResponse(kebun.getKiriAtas()),
+                toCoordinateResponse(kebun.getKiriBawah()),
+                toCoordinateResponse(kebun.getKananAtas()),
+                toCoordinateResponse(kebun.getKananBawah())
+        );
+    }
+
+    public List<KebunResponse> toResponses(List<KebunSawit> kebunList) {
+        return kebunList.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     public KebunDetailResponse toDetailResponse(
             KebunSawit kebun,
             MandorInfo mandorInfo,
@@ -50,5 +69,12 @@ public class KebunResponseMapper {
 
     private Coordinate toCoordinate(CoordinateRequest request) {
         return new Coordinate(request.getX(), request.getY());
+    }
+
+    private CoordinateResponse toCoordinateResponse(Coordinate coordinate) {
+        if (coordinate == null) {
+            return null;
+        }
+        return new CoordinateResponse(coordinate.getX(), coordinate.getY());
     }
 }

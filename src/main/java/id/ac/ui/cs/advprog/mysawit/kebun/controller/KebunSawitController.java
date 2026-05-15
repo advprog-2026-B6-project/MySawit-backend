@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.mysawit.kebun.controller;
 
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.CreateKebunRequest;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
+import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunResponse;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunResponseMapper;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.UpdateKebunRequest;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
@@ -28,22 +29,23 @@ public class KebunSawitController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> create(@Valid @RequestBody CreateKebunRequest request) {
+    public ResponseEntity<KebunResponse> create(@Valid @RequestBody CreateKebunRequest request) {
         KebunSawit kebun = mapper.toDomain(request);
         KebunSawit created = service.create(kebun);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(created));
     }
 
     @GetMapping
-    public ResponseEntity<List<KebunSawit>> getAll(
+    public ResponseEntity<List<KebunResponse>> getAll(
             @RequestParam(required = false, defaultValue = "") String nama,
             @RequestParam(required = false, defaultValue = "") String kode) {
-        return ResponseEntity.ok(service.findAll(nama, kode));
+        return ResponseEntity.ok(mapper.toResponses(service.findAll(nama, kode)));
     }
 
     @GetMapping("/{kodeUnik}")
     public ResponseEntity<Object> getByKodeUnik(@PathVariable String kodeUnik) {
         return service.findByKodeUnik(kodeUnik)
+                .map(mapper::toResponse)
                 .<ResponseEntity<Object>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "Kebun tidak ditemukan: " + kodeUnik)));
@@ -58,10 +60,10 @@ public class KebunSawitController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable String id, @Valid @RequestBody UpdateKebunRequest request) {
+    public ResponseEntity<KebunResponse> update(@PathVariable String id, @Valid @RequestBody UpdateKebunRequest request) {
         KebunSawit kebun = mapper.toDomain(request);
         KebunSawit updated = service.update(id, kebun);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(mapper.toResponse(updated));
     }
 
     @DeleteMapping("/{id}")
