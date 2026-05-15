@@ -62,7 +62,7 @@ public class KebunSawitServiceImpl implements KebunSawitService {
         validator.validateUpdate(id, updatedKebun);
         double luasHektare = geometry.calculateHectares(updatedKebun);
 
-        // Lock kodeUnik: always keep original
+        // Preserve the original kodeUnik.
         existing.setNamaKebun(updatedKebun.getNamaKebun());
         existing.setLuasHektare(luasHektare);
         existing.setKiriAtas(updatedKebun.getKiriAtas());
@@ -78,7 +78,6 @@ public class KebunSawitServiceImpl implements KebunSawitService {
         repository.findById(id)
                 .orElseThrow(() -> new KebunNotFoundException("Kebun tidak ditemukan dengan id: " + id));
 
-        // Cek apakah kebun masih memiliki Mandor yang ditugaskan
         if (assignmentRepository.kebunHasMandor(id)) {
             throw new KebunConflictException(
                     "Tidak dapat menghapus kebun yang masih memiliki Mandor yang ditugaskan");

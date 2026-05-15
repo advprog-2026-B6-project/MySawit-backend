@@ -200,7 +200,7 @@ class KebunSawitServiceImplTest {
             when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
             KebunSawit result = service.update("id-1", updated);
-            // 300*300 = 90000 m² = 9.0 hectare
+            // 300*300 = 90000 m2 = 9.0 hectare
             assertEquals(90000.0 / 10000.0, result.getLuasHektare(), 0.001);
         }
 

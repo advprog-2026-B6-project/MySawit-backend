@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KebunValidator {
 
-    private static final String KODE_UNIK_REGEX = "^[A-Z]{2}-\\d{4}$";
+    private static final String KODE_UNIK_PATTERN = "^[A-Z]{2}-\\d{4}$";
 
     private final KebunSawitRepository repository;
     private final KebunGeometry geometry;
@@ -32,7 +32,7 @@ public class KebunValidator {
     }
 
     private void validateKodeUnik(KebunSawit kebun) {
-        if (kebun.getKodeUnik() == null || !kebun.getKodeUnik().matches(KODE_UNIK_REGEX)) {
+        if (kebun.getKodeUnik() == null || !kebun.getKodeUnik().matches(KODE_UNIK_PATTERN)) {
             throw new KebunValidationException(
                     "Format kode unik tidak valid. Gunakan format: XX-0000 (contoh: KB-0001)");
         }
