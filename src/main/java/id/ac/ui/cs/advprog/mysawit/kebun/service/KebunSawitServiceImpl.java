@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class KebunSawitServiceImpl implements KebunSawitService {
+public class KebunSawitServiceImpl implements KebunCommandService, KebunQueryService {
 
     private final KebunSawitRepository repository;
     private final KebunAssignmentRepository assignmentRepository;
