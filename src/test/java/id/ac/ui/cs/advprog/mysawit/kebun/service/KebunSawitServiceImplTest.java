@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.mysawit.kebun.service;
 
 import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
+import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunResponseMapper;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunAssignmentRepository;
@@ -42,7 +43,8 @@ class KebunSawitServiceImplTest {
         KebunDetailAssembler detailAssembler = new KebunDetailAssembler(
                 repository,
                 assignmentRepository,
-                userReader);
+                userReader,
+                new KebunResponseMapper());
         service = new KebunSawitServiceImpl(
                 repository,
                 assignmentRepository,

@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.service;
 
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
+import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunResponseMapper;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.MandorInfo;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.SupirInfo;
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunNotFoundException;
@@ -17,13 +18,16 @@ public class KebunDetailAssembler {
     private final KebunSawitRepository repository;
     private final KebunAssignmentRepository assignmentRepository;
     private final KebunUserReader userReader;
+    private final KebunResponseMapper mapper;
 
     public KebunDetailAssembler(KebunSawitRepository repository,
                                 KebunAssignmentRepository assignmentRepository,
-                                KebunUserReader userReader) {
+                                KebunUserReader userReader,
+                                KebunResponseMapper mapper) {
         this.repository = repository;
         this.assignmentRepository = assignmentRepository;
         this.userReader = userReader;
+        this.mapper = mapper;
     }
 
     public KebunDetailResponse getDetail(String kebunId, String searchSupirNama) {
@@ -33,18 +37,7 @@ public class KebunDetailAssembler {
         MandorInfo mandorInfo = resolveMandor(kebunId);
         List<SupirInfo> supirList = resolveSupirs(kebunId, searchSupirNama);
 
-        return new KebunDetailResponse(
-                kebun.getId(),
-                kebun.getNamaKebun(),
-                kebun.getKodeUnik(),
-                kebun.getLuasHektare(),
-                kebun.getKiriAtas(),
-                kebun.getKiriBawah(),
-                kebun.getKananAtas(),
-                kebun.getKananBawah(),
-                mandorInfo,
-                supirList
-        );
+        return mapper.toDetailResponse(kebun, mandorInfo, supirList);
     }
 
     private MandorInfo resolveMandor(String kebunId) {

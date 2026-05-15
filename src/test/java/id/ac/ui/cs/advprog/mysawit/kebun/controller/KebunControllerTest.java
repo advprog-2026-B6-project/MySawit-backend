@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.mysawit.kebun.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
+import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunResponseMapper;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.MandorInfo;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.SupirInfo;
 import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunConflictException;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -42,6 +44,9 @@ class KebunControllerTest {
 
     @Mock
     private KebunAssignmentService assignmentService;
+
+    @Spy
+    private KebunResponseMapper kebunResponseMapper = new KebunResponseMapper();
 
     @InjectMocks
     private KebunSawitController kebunSawitController;
