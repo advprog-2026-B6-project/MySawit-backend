@@ -47,6 +47,7 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
     public void reassignMandor(Long mandorId, String fromKebunId, String toKebunId) {
         requireKebunExists(fromKebunId, "Kebun asal tidak ditemukan dengan id: " + fromKebunId);
         requireKebunExists(toKebunId, "Kebun tujuan tidak ditemukan dengan id: " + toKebunId);
+        requireUserWithRole(mandorId, Role.MANDOR, "Mandor");
 
         String currentKebunId = assignmentRepository.findKebunIdByMandorId(mandorId)
                 .orElseThrow(() -> new KebunConflictException(
@@ -84,6 +85,7 @@ public class KebunAssignmentServiceImpl implements KebunAssignmentService {
     public void reassignSupir(Long supirId, String fromKebunId, String toKebunId) {
         requireKebunExists(fromKebunId, "Kebun asal tidak ditemukan dengan id: " + fromKebunId);
         requireKebunExists(toKebunId, "Kebun tujuan tidak ditemukan dengan id: " + toKebunId);
+        requireUserWithRole(supirId, Role.SUPIR, "Supir Truk");
 
         String currentKebunId = assignmentRepository.findKebunIdBySupirId(supirId)
                 .orElseThrow(() -> new KebunConflictException(
