@@ -13,26 +13,23 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class KebunSawitServiceImpl implements KebunCommandService, KebunQueryService {
+public class KebunSawitServiceImpl implements KebunSawitService {
 
     private final KebunSawitRepository repository;
     private final KebunAssignmentRepository assignmentRepository;
     private final KebunGeometry geometry;
     private final KebunValidator validator;
-    private final KebunSearchService searchService;
     private final KebunDetailAssembler detailAssembler;
 
     public KebunSawitServiceImpl(KebunSawitRepository repository,
                                  KebunAssignmentRepository assignmentRepository,
                                  KebunGeometry geometry,
                                  KebunValidator validator,
-                                 KebunSearchService searchService,
                                  KebunDetailAssembler detailAssembler) {
         this.repository = repository;
         this.assignmentRepository = assignmentRepository;
         this.geometry = geometry;
         this.validator = validator;
-        this.searchService = searchService;
         this.detailAssembler = detailAssembler;
     }
 
@@ -46,7 +43,7 @@ public class KebunSawitServiceImpl implements KebunCommandService, KebunQuerySer
 
     @Override
     public List<KebunSawit> findAll(String searchNama, String searchKode) {
-        return searchService.findAll(searchNama, searchKode);
+        return repository.search(searchNama, searchKode);
     }
 
     @Override

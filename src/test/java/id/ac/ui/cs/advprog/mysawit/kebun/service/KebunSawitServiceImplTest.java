@@ -40,7 +40,6 @@ class KebunSawitServiceImplTest {
         KebunGeometry geometry = new KebunGeometry();
         KebunOverlapChecker overlapChecker = new KebunOverlapChecker(repository);
         KebunValidator validator = new KebunValidator(repository, geometry, overlapChecker);
-        KebunSearchService searchService = new KebunSearchService(repository);
         KebunDetailAssembler detailAssembler = new KebunDetailAssembler(
                 repository,
                 assignmentRepository,
@@ -51,7 +50,6 @@ class KebunSawitServiceImplTest {
                 assignmentRepository,
                 geometry,
                 validator,
-                searchService,
                 detailAssembler);
     }
 
