@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/kebun")
-@CrossOrigin(origins = {"http://localhost:3000", "https://my-sawit-frontend.vercel.app"})
+
 public class KebunAssignmentController {
 
     private final KebunAssignmentService assignmentService;
