@@ -1,4 +1,0 @@
-services:
-  prometheus:
-    volumes:
-      - ./prometheus/prometheus.prod.yml:/etc/prometheus/prometheus.yml
