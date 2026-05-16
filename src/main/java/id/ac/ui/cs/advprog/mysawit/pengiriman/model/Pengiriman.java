@@ -39,6 +39,8 @@ public class Pengiriman {
 
     private String alasanPenolakan;
 
+    private Double muatanKgDiakui;
+
     public void setStatus(StatusPengiriman status) {
         this.status = status;
         this.waktuDiperbarui = LocalDateTime.now();

@@ -18,15 +18,23 @@ public class AsyncPayrollRequestSender implements PayrollRequestSender {
 
     @Override
     public void sendPayrollRequest(Pengiriman pengiriman) {
-        PayrollRequest request = PayrollRequest.builder()
+        sendPayrollRequest(pengiriman, pengiriman.getMuatanKg());
+    }
+
+    @Override
+    public void sendPayrollRequest(Pengiriman pengiriman, double muatanKgDiakui) {
+        PayrollRequest request = buildRequest(pengiriman, muatanKgDiakui);
+        CompletableFuture.runAsync(() -> payrollRequestClient.sendPayrollRequest(request));
+    }
+
+    private PayrollRequest buildRequest(Pengiriman pengiriman, double muatanKgDiakui) {
+        return PayrollRequest.builder()
                 .pengirimanId(pengiriman.getId())
                 .supirTrukId(pengiriman.getSupirTrukId())
                 .mandorId(pengiriman.getMandorId())
-                .muatanKg(pengiriman.getMuatanKg())
+                .muatanKg(muatanKgDiakui)
                 .tujuan(pengiriman.getTujuan())
                 .waktuDisetujui(pengiriman.getWaktuDisetujui())
                 .build();
-
-        CompletableFuture.runAsync(() -> payrollRequestClient.sendPayrollRequest(request));
     }
 }
