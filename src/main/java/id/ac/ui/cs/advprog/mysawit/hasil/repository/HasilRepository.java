@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface HasilRepository {
     Hasil save(Hasil report);
+
+    Optional<Hasil> findById(String id);
     
     List<Hasil> findAll();
 

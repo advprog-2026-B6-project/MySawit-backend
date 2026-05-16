@@ -11,6 +11,12 @@ public interface HasilService {
 
     List<Hasil> findAll();
 
+    List<Hasil> findAvailableForPengiriman();
+
+    Hasil approve(String reportId);
+
+    Hasil reject(String reportId, String rejectionReason);
+
     Optional<Hasil> findByWorkerAndDate(String workerId, LocalDate hasilDate);
 }
 
