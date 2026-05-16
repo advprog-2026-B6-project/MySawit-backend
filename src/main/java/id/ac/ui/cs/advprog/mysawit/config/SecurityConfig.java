@@ -45,6 +45,11 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(
+                                "/actuator",
+                                "/actuator/health",
+                                "/actuator/info",
+                                "/actuator/prometheus").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/kebun/**").permitAll() // sementara
                         .requestMatchers("/hasil-reports/**").authenticated() // ganti permitall kalau err
