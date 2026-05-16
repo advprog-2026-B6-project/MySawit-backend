@@ -1,21 +1,5 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
-import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
-import id.ac.ui.cs.advprog.mysawit.auth.model.User;
-import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
-import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
-import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
-import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
-import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanRepository;
-import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -27,10 +11,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
+import id.ac.ui.cs.advprog.mysawit.auth.model.User;
+import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanRepository;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
 
 @ExtendWith(MockitoExtension.class)
 class PengirimanServiceImplTest {
@@ -51,13 +50,16 @@ class PengirimanServiceImplTest {
     private PengirimanServiceImpl pengirimanService;
 
     private Long mandorId;
+    private Long adminId;
     private UUID supirTrukId;
     private SupirTruk supirTruk;
     private User mandorUser;
+    private User adminUser;
 
     @BeforeEach
     void setUp() {
         mandorId = 1L;
+    adminId = 99L;
         supirTrukId = UUID.randomUUID();
         supirTruk = SupirTruk.builder()
                 .id(supirTrukId)
@@ -66,6 +68,7 @@ class PengirimanServiceImplTest {
                 .platNomorTruk("B 1234 ABC")
                 .build();
         mandorUser = new User("Ahmad Mandor", "ahmad", "secret", Role.MANDOR, "CERT-001");
+        adminUser = new User("Admin Utama", "admin", "secret", Role.ADMIN, null);
     }
 
     @Test
@@ -452,6 +455,89 @@ class PengirimanServiceImplTest {
                 pengirimanService.tolakPengiriman(pengirimanId, mandorId, "Alasan"));
 
         assertTrue(exception.getMessage().contains("Mandor tidak berhak"));
+    }
+
+    @Test
+    void testSetujuiPengirimanAdminSuccess() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+        when(pengirimanRepository.save(any(Pengiriman.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        Pengiriman result = pengirimanService.setujuiPengirimanAdmin(pengirimanId, adminId);
+
+        assertEquals(StatusPengiriman.DISETUJUI, result.getStatus());
+        verify(payrollRequestSender).sendPayrollRequest(eq(result));
+    }
+
+    @Test
+    void testSetujuiPengirimanAdminBukanAdmin() {
+        User bukanAdmin = new User("Budi", "budi", "secret", Role.MANDOR, null);
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(bukanAdmin));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.setujuiPengirimanAdmin(pengirimanId, adminId));
+
+        assertTrue(exception.getMessage().contains("bukan seorang Admin"));
+    }
+
+    @Test
+    void testTolakPengirimanAdminSuccess() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+        when(pengirimanRepository.save(any(Pengiriman.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        Pengiriman result = pengirimanService.tolakPengirimanAdmin(
+                pengirimanId, adminId, "  Tidak sesuai  ");
+
+        assertEquals(StatusPengiriman.DITOLAK, result.getStatus());
+        assertEquals("Tidak sesuai", result.getAlasanPenolakan());
+    }
+
+    @Test
+    void testTolakPengirimanParsialAdminSuccess() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+        when(pengirimanRepository.save(any(Pengiriman.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        Pengiriman result = pengirimanService.tolakPengirimanParsialAdmin(
+                pengirimanId, adminId, 120.0, "  Parsial  ");
+
+        assertEquals(StatusPengiriman.DITOLAK, result.getStatus());
+        assertEquals("Parsial", result.getAlasanPenolakan());
+        assertEquals(120.0, result.getMuatanKgDiakui());
+        verify(payrollRequestSender).sendPayrollRequest(eq(result), eq(120.0));
+    }
+
+    @Test
+    void testTolakPengirimanParsialAdminMuatanInvalid() {
+        Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 300.0, "Pabrik A");
+        pengiriman.setStatus(StatusPengiriman.TIBA);
+        UUID pengirimanId = pengiriman.getId();
+
+        when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                pengirimanService.tolakPengirimanParsialAdmin(pengirimanId, adminId, 300.0, "Alasan"));
+
+        assertTrue(exception.getMessage().contains("Kilogram diakui"));
     }
 
     @Test

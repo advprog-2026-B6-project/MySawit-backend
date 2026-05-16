@@ -1,10 +1,10 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
-import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
-import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
-
 import java.util.List;
 import java.util.UUID;
+
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 
 public interface PengirimanService {
 
@@ -12,6 +12,12 @@ public interface PengirimanService {
     Pengiriman ubahStatusPengiriman(UUID pengirimanId, UUID supirTrukId, StatusPengiriman statusBaru);
     Pengiriman setujuiPengiriman(UUID pengirimanId, Long mandorId);
     Pengiriman tolakPengiriman(UUID pengirimanId, Long mandorId, String alasanPenolakan);
+    Pengiriman setujuiPengirimanAdmin(UUID pengirimanId, Long adminId);
+    Pengiriman tolakPengirimanAdmin(UUID pengirimanId, Long adminId, String alasanPenolakan);
+    Pengiriman tolakPengirimanParsialAdmin(UUID pengirimanId,
+                                           Long adminId,
+                                           double muatanKgDiakui,
+                                           String alasanPenolakan);
     List<Pengiriman> getDaftarPengirimanSupir(UUID supirTrukId);
     List<Pengiriman> getRiwayatPengirimanSupir(UUID supirTrukId,
                                                java.time.LocalDate tanggalMulai,

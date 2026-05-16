@@ -1,5 +1,12 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
@@ -9,13 +16,6 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
-
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class PengirimanServiceImpl implements PengirimanService {
@@ -199,6 +199,41 @@ public class PengirimanServiceImpl implements PengirimanService {
         );
     }
 
+    private User validateAdmin(Long adminId) {
+        if (adminId == null) {
+            throw new IllegalArgumentException("Admin tidak ditemukan");
+        }
+
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new IllegalArgumentException("Admin tidak ditemukan"));
+        if (admin.getRole() != Role.ADMIN) {
+            throw new IllegalArgumentException("User dengan id " + adminId + " bukan seorang Admin");
+        }
+        return admin;
+    }
+
+    private void validateAdminDecision(Pengiriman pengiriman) {
+        if (pengiriman.getStatus() != StatusPengiriman.TIBA) {
+            throw new IllegalArgumentException("Pengiriman belum sampai tujuan");
+        }
+    }
+
+    private String normalizeAlasanPenolakan(String alasanPenolakan) {
+        if (alasanPenolakan == null || alasanPenolakan.trim().isEmpty()) {
+            throw new IllegalArgumentException("Alasan penolakan wajib diisi");
+        }
+        return alasanPenolakan.trim();
+    }
+
+    private void validateMuatanDiakui(double muatanKgDiakui, double muatanKg) {
+        if (muatanKgDiakui <= 0) {
+            throw new IllegalArgumentException("Kilogram diakui harus lebih dari 0 kg");
+        }
+        if (muatanKgDiakui >= muatanKg) {
+            throw new IllegalArgumentException("Kilogram diakui harus lebih kecil dari muatan");
+        }
+    }
+
     @Override
     public Pengiriman setujuiPengiriman(UUID pengirimanId, Long mandorId) {
         Pengiriman pengiriman = pengirimanRepository.findById(pengirimanId)
@@ -258,6 +293,56 @@ public class PengirimanServiceImpl implements PengirimanService {
         pengiriman.setAlasanPenolakan(alasanPenolakan.trim());
         pengiriman.setStatus(StatusPengiriman.DITOLAK);
         return pengirimanRepository.save(pengiriman);
+    }
+
+    @Override
+    public Pengiriman setujuiPengirimanAdmin(UUID pengirimanId, Long adminId) {
+        Pengiriman pengiriman = pengirimanRepository.findById(pengirimanId)
+                .orElseThrow(() -> new IllegalArgumentException("Pengiriman tidak ditemukan"));
+
+        validateAdmin(adminId);
+        validateAdminDecision(pengiriman);
+
+        pengiriman.setStatus(StatusPengiriman.DISETUJUI);
+        Pengiriman savedPengiriman = pengirimanRepository.save(pengiriman);
+        payrollRequestSender.sendPayrollRequest(savedPengiriman);
+        return savedPengiriman;
+    }
+
+    @Override
+    public Pengiriman tolakPengirimanAdmin(UUID pengirimanId, Long adminId, String alasanPenolakan) {
+        Pengiriman pengiriman = pengirimanRepository.findById(pengirimanId)
+                .orElseThrow(() -> new IllegalArgumentException("Pengiriman tidak ditemukan"));
+
+        validateAdmin(adminId);
+        validateAdminDecision(pengiriman);
+
+        String normalizedReason = normalizeAlasanPenolakan(alasanPenolakan);
+        pengiriman.setAlasanPenolakan(normalizedReason);
+        pengiriman.setMuatanKgDiakui(null);
+        pengiriman.setStatus(StatusPengiriman.DITOLAK);
+        return pengirimanRepository.save(pengiriman);
+    }
+
+    @Override
+    public Pengiriman tolakPengirimanParsialAdmin(UUID pengirimanId,
+                                                  Long adminId,
+                                                  double muatanKgDiakui,
+                                                  String alasanPenolakan) {
+        Pengiriman pengiriman = pengirimanRepository.findById(pengirimanId)
+                .orElseThrow(() -> new IllegalArgumentException("Pengiriman tidak ditemukan"));
+
+        validateAdmin(adminId);
+        validateAdminDecision(pengiriman);
+        validateMuatanDiakui(muatanKgDiakui, pengiriman.getMuatanKg());
+
+        String normalizedReason = normalizeAlasanPenolakan(alasanPenolakan);
+        pengiriman.setAlasanPenolakan(normalizedReason);
+        pengiriman.setMuatanKgDiakui(muatanKgDiakui);
+        pengiriman.setStatus(StatusPengiriman.DITOLAK);
+        Pengiriman savedPengiriman = pengirimanRepository.save(pengiriman);
+        payrollRequestSender.sendPayrollRequest(savedPengiriman, muatanKgDiakui);
+        return savedPengiriman;
     }
 
     @Override
