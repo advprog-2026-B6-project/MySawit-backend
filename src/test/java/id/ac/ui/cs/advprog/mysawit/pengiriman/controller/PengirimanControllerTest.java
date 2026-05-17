@@ -7,6 +7,10 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.UbahStatusRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.PengirimanService;
+import id.ac.ui.cs.advprog.mysawit.auth.model.User;
+import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
+import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,10 +19,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -31,6 +38,9 @@ class PengirimanControllerTest {
 
     @Mock
     private PengirimanService pengirimanService;
+
+        @Mock
+        private UserRepository userRepository;
 
     @InjectMocks
     private PengirimanController pengirimanController;
@@ -50,6 +60,11 @@ class PengirimanControllerTest {
                 .tujuan("Pabrik A")
                 .build();
     }
+
+        @AfterEach
+        void tearDown() {
+                SecurityContextHolder.clearContext();
+        }
 
     @Test
     void testBuatPengirimanSuccess() {
@@ -110,8 +125,23 @@ class PengirimanControllerTest {
         BuatPengirimanRequest request = new BuatPengirimanRequest(
                 null, supirTrukId, 300.0, "Pabrik A");
 
-        when(pengirimanService.buatPengiriman(eq(null), eq(supirTrukId), eq(300.0), eq("Pabrik A")))
-                .thenThrow(new IllegalArgumentException("Mandor tidak ditemukan"));
+        User mandor = new User(mandorId, "Mandor", "mandor", "pw", Role.MANDOR, null, null);
+        when(userRepository.findByUsername("mandor")).thenReturn(Optional.of(mandor));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("mandor", null, List.of()));
+
+        when(pengirimanService.buatPengiriman(eq(mandorId), eq(supirTrukId), eq(300.0), eq("Pabrik A")))
+                .thenReturn(pengiriman);
+
+        ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    }
+
+    @Test
+    void testBuatPengirimanWithNullMandorIdWithoutAuth() {
+        BuatPengirimanRequest request = new BuatPengirimanRequest(
+                null, supirTrukId, 300.0, "Pabrik A");
 
         ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
 
