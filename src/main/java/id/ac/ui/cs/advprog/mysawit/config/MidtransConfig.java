@@ -19,9 +19,13 @@ public class MidtransConfig {
 
     @PostConstruct
     public void init() {
-        Midtrans.serverKey = serverKey;
-        Midtrans.clientKey = clientKey;
-        Midtrans.isProduction = isProduction;
+        setGlobalMidtransConfig(serverKey, clientKey, isProduction);
+    }
+
+    private static void setGlobalMidtransConfig(String server, String client, boolean isProd) {
+        Midtrans.serverKey = server;
+        Midtrans.clientKey = client;
+        Midtrans.isProduction = isProd;
     }
 
     public String getServerKey() {
