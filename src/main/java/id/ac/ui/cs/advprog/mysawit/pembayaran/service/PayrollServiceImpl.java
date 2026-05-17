@@ -143,6 +143,7 @@ public class PayrollServiceImpl implements PayrollService {
                 .totalWage(payroll.getTotalWage())
                 .status(payroll.getStatus())
                 .createdAt(payroll.getCreatedAt())
+                .rejectReason(payroll.getRejectReason())
                 .build();
     }
 }

@@ -153,6 +153,21 @@ class HasilServiceTest {
         public java.math.BigDecimal calculateWage(String role, java.math.BigDecimal totalKg) {
             return java.math.BigDecimal.ZERO;
         }
+
+        @Override
+        public PayrollResponse approvePayroll(Long id) {
+            return null;
+        }
+
+        @Override
+        public PayrollResponse rejectPayroll(Long id, String reason) {
+            return null;
+        }
+
+        @Override
+        public java.math.BigDecimal generateMonthlyRecap(int year, int month) {
+            return java.math.BigDecimal.ZERO;
+        }
     }
 }
 
