@@ -2,6 +2,9 @@ package id.ac.ui.cs.advprog.mysawit.pembayaran.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.Data;
+
+@Data
 public class MidtransNotification {
     @JsonProperty("transaction_time")
     private String transactionTime;
@@ -38,11 +41,4 @@ public class MidtransNotification {
 
     @JsonProperty("currency")
     private String currency;
-
-    public String getTransactionStatus() { return transactionStatus; }
-    public String getStatusCode() { return statusCode; }
-    public String getSignatureKey() { return signatureKey; }
-    public String getOrderId() { return orderId; }
-    public String getGrossAmount() { return grossAmount; }
-    public String getFraudStatus() { return fraudStatus; }
 }
