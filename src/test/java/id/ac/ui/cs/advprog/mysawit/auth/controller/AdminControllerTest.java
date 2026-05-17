@@ -61,53 +61,55 @@ class AdminControllerTest {
     void assignBuruhToMandor_success_returnsOk() {
         UserDto dto = new UserDto(1L, "B", "b", Role.BURUH, null, "m");
         when(userService.assignBuruhToMandor("b", "m")).thenReturn(Optional.of(dto));
-        ResponseEntity<?> out = controller.assignBuruhToMandor("b", "m");
+        ResponseEntity<UserDto> out = controller.assignBuruhToMandor("b", "m");
         assertEquals(200, out.getStatusCode().value());
     }
 
     @Test
     void assignBuruhToMandor_notFound_returns404() {
         when(userService.assignBuruhToMandor("b", "m")).thenReturn(Optional.empty());
-        ResponseEntity<?> out = controller.assignBuruhToMandor("b", "m");
+        ResponseEntity<UserDto> out = controller.assignBuruhToMandor("b", "m");
         assertEquals(404, out.getStatusCode().value());
+        assertNull(out.getBody());
     }
 
     @Test
     void assignBuruhToMandor_illegalArgument_returns400() {
         when(userService.assignBuruhToMandor("b", "x")).thenThrow(new IllegalArgumentException("bad"));
-        ResponseEntity<?> out = controller.assignBuruhToMandor("b", "x");
+        ResponseEntity<UserDto> out = controller.assignBuruhToMandor("b", "x");
         assertEquals(400, out.getStatusCode().value());
-        assertEquals("bad", out.getBody());
+        assertNull(out.getBody());
     }
 
     @Test
     void assignBuruhToMandor_illegalState_returns409() {
         when(userService.assignBuruhToMandor("b", "m")).thenThrow(new IllegalStateException("conflict"));
-        ResponseEntity<?> out = controller.assignBuruhToMandor("b", "m");
+        ResponseEntity<UserDto> out = controller.assignBuruhToMandor("b", "m");
         assertEquals(409, out.getStatusCode().value());
-        assertEquals("conflict", out.getBody());
+        assertNull(out.getBody());
     }
 
     @Test
     void reassignBuruh_success_returnsOk() {
         UserDto dto = new UserDto(1L, "B", "b", Role.BURUH, null, "m2");
         when(userService.reassignBuruhToMandor("b", "m2")).thenReturn(Optional.of(dto));
-        ResponseEntity<?> out = controller.reassignBuruh("b", "m2");
+        ResponseEntity<UserDto> out = controller.reassignBuruh("b", "m2");
         assertEquals(200, out.getStatusCode().value());
     }
 
     @Test
     void reassignBuruh_notFound_returns404() {
         when(userService.reassignBuruhToMandor("b", "m2")).thenReturn(Optional.empty());
-        ResponseEntity<?> out = controller.reassignBuruh("b", "m2");
+        ResponseEntity<UserDto> out = controller.reassignBuruh("b", "m2");
         assertEquals(404, out.getStatusCode().value());
+        assertNull(out.getBody());
     }
 
     @Test
     void reassignBuruh_illegalArgument_returns400() {
         when(userService.reassignBuruhToMandor("b", "x")).thenThrow(new IllegalArgumentException("bad"));
-        ResponseEntity<?> out = controller.reassignBuruh("b", "x");
+        ResponseEntity<UserDto> out = controller.reassignBuruh("b", "x");
         assertEquals(400, out.getStatusCode().value());
-        assertEquals("bad", out.getBody());
+        assertNull(out.getBody());
     }
 }

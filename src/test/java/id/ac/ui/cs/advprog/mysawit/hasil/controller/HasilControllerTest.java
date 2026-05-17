@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -218,11 +219,66 @@ class HasilControllerTest {
         var response = controller.create(125.5, "Panen dini", List.of(photo1));
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        @SuppressWarnings("unchecked")
         Map<String, Object> body = response.getBody();
         assertEquals("h-1", body.get("id"));
         assertEquals("buruh-1", body.get("workerId"));
         assertEquals("SUBMITTED", body.get("status"));
+    }
+
+    @Test
+    void mandorCanApproveSupervisedSubmittedReport() {
+        setAuthentication("mandor-1", "MANDOR");
+        Hasil submitted = Hasil.of("h-1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
+                "Panen pagi", List.of("foto-1.jpg"), true, HasilStatus.SUBMITTED);
+        Hasil approved = submitted.approveForPengiriman();
+        given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
+                new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1")
+        ));
+        given(hasilService.findAll()).willReturn(List.of(submitted));
+        given(hasilService.approve("h-1")).willReturn(approved);
+
+        var response = controller.approveReport("h-1");
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("VERIFIED", response.getBody().status());
+        assertEquals(true, response.getBody().visibleForPengiriman());
+        verify(hasilService).approve("h-1");
+    }
+
+    @Test
+    void mandorCanRejectSupervisedSubmittedReportWithReason() {
+        setAuthentication("mandor-1", "MANDOR");
+        Hasil submitted = Hasil.of("h-1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
+                "Panen pagi", List.of("foto-1.jpg"), true, HasilStatus.SUBMITTED);
+        Hasil rejected = submitted.reject("Foto kurang jelas");
+        given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
+                new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1")
+        ));
+        given(hasilService.findAll()).willReturn(List.of(submitted));
+        given(hasilService.reject("h-1", "Foto kurang jelas")).willReturn(rejected);
+
+        var response = controller.rejectReport("h-1", Map.of("rejectionReason", "Foto kurang jelas"));
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("REJECTED", response.getBody().status());
+        assertEquals("Foto kurang jelas", response.getBody().rejectionReason());
+        assertEquals(false, response.getBody().visibleForPengiriman());
+    }
+
+    @Test
+    void pengirimanAvailableOnlyReturnsVisibleReportsFromService() {
+        Hasil approved = Hasil.of("h-1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
+                "Panen pagi", List.of("foto-1.jpg"), true, HasilStatus.VERIFIED, null, true);
+        given(hasilService.findAvailableForPengiriman()).willReturn(List.of(approved));
+        given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
+                new User(1L, "Budi", "buruh-1", "pw", Role.BURUH, null, null)
+        ));
+
+        var response = controller.availableForPengiriman();
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(1, response.getBody().size());
+        assertEquals(true, response.getBody().get(0).visibleForPengiriman());
     }
 
     @Test

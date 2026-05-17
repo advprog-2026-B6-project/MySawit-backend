@@ -23,6 +23,11 @@ public class InMemoryHasilRepository implements HasilRepository {
     }
 
     @Override
+    public Optional<Hasil> findById(String id) {
+        return Optional.ofNullable(reportsById.get(id));
+    }
+
+    @Override
     public List<Hasil> findAll() {
         return new ArrayList<>(reportsById.values());
     }

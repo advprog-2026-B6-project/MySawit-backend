@@ -11,6 +11,8 @@ public record HasilData(
         String news,
         List<String> photoUrls,
         boolean locked,
-        HasilStatus status
+        HasilStatus status,
+        String rejectionReason,
+        boolean visibleForPengiriman
 ) {
 }

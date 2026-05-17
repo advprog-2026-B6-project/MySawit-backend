@@ -2,6 +2,8 @@ package id.ac.ui.cs.advprog.mysawit.auth.controller;
 
 import id.ac.ui.cs.advprog.mysawit.auth.dto.UserDto;
 import id.ac.ui.cs.advprog.mysawit.auth.service.UserService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,26 +43,32 @@ public class AdminController {
     }
 
     @PostMapping("/assign/{buruhUsername}/{mandorUsername}")
-    public ResponseEntity<?> assignBuruhToMandor(@PathVariable String buruhUsername,
+    public ResponseEntity<UserDto> assignBuruhToMandor(@PathVariable String buruhUsername,
             @PathVariable String mandorUsername) {
         try {
             Optional<UserDto> result = userService.assignBuruhToMandor(buruhUsername, mandorUsername);
-            return result.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+            if (result.isPresent()) {
+                return ResponseEntity.status(HttpStatus.OK).body(result.get());
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         } catch (IllegalStateException e) {
-            return ResponseEntity.status(409).body(e.getMessage());
+            return ResponseEntity.status(409).build();
         }
     }
 
     @PostMapping("/reassign/{buruhUsername}/{newMandorUsername}")
-    public ResponseEntity<?> reassignBuruh(@PathVariable String buruhUsername,
+    public ResponseEntity<UserDto> reassignBuruh(@PathVariable String buruhUsername,
             @PathVariable String newMandorUsername) {
         try {
             Optional<UserDto> result = userService.reassignBuruhToMandor(buruhUsername, newMandorUsername);
-            return result.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+            if (result.isPresent()) {
+                return ResponseEntity.status(HttpStatus.OK).body(result.get());
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 }

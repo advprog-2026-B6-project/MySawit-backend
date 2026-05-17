@@ -12,6 +12,8 @@ public record HasilHistoryResponse(
         String news,
         String status,
         boolean locked,
-        List<String> photoUrls
+        List<String> photoUrls,
+        String rejectionReason,
+        boolean visibleForPengiriman
 ) {
 }

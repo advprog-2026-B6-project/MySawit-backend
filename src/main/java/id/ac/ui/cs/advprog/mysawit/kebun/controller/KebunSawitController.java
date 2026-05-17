@@ -27,7 +27,6 @@ public class KebunSawitController {
             KebunSawit created = service.create(kebun);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalArgumentException e) {
-            e.printStackTrace(); // DEBUG: Print exception stack trace to console
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
