@@ -24,6 +24,11 @@ public class AsyncPayrollRequestSender implements PayrollRequestSender {
     @Override
     public void sendPayrollRequest(Pengiriman pengiriman, double muatanKgDiakui) {
         PayrollRequest request = buildRequest(pengiriman, muatanKgDiakui);
+        sendPayrollRequest(request);
+    }
+
+    @Override
+    public void sendPayrollRequest(PayrollRequest request) {
         CompletableFuture.runAsync(() -> payrollRequestClient.sendPayrollRequest(request));
     }
 

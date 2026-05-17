@@ -1,10 +1,16 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
 import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import id.ac.ui.cs.advprog.mysawit.auth.model.User;
+import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PengirimanAssignmentRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PengirimanAssignmentResponse;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.mapper.PengirimanAssignmentMapper;
@@ -17,9 +23,15 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanAssignmentRep
 public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentService {
 
     private final PengirimanAssignmentRepository repository;
+    private final UserRepository userRepository;
+    private final PayrollRequestSender payrollRequestSender;
 
-    public PengirimanAssignmentServiceImpl(PengirimanAssignmentRepository repository) {
+    public PengirimanAssignmentServiceImpl(PengirimanAssignmentRepository repository,
+                                           UserRepository userRepository,
+                                           PayrollRequestSender payrollRequestSender) {
         this.repository = repository;
+        this.userRepository = userRepository;
+        this.payrollRequestSender = payrollRequestSender;
     }
 
     @Override
@@ -48,6 +60,26 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
     @Override
     public List<PengirimanAssignmentResponse> getAssignmentsBySupirEmail(String supirEmail) {
         return repository.findBySupirEmail(supirEmail).stream()
+                .map(PengirimanAssignmentMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PengirimanAssignmentResponse> getRiwayatAssignmentsBySupirEmail(
+            String supirEmail, LocalDate tanggalMulai, LocalDate tanggalSelesai) {
+        if (tanggalMulai != null && tanggalSelesai != null && tanggalMulai.isAfter(tanggalSelesai)) {
+            throw new IllegalArgumentException("Tanggal mulai tidak boleh setelah tanggal selesai");
+        }
+
+        return repository.findBySupirEmail(supirEmail).stream()
+                .filter(a -> a.getApproval() != null || a.getStatus() == StatusAssignment.TIBA)
+                .filter(a -> {
+                    if (tanggalMulai == null && tanggalSelesai == null) return true;
+                    LocalDate tanggal = a.getCreatedAt().toLocalDate();
+                    boolean afterStart = tanggalMulai == null || !tanggal.isBefore(tanggalMulai);
+                    boolean beforeEnd = tanggalSelesai == null || !tanggal.isAfter(tanggalSelesai);
+                    return afterStart && beforeEnd;
+                })
                 .map(PengirimanAssignmentMapper::toResponse)
                 .collect(Collectors.toList());
     }
@@ -98,7 +130,26 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
         assignment.setApproval(approval);
         assignment.setNote(approval == ApprovalAssignment.REJECTED ? note.trim() : null);
         PengirimanAssignment saved = repository.save(assignment);
+        if (approval == ApprovalAssignment.APPROVED) {
+            sendPayrollRequestForAssignment(saved);
+        }
         return PengirimanAssignmentMapper.toResponse(saved);
+    }
+
+    private void sendPayrollRequestForAssignment(PengirimanAssignment assignment) {
+        User mandor = userRepository.findByUsername(assignment.getMandorEmail()).orElse(null);
+        UUID supirTrukId = UUID.nameUUIDFromBytes(assignment.getSupirEmail().getBytes());
+
+        PayrollRequest request = PayrollRequest.builder()
+                .pengirimanId(null)
+                .supirTrukId(supirTrukId)
+                .mandorId(mandor != null ? mandor.getId() : null)
+                .muatanKg(assignment.getMuatanKg())
+                .tujuan(assignment.getTujuan())
+                .waktuDisetujui(LocalDateTime.now())
+                .build();
+
+        payrollRequestSender.sendPayrollRequest(request);
     }
 
     private void validateRequest(PengirimanAssignmentRequest request, String mandorEmail) {

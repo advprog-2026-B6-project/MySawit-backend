@@ -1,10 +1,12 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.controller;
 
 import java.util.List;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
@@ -74,6 +77,21 @@ public class PengirimanAssignmentController {
             return ResponseEntity.ok(ApiResponse.success("Daftar penugasan supir berhasil diambil", assignments));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/me/supir/riwayat")
+    public ResponseEntity<ApiResponse<List<PengirimanAssignmentResponse>>> getRiwayatAssignmentsSupirSaya(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tanggalMulai,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tanggalSelesai) {
+        try {
+            List<PengirimanAssignmentResponse> assignments = assignmentService.getRiwayatAssignmentsBySupirEmail(
+                    getCurrentEmail(), tanggalMulai, tanggalSelesai);
+            return ResponseEntity.ok(ApiResponse.success("Riwayat penugasan supir berhasil diambil", assignments));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
