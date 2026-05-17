@@ -193,6 +193,56 @@ public class PaymentControllerTest {
         verify(payrollRepository, never()).save(any());
     }
 
+    @Test
+    void testHandleWebhookValidSignatureCancel() throws Exception {
+        when(midtransConfig.getServerKey()).thenReturn("mock-server-key");
+        when(payrollRepository.findById(1L)).thenReturn(Optional.of(mockPayroll));
+
+        MidtransNotification notification = new MidtransNotification();
+        notification.setOrderId("1");
+        notification.setStatusCode("200");
+        notification.setGrossAmount("10000.00");
+        notification.setTransactionStatus("cancel");
+
+        String expectedSignature = getExpectedSignature("1", "200", "10000.00", "mock-server-key");
+        notification.setSignatureKey(expectedSignature);
+
+        mockMvc.perform(post("/pembayaran/webhook")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(notification)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("OK"));
+
+        assertEquals("FAILED", mockPayroll.getStatus());
+        verify(payrollRepository, times(1)).save(mockPayroll);
+    }
+
+    @Test
+    void testHandleWebhookValidSignatureChallenge() throws Exception {
+        when(midtransConfig.getServerKey()).thenReturn("mock-server-key");
+        when(payrollRepository.findById(1L)).thenReturn(Optional.of(mockPayroll));
+
+        MidtransNotification notification = new MidtransNotification();
+        notification.setOrderId("1");
+        notification.setStatusCode("200");
+        notification.setGrossAmount("10000.00");
+        notification.setTransactionStatus("settlement");
+        notification.setFraudStatus("challenge");
+
+        String expectedSignature = getExpectedSignature("1", "200", "10000.00", "mock-server-key");
+        notification.setSignatureKey(expectedSignature);
+
+        mockMvc.perform(post("/pembayaran/webhook")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(notification)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("OK"));
+
+        // Status should remain PENDING because it is challenged
+        assertEquals("PENDING", mockPayroll.getStatus());
+        verify(payrollRepository, never()).save(any());
+    }
+
     private String getExpectedSignature(String orderId, String statusCode, String grossAmount, String serverKey) {
         try {
             String input = orderId + statusCode + grossAmount + serverKey;
