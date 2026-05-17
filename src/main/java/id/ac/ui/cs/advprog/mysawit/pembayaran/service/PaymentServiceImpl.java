@@ -40,10 +40,10 @@ public class PaymentServiceImpl implements PaymentService {
             return new CheckoutResponse(token, redirectUrl);
 
         } catch (MidtransError e) {
-            logger.error("Midtrans specific error: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to generate Midtrans Snap Token: " + e.getMessage(), e);
+            logger.error("Midtrans specific error occurred during snap token generation", e);
+            throw new RuntimeException("Failed to generate Midtrans Snap Token. Please try again later.", e);
         } catch (Exception e) {
-            logger.error("Unexpected error during Midtrans API call: {}", e.getMessage(), e);
+            logger.error("Unexpected error during Midtrans API call", e);
             throw new RuntimeException("An unexpected error occurred during payment processing.", e);
         }
     }

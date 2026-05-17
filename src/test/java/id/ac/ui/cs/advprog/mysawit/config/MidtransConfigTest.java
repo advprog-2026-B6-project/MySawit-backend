@@ -30,6 +30,6 @@ public class MidtransConfigTest {
         assertEquals("test-client-key", Midtrans.clientKey);
         assertEquals(true, Midtrans.isProduction);
 
-        assertEquals("test-server-key", config.getServerKey());
+        assertEquals("test-server-key", com.midtrans.Midtrans.serverKey);
     }
 }

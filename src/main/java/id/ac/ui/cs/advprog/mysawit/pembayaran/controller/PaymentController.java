@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.mysawit.pembayaran.controller;
 
-import id.ac.ui.cs.advprog.mysawit.config.MidtransConfig;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.CheckoutRequest;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.CheckoutResponse;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.MidtransNotification;
@@ -9,6 +8,7 @@ import id.ac.ui.cs.advprog.mysawit.pembayaran.repository.PayrollRepository;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.service.PaymentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,14 +26,14 @@ public class PaymentController {
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
     private final PaymentService paymentService;
-    private final MidtransConfig midtransConfig;
     private final PayrollRepository payrollRepository;
 
+    @Value("${midtrans.server.key}")
+    private String serverKey;
+
     public PaymentController(PaymentService paymentService,
-                             MidtransConfig midtransConfig,
                              PayrollRepository payrollRepository) {
         this.paymentService = paymentService;
-        this.midtransConfig = midtransConfig;
         this.payrollRepository = payrollRepository;
     }
 
@@ -51,7 +51,6 @@ public class PaymentController {
         String statusCode = notification.getStatusCode();
 
         String grossAmount = notification.getGrossAmount();
-        String serverKey = midtransConfig.getServerKey();
 
         String signatureInput = orderIdStr + statusCode + grossAmount + serverKey;
         String generatedSignature = calculateSHA512(signatureInput);

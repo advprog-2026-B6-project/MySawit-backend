@@ -28,7 +28,4 @@ public class MidtransConfig {
         Midtrans.isProduction = isProd;
     }
 
-    public String getServerKey() {
-        return serverKey;
-    }
 }

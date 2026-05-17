@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.pembayaran.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.ac.ui.cs.advprog.mysawit.config.MidtransConfig;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.CheckoutRequest;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.CheckoutResponse;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.MidtransNotification;
@@ -15,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -37,9 +37,6 @@ public class PaymentControllerTest {
     private PaymentService paymentService;
 
     @Mock
-    private MidtransConfig midtransConfig;
-
-    @Mock
     private PayrollRepository payrollRepository;
 
     @InjectMocks
@@ -51,6 +48,9 @@ public class PaymentControllerTest {
     void setUp() {
         objectMapper = new ObjectMapper();
         mockMvc = MockMvcBuilders.standaloneSetup(paymentController).build();
+
+        // Menyuntikkan nilai mock-server-key ke variabel private serverKey di controller
+        ReflectionTestUtils.setField(paymentController, "serverKey", "mock-server-key");
 
         mockPayroll = Payroll.builder()
                 .id(1L)
@@ -81,7 +81,6 @@ public class PaymentControllerTest {
 
     @Test
     void testHandleWebhookValidSignatureSettlement() throws Exception {
-        when(midtransConfig.getServerKey()).thenReturn("mock-server-key");
         when(payrollRepository.findById(1L)).thenReturn(Optional.of(mockPayroll));
 
         MidtransNotification notification = new MidtransNotification();
@@ -106,7 +105,6 @@ public class PaymentControllerTest {
 
     @Test
     void testHandleWebhookValidSignatureDeny() throws Exception {
-        when(midtransConfig.getServerKey()).thenReturn("mock-server-key");
         when(payrollRepository.findById(1L)).thenReturn(Optional.of(mockPayroll));
 
         MidtransNotification notification = new MidtransNotification();
@@ -130,8 +128,6 @@ public class PaymentControllerTest {
 
     @Test
     void testHandleWebhookInvalidSignature() throws Exception {
-        when(midtransConfig.getServerKey()).thenReturn("mock-server-key");
-
         MidtransNotification notification = new MidtransNotification();
         notification.setOrderId("1");
         notification.setStatusCode("200");
@@ -150,8 +146,6 @@ public class PaymentControllerTest {
 
     @Test
     void testHandleWebhookInvalidOrderIdFormat() throws Exception {
-        when(midtransConfig.getServerKey()).thenReturn("mock-server-key");
-
         MidtransNotification notification = new MidtransNotification();
         notification.setOrderId("invalid-id");
         notification.setStatusCode("200");
@@ -172,7 +166,6 @@ public class PaymentControllerTest {
 
     @Test
     void testHandleWebhookPayrollNotFound() throws Exception {
-        when(midtransConfig.getServerKey()).thenReturn("mock-server-key");
         when(payrollRepository.findById(99L)).thenReturn(Optional.empty());
 
         MidtransNotification notification = new MidtransNotification();
@@ -195,7 +188,6 @@ public class PaymentControllerTest {
 
     @Test
     void testHandleWebhookValidSignatureCancel() throws Exception {
-        when(midtransConfig.getServerKey()).thenReturn("mock-server-key");
         when(payrollRepository.findById(1L)).thenReturn(Optional.of(mockPayroll));
 
         MidtransNotification notification = new MidtransNotification();
@@ -219,7 +211,6 @@ public class PaymentControllerTest {
 
     @Test
     void testHandleWebhookValidSignatureChallenge() throws Exception {
-        when(midtransConfig.getServerKey()).thenReturn("mock-server-key");
         when(payrollRepository.findById(1L)).thenReturn(Optional.of(mockPayroll));
 
         MidtransNotification notification = new MidtransNotification();
