@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,6 +38,18 @@ public class PengirimanAssignment {
 
     @Column(nullable = false)
     private String tujuan;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "assignment_status", nullable = false, columnDefinition = "varchar(32) default 'MEMUAT'")
+    @Builder.Default
+    private StatusAssignment status = StatusAssignment.MEMUAT;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "assignment_approval")
+    private ApprovalAssignment approval;
+
+    @Column(name = "approval_note", columnDefinition = "TEXT")
+    private String note;
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

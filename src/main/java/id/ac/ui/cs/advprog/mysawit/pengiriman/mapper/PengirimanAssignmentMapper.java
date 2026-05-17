@@ -25,6 +25,9 @@ public final class PengirimanAssignmentMapper {
                 assignment.getSupirEmail(),
                 assignment.getMuatanKg(),
                 assignment.getTujuan(),
+                assignment.getStatus(),
+                assignment.getApproval(),
+                assignment.getNote(),
                 assignment.getCreatedAt());
     }
 }
