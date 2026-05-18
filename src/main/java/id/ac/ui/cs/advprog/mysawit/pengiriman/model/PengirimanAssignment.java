@@ -40,15 +40,14 @@ public class PengirimanAssignment {
     private String tujuan;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "assignment_status", nullable = false, columnDefinition = "varchar(32) default 'MEMUAT'")
+    @Column(nullable = false)
     @Builder.Default
     private StatusAssignment status = StatusAssignment.MEMUAT;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "assignment_approval")
     private ApprovalAssignment approval;
 
-    @Column(name = "approval_note", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String note;
 
     @Builder.Default

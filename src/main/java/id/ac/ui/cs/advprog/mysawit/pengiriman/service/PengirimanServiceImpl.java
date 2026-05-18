@@ -11,9 +11,12 @@ import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovedPengirimanResponse;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.ApprovalAssignment;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanAssignmentRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
 
@@ -21,15 +24,18 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
 public class PengirimanServiceImpl implements PengirimanService {
 
     private final PengirimanRepository pengirimanRepository;
+    private final PengirimanAssignmentRepository pengirimanAssignmentRepository;
     private final SupirTrukRepository supirTrukRepository;
     private final UserRepository userRepository;
     private final PayrollRequestSender payrollRequestSender;
 
     public PengirimanServiceImpl(PengirimanRepository pengirimanRepository,
+                                  PengirimanAssignmentRepository pengirimanAssignmentRepository,
                                   SupirTrukRepository supirTrukRepository,
                                   UserRepository userRepository,
                                   PayrollRequestSender payrollRequestSender) {
         this.pengirimanRepository = pengirimanRepository;
+        this.pengirimanAssignmentRepository = pengirimanAssignmentRepository;
         this.supirTrukRepository = supirTrukRepository;
         this.userRepository = userRepository;
         this.payrollRequestSender = payrollRequestSender;
@@ -159,43 +165,51 @@ public class PengirimanServiceImpl implements PengirimanService {
             throw new IllegalArgumentException("Tanggal mulai tidak boleh setelah tanggal selesai");
         }
 
-        String normalizedMandorName = mandorName == null ? null : mandorName.trim().toLowerCase();
+        String normalizedMandorQuery = mandorName == null ? "" : mandorName.trim().toLowerCase();
 
-        return pengirimanRepository.findAll().stream()
-                .filter(p -> p.getStatus() == StatusPengiriman.DISETUJUI)
-                .filter(p -> p.getWaktuDisetujui() != null)
-                .filter(p -> {
+        return pengirimanAssignmentRepository.findAll().stream()
+                .filter(a -> a.getApproval() == ApprovalAssignment.APPROVED)
+                .filter(a -> {
+                    if (normalizedMandorQuery.isBlank()) {
+                        return true;
+                    }
+                    String mandorEmail = a.getMandorEmail() == null ? "" : a.getMandorEmail().toLowerCase();
+                    return mandorEmail.contains(normalizedMandorQuery);
+                })
+                .filter(a -> {
                     if (tanggalMulai == null && tanggalSelesai == null) {
                         return true;
                     }
-                    LocalDate tanggal = p.getWaktuDisetujui().toLocalDate();
+                    if (a.getCreatedAt() == null) {
+                        return false;
+                    }
+                    LocalDate tanggal = a.getCreatedAt().toLocalDate();
                     boolean afterStart = tanggalMulai == null || !tanggal.isBefore(tanggalMulai);
                     boolean beforeEnd = tanggalSelesai == null || !tanggal.isAfter(tanggalSelesai);
                     return afterStart && beforeEnd;
                 })
-                .map(p -> buildApprovedResponse(p, normalizedMandorName))
-                .filter(response -> response != null)
+                .map(this::toApprovedResponseFromAssignment)
                 .collect(Collectors.toList());
     }
 
-    private ApprovedPengirimanResponse buildApprovedResponse(Pengiriman pengiriman, String normalizedMandorName) {
-    String mandorName = userRepository.findById(pengiriman.getMandorId())
-        .map(User::getFullname)
-                .orElse("Tidak diketahui");
-
-        if (normalizedMandorName != null && !mandorName.toLowerCase().contains(normalizedMandorName)) {
-            return null;
-        }
+    private ApprovedPengirimanResponse toApprovedResponseFromAssignment(PengirimanAssignment assignment) {
+        User mandor = userRepository.findByUsername(assignment.getMandorEmail()).orElse(null);
+        String mandorFullname = mandor != null && mandor.getFullname() != null
+                ? mandor.getFullname().trim()
+                : "";
+        String mandorDisplayName = !mandorFullname.isBlank()
+                ? mandorFullname
+                : assignment.getMandorEmail();
 
         return new ApprovedPengirimanResponse(
-                pengiriman.getId(),
-                pengiriman.getSupirTrukId(),
-                pengiriman.getMandorId(),
-                mandorName,
-                pengiriman.getMuatanKg(),
-                pengiriman.getTujuan(),
-                pengiriman.getWaktuDisetujui(),
-                pengiriman.getStatus()
+                UUID.nameUUIDFromBytes(("assignment-" + assignment.getId()).getBytes()),
+                UUID.nameUUIDFromBytes(assignment.getSupirEmail().getBytes()),
+                mandor != null ? mandor.getId() : null,
+                mandorDisplayName,
+                assignment.getMuatanKg(),
+                assignment.getTujuan(),
+                assignment.getCreatedAt(),
+                StatusPengiriman.DISETUJUI
         );
     }
 
