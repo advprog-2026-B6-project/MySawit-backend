@@ -640,6 +640,7 @@ class PengirimanServiceImplTest {
         .muatanKg(200.0)
         .tujuan("Pabrik A")
         .approval(ApprovalAssignment.APPROVED)
+        .adminFinalApproval(ApprovalAssignment.PARTIALLY_REJECTED)
         .createdAt(LocalDateTime.of(2026, 5, 2, 10, 0))
         .build();
 
@@ -662,6 +663,7 @@ class PengirimanServiceImplTest {
 
         assertEquals(1, result.size());
         assertEquals(mandorId, result.get(0).getMandorId());
+        assertEquals(ApprovalAssignment.PARTIALLY_REJECTED, result.get(0).getAdminFinalApproval());
     }
 
     @Test
@@ -779,6 +781,27 @@ class PengirimanServiceImplTest {
     }
 
     @Test
+    void testSetujuiAssignmentFinalAdminImmutableAfterFinalDecision() {
+    PengirimanAssignment assignment = PengirimanAssignment.builder()
+        .id(5L)
+        .mandorEmail("mandor@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(150.0)
+        .tujuan("Pabrik A")
+        .approval(ApprovalAssignment.APPROVED)
+        .adminFinalApproval(ApprovalAssignment.REJECTED)
+        .build();
+
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    when(pengirimanAssignmentRepository.findById(5L)).thenReturn(Optional.of(assignment));
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        pengirimanService.setujuiAssignmentFinalAdmin(5L, adminId));
+
+    assertTrue(exception.getMessage().contains("tidak dapat diubah"));
+    }
+
+    @Test
     void testSetujuiAssignmentFinalAdminNotApproved() {
     PengirimanAssignment assignment = PengirimanAssignment.builder()
         .id(6L)
@@ -818,6 +841,27 @@ class PengirimanServiceImplTest {
 
     assertEquals(ApprovalAssignment.REJECTED, result.getAdminFinalApproval());
     assertEquals("Tidak sesuai", result.getAdminFinalNote());
+    }
+
+    @Test
+    void testTolakAssignmentFinalAdminImmutableAfterFinalDecision() {
+    PengirimanAssignment assignment = PengirimanAssignment.builder()
+        .id(7L)
+        .mandorEmail("mandor@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(150.0)
+        .tujuan("Pabrik A")
+        .approval(ApprovalAssignment.APPROVED)
+        .adminFinalApproval(ApprovalAssignment.APPROVED)
+        .build();
+
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    when(pengirimanAssignmentRepository.findById(7L)).thenReturn(Optional.of(assignment));
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        pengirimanService.tolakAssignmentFinalAdmin(7L, adminId, "Tidak sesuai"));
+
+    assertTrue(exception.getMessage().contains("tidak dapat diubah"));
     }
 
     @Test
@@ -863,6 +907,27 @@ class PengirimanServiceImplTest {
     assertEquals(80.0, result.getKilogramDiakui());
     verify(payrollRequestSender).sendPayrollRequest(
             any(id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest.class));
+    }
+
+    @Test
+    void testTolakAssignmentFinalParsialAdminImmutableAfterFinalDecision() {
+    PengirimanAssignment assignment = PengirimanAssignment.builder()
+        .id(9L)
+        .mandorEmail("mandor@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(150.0)
+        .tujuan("Pabrik A")
+        .approval(ApprovalAssignment.APPROVED)
+        .adminFinalApproval(ApprovalAssignment.REJECTED)
+        .build();
+
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    when(pengirimanAssignmentRepository.findById(9L)).thenReturn(Optional.of(assignment));
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        pengirimanService.tolakAssignmentFinalParsialAdmin(9L, adminId, 80.0, "Rusak"));
+
+    assertTrue(exception.getMessage().contains("tidak dapat diubah"));
     }
 
     @Test

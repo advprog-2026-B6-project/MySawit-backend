@@ -203,7 +203,7 @@ public class PengirimanServiceImpl implements PengirimanService {
                 ? mandorFullname
                 : assignment.getMandorEmail();
 
-        return new ApprovedPengirimanResponse(
+        ApprovedPengirimanResponse response = new ApprovedPengirimanResponse(
                 assignment.getId(),
                 UUID.nameUUIDFromBytes(("assignment-" + assignment.getId()).getBytes()),
                 UUID.nameUUIDFromBytes(assignment.getSupirEmail().getBytes()),
@@ -214,6 +214,11 @@ public class PengirimanServiceImpl implements PengirimanService {
                 assignment.getCreatedAt(),
                 StatusPengiriman.DISETUJUI
         );
+        response.setAdminFinalApproval(assignment.getAdminFinalApproval());
+        response.setAdminFinalNote(assignment.getAdminFinalNote());
+        response.setKilogramDiakui(assignment.getKilogramDiakui());
+        response.setAdminFinalReviewedAt(assignment.getAdminFinalReviewedAt());
+        return response;
     }
 
     private void sendPayrollRequestForAssignment(PengirimanAssignment assignment) {
@@ -252,6 +257,12 @@ public class PengirimanServiceImpl implements PengirimanService {
     private void validateAdminDecision(Pengiriman pengiriman) {
         if (pengiriman.getStatus() != StatusPengiriman.TIBA) {
             throw new IllegalArgumentException("Pengiriman belum sampai tujuan");
+        }
+    }
+
+    private void validateAdminFinalApprovalMutable(PengirimanAssignment assignment) {
+        if (assignment.getAdminFinalApproval() != null) {
+            throw new IllegalArgumentException("Keputusan final admin sudah dibuat dan tidak dapat diubah");
         }
     }
 
@@ -391,6 +402,7 @@ public class PengirimanServiceImpl implements PengirimanService {
         if (assignment.getApproval() != ApprovalAssignment.APPROVED) {
             throw new IllegalArgumentException("Penugasan belum disetujui oleh mandor");
         }
+        validateAdminFinalApprovalMutable(assignment);
 
         assignment.setAdminFinalApproval(ApprovalAssignment.APPROVED);
         assignment.setAdminFinalNote(null);
@@ -409,6 +421,7 @@ public class PengirimanServiceImpl implements PengirimanService {
         if (assignment.getApproval() != ApprovalAssignment.APPROVED) {
             throw new IllegalArgumentException("Penugasan belum disetujui oleh mandor");
         }
+        validateAdminFinalApprovalMutable(assignment);
 
         String normalizedReason = normalizeAlasanPenolakan(alasanPenolakan);
         assignment.setAdminFinalApproval(ApprovalAssignment.REJECTED);
@@ -431,6 +444,7 @@ public class PengirimanServiceImpl implements PengirimanService {
         if (assignment.getApproval() != ApprovalAssignment.APPROVED) {
             throw new IllegalArgumentException("Penugasan belum disetujui oleh mandor");
         }
+        validateAdminFinalApprovalMutable(assignment);
 
         validateMuatanDiakui(muatanKgDiakui, assignment.getMuatanKg());
         String normalizedReason = normalizeAlasanPenolakan(alasanPenolakan);

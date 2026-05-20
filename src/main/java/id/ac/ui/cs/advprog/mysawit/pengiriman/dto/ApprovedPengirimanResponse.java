@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.mysawit.pengiriman.dto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.ApprovalAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 
 public class ApprovedPengirimanResponse {
@@ -15,6 +16,10 @@ public class ApprovedPengirimanResponse {
     private String tujuan;
     private LocalDateTime waktuDisetujui;
     private StatusPengiriman status;
+    private ApprovalAssignment adminFinalApproval;
+    private String adminFinalNote;
+    private Double kilogramDiakui;
+    private LocalDateTime adminFinalReviewedAt;
 
     public ApprovedPengirimanResponse() {
     }
@@ -103,5 +108,37 @@ public class ApprovedPengirimanResponse {
 
     public void setStatus(StatusPengiriman status) {
         this.status = status;
+    }
+
+    public ApprovalAssignment getAdminFinalApproval() {
+        return adminFinalApproval;
+    }
+
+    public void setAdminFinalApproval(ApprovalAssignment adminFinalApproval) {
+        this.adminFinalApproval = adminFinalApproval;
+    }
+
+    public String getAdminFinalNote() {
+        return adminFinalNote;
+    }
+
+    public void setAdminFinalNote(String adminFinalNote) {
+        this.adminFinalNote = adminFinalNote;
+    }
+
+    public Double getKilogramDiakui() {
+        return kilogramDiakui;
+    }
+
+    public void setKilogramDiakui(Double kilogramDiakui) {
+        this.kilogramDiakui = kilogramDiakui;
+    }
+
+    public LocalDateTime getAdminFinalReviewedAt() {
+        return adminFinalReviewedAt;
+    }
+
+    public void setAdminFinalReviewedAt(LocalDateTime adminFinalReviewedAt) {
+        this.adminFinalReviewedAt = adminFinalReviewedAt;
     }
 }
