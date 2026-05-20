@@ -35,7 +35,9 @@ public class PengirimanAssignmentController {
     private final PengirimanAssignmentService assignmentService;
     private final UserRepository userRepository;
 
-    public PengirimanAssignmentController(PengirimanAssignmentService assignmentService, UserRepository userRepository) {
+    public PengirimanAssignmentController(
+            PengirimanAssignmentService assignmentService,
+            UserRepository userRepository) {
         this.assignmentService = assignmentService;
         this.userRepository = userRepository;
     }
@@ -63,7 +65,8 @@ public class PengirimanAssignmentController {
     @GetMapping("/me/mandor")
     public ResponseEntity<ApiResponse<List<PengirimanAssignmentResponse>>> getAssignmentsMandorSaya() {
         try {
-            List<PengirimanAssignmentResponse> assignments = assignmentService.getAssignmentsByMandorEmail(getCurrentEmail());
+            List<PengirimanAssignmentResponse> assignments =
+                    assignmentService.getAssignmentsByMandorEmail(getCurrentEmail());
             return ResponseEntity.ok(ApiResponse.success("Daftar penugasan mandor berhasil diambil", assignments));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
@@ -73,7 +76,8 @@ public class PengirimanAssignmentController {
     @GetMapping("/me/supir")
     public ResponseEntity<ApiResponse<List<PengirimanAssignmentResponse>>> getAssignmentsSupirSaya() {
         try {
-            List<PengirimanAssignmentResponse> assignments = assignmentService.getAssignmentsBySupirEmail(getCurrentEmail());
+            List<PengirimanAssignmentResponse> assignments =
+                    assignmentService.getAssignmentsBySupirEmail(getCurrentEmail());
             return ResponseEntity.ok(ApiResponse.success("Daftar penugasan supir berhasil diambil", assignments));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
@@ -138,7 +142,10 @@ public class PengirimanAssignmentController {
             @PathVariable Long id,
             @RequestBody UpdateAssignmentStatusRequest request) {
         try {
-            PengirimanAssignmentResponse response = assignmentService.updateStatus(id, getCurrentEmail(), request.getStatus());
+            PengirimanAssignmentResponse response = assignmentService.updateStatus(
+                    id,
+                    getCurrentEmail(),
+                    request.getStatus());
             return ResponseEntity.ok(ApiResponse.success("Status penugasan berhasil diubah", response));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));

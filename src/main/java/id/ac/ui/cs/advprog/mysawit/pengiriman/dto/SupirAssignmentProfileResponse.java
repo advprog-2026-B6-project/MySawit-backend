@@ -10,7 +10,10 @@ public class SupirAssignmentProfileResponse {
     public SupirAssignmentProfileResponse() {
     }
 
-    public SupirAssignmentProfileResponse(String username, String email, List<PengirimanAssignmentResponse> assignments) {
+    public SupirAssignmentProfileResponse(
+            String username,
+            String email,
+            List<PengirimanAssignmentResponse> assignments) {
         this.username = username;
         this.email = email;
         this.assignments = assignments;

@@ -13,8 +13,15 @@ public interface PengirimanAssignmentService {
     List<PengirimanAssignmentResponse> getAllAssignments();
     List<PengirimanAssignmentResponse> getAssignmentsByMandorEmail(String mandorEmail);
     List<PengirimanAssignmentResponse> getAssignmentsBySupirEmail(String supirEmail);
-    List<PengirimanAssignmentResponse> getRiwayatAssignmentsBySupirEmail(String supirEmail, LocalDate tanggalMulai, LocalDate tanggalSelesai);
+    List<PengirimanAssignmentResponse> getRiwayatAssignmentsBySupirEmail(
+            String supirEmail,
+            LocalDate tanggalMulai,
+            LocalDate tanggalSelesai);
     List<PengirimanAssignmentResponse> getAssignmentsByMandorAndSupirEmail(String mandorEmail, String supirEmail);
     PengirimanAssignmentResponse updateStatus(Long assignmentId, String supirEmail, StatusAssignment status);
-    PengirimanAssignmentResponse updateApproval(Long assignmentId, String mandorEmail, ApprovalAssignment approval, String note);
+    PengirimanAssignmentResponse updateApproval(
+            Long assignmentId,
+            String mandorEmail,
+            ApprovalAssignment approval,
+            String note);
 }

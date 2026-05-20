@@ -85,7 +85,9 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
     }
 
     @Override
-    public List<PengirimanAssignmentResponse> getAssignmentsByMandorAndSupirEmail(String mandorEmail, String supirEmail) {
+    public List<PengirimanAssignmentResponse> getAssignmentsByMandorAndSupirEmail(
+            String mandorEmail,
+            String supirEmail) {
         return repository.findByMandorEmailAndSupirEmail(mandorEmail, supirEmail).stream()
                 .map(PengirimanAssignmentMapper::toResponse)
                 .collect(Collectors.toList());

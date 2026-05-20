@@ -774,7 +774,8 @@ class PengirimanServiceImplTest {
     PengirimanAssignment result = pengirimanService.setujuiAssignmentFinalAdmin(5L, adminId);
 
     assertEquals(ApprovalAssignment.APPROVED, result.getAdminFinalApproval());
-    verify(payrollRequestSender).sendPayrollRequest(any(id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest.class));
+    verify(payrollRequestSender).sendPayrollRequest(
+            any(id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest.class));
     }
 
     @Test
@@ -860,7 +861,8 @@ class PengirimanServiceImplTest {
 
     assertEquals(ApprovalAssignment.PARTIALLY_REJECTED, result.getAdminFinalApproval());
     assertEquals(80.0, result.getKilogramDiakui());
-    verify(payrollRequestSender).sendPayrollRequest(any(id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest.class));
+    verify(payrollRequestSender).sendPayrollRequest(
+            any(id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest.class));
     }
 
     @Test
