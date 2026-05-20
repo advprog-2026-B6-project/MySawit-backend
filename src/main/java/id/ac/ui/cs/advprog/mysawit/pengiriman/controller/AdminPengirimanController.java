@@ -19,7 +19,10 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.AdminRejectPengirimanRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApiResponse;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovedPengirimanResponse;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PartialRejectPengirimanRequest;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PengirimanAssignmentResponse;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.mapper.PengirimanAssignmentMapper;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.PengirimanService;
 
 @RestController
@@ -89,6 +92,53 @@ public class AdminPengirimanController {
                     request.getAlasanPenolakan());
             return ResponseEntity.ok(
                     ApiResponse.success("Pengiriman final berhasil ditolak parsial", pengiriman));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PutMapping("/assignments/{id}/approve")
+    public ResponseEntity<ApiResponse<PengirimanAssignmentResponse>> approveAssignmentFinal(
+            @PathVariable Long id,
+            @RequestBody AdminApprovePengirimanRequest request) {
+        try {
+            PengirimanAssignment assignment = pengirimanService.setujuiAssignmentFinalAdmin(id, request.getAdminId());
+            return ResponseEntity.ok(ApiResponse.success(
+                    "Hasil pengiriman akhir disetujui admin. Payroll mandor diproses async.",
+                    PengirimanAssignmentMapper.toResponse(assignment)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PutMapping("/assignments/{id}/reject")
+    public ResponseEntity<ApiResponse<PengirimanAssignmentResponse>> rejectAssignmentFinal(
+            @PathVariable Long id,
+            @RequestBody AdminRejectPengirimanRequest request) {
+        try {
+            PengirimanAssignment assignment = pengirimanService.tolakAssignmentFinalAdmin(
+                    id, request.getAdminId(), request.getAlasanPenolakan());
+            return ResponseEntity.ok(ApiResponse.success(
+                    "Hasil pengiriman akhir ditolak admin.",
+                    PengirimanAssignmentMapper.toResponse(assignment)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PutMapping("/assignments/{id}/reject-partial")
+    public ResponseEntity<ApiResponse<PengirimanAssignmentResponse>> rejectAssignmentFinalParsial(
+            @PathVariable Long id,
+            @RequestBody PartialRejectPengirimanRequest request) {
+        try {
+            PengirimanAssignment assignment = pengirimanService.tolakAssignmentFinalParsialAdmin(
+                    id,
+                    request.getAdminId(),
+                    request.getMuatanKgDiakui(),
+                    request.getAlasanPenolakan());
+            return ResponseEntity.ok(ApiResponse.success(
+                    "Hasil pengiriman akhir ditolak parsial admin.",
+                    PengirimanAssignmentMapper.toResponse(assignment)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }

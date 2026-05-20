@@ -50,6 +50,17 @@ public class PengirimanAssignment {
     @Column(columnDefinition = "TEXT")
     private String note;
 
+    @Enumerated(EnumType.STRING)
+    private ApprovalAssignment adminFinalApproval;
+
+    @Column(columnDefinition = "TEXT")
+    private String adminFinalNote;
+
+    @Column(name = "kilogram_diakui")
+    private Double kilogramDiakui;
+
+    private LocalDateTime adminFinalReviewedAt;
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }

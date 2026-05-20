@@ -6,6 +6,7 @@ import java.util.UUID;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 
 public class ApprovedPengirimanResponse {
+    private Long assignmentId;
     private UUID pengirimanId;
     private UUID supirTrukId;
     private Long mandorId;
@@ -18,9 +19,10 @@ public class ApprovedPengirimanResponse {
     public ApprovedPengirimanResponse() {
     }
 
-    public ApprovedPengirimanResponse(UUID pengirimanId, UUID supirTrukId, Long mandorId,
+    public ApprovedPengirimanResponse(Long assignmentId, UUID pengirimanId, UUID supirTrukId, Long mandorId,
                                       String mandorName, double muatanKg, String tujuan,
                                       LocalDateTime waktuDisetujui, StatusPengiriman status) {
+        this.assignmentId = assignmentId;
         this.pengirimanId = pengirimanId;
         this.supirTrukId = supirTrukId;
         this.mandorId = mandorId;
@@ -29,6 +31,14 @@ public class ApprovedPengirimanResponse {
         this.tujuan = tujuan;
         this.waktuDisetujui = waktuDisetujui;
         this.status = status;
+    }
+
+    public Long getAssignmentId() {
+        return assignmentId;
+    }
+
+    public void setAssignmentId(Long assignmentId) {
+        this.assignmentId = assignmentId;
     }
 
     public UUID getPengirimanId() {

@@ -18,6 +18,18 @@ public interface PengirimanService {
                                            Long adminId,
                                            double muatanKgDiakui,
                                            String alasanPenolakan);
+    id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment setujuiAssignmentFinalAdmin(
+        Long assignmentId,
+        Long adminId);
+    id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment tolakAssignmentFinalAdmin(
+        Long assignmentId,
+        Long adminId,
+        String alasanPenolakan);
+    id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment tolakAssignmentFinalParsialAdmin(
+        Long assignmentId,
+        Long adminId,
+        double muatanKgDiakui,
+        String alasanPenolakan);
     List<Pengiriman> getDaftarPengirimanSupir(UUID supirTrukId);
     List<Pengiriman> getRiwayatPengirimanSupir(UUID supirTrukId,
                                                java.time.LocalDate tanggalMulai,

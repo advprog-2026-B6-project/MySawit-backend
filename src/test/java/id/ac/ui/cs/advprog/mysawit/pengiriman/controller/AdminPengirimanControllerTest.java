@@ -23,7 +23,10 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.AdminApprovePengirimanRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.AdminRejectPengirimanRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovedPengirimanResponse;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PartialRejectPengirimanRequest;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.ApprovalAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.PengirimanService;
 
@@ -38,12 +41,20 @@ class AdminPengirimanControllerTest {
 
     private ApprovedPengirimanResponse response;
         private Pengiriman pengiriman;
+        private PengirimanAssignment assignment;
 
     @BeforeEach
     void setUp() {
         response = new ApprovedPengirimanResponse(
-                UUID.randomUUID(), UUID.randomUUID(), 1L, "Mandor A", 200.0, "Pabrik A",
-                LocalDateTime.now(), StatusPengiriman.DISETUJUI);
+                10L,
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                1L,
+                "Mandor A",
+                200.0,
+                "Pabrik A",
+                LocalDateTime.now(),
+                StatusPengiriman.DISETUJUI);
         pengiriman = Pengiriman.builder()
                 .id(UUID.randomUUID())
                 .mandorId(1L)
@@ -51,6 +62,15 @@ class AdminPengirimanControllerTest {
                 .muatanKg(200.0)
                 .tujuan("Pabrik A")
                 .status(StatusPengiriman.TIBA)
+                .build();
+        assignment = PengirimanAssignment.builder()
+                .id(10L)
+                .mandorEmail("mandor@mysawit.id")
+                .supirEmail("supir@mysawit.id")
+                .muatanKg(200.0)
+                .tujuan("Pabrik A")
+                .status(StatusAssignment.TIBA)
+                .approval(ApprovalAssignment.APPROVED)
                 .build();
     }
 
@@ -113,6 +133,17 @@ class AdminPengirimanControllerTest {
 
         assertEquals(HttpStatus.OK, result.getStatusCode());
     }
+
+        @Test
+        void testRejectAssignmentFinalParsialSuccess() {
+                when(pengirimanService.tolakAssignmentFinalParsialAdmin(eq(10L), eq(1L), eq(120.0), eq("Alasan")))
+                                .thenReturn(assignment);
+
+                ResponseEntity<?> result = adminPengirimanController.rejectAssignmentFinalParsial(
+                                10L, new PartialRejectPengirimanRequest(1L, 120.0, "Alasan"));
+
+                assertEquals(HttpStatus.OK, result.getStatusCode());
+        }
 
     @Test
     void testApprovePengirimanFinalError() {

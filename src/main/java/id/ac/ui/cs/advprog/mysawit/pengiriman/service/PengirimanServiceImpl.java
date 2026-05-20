@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -11,9 +12,10 @@ import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovedPengirimanResponse;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.ApprovalAssignment;
-import id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanAssignmentRepository;
@@ -202,6 +204,7 @@ public class PengirimanServiceImpl implements PengirimanService {
                 : assignment.getMandorEmail();
 
         return new ApprovedPengirimanResponse(
+                assignment.getId(),
                 UUID.nameUUIDFromBytes(("assignment-" + assignment.getId()).getBytes()),
                 UUID.nameUUIDFromBytes(assignment.getSupirEmail().getBytes()),
                 mandor != null ? mandor.getId() : null,
@@ -211,6 +214,26 @@ public class PengirimanServiceImpl implements PengirimanService {
                 assignment.getCreatedAt(),
                 StatusPengiriman.DISETUJUI
         );
+    }
+
+    private void sendPayrollRequestForAssignment(PengirimanAssignment assignment) {
+        sendPayrollRequestForAssignment(assignment, assignment.getMuatanKg());
+    }
+
+    private void sendPayrollRequestForAssignment(PengirimanAssignment assignment, double muatanKgDiakui) {
+        User mandor = userRepository.findByUsername(assignment.getMandorEmail()).orElse(null);
+        UUID supirTrukId = UUID.nameUUIDFromBytes(assignment.getSupirEmail().getBytes());
+
+        PayrollRequest request = PayrollRequest.builder()
+                .pengirimanId(null)
+                .supirTrukId(supirTrukId)
+                .mandorId(mandor != null ? mandor.getId() : null)
+                .muatanKg(muatanKgDiakui)
+                .tujuan(assignment.getTujuan())
+                .waktuDisetujui(LocalDateTime.now())
+                .build();
+
+        payrollRequestSender.sendPayrollRequest(request);
     }
 
     private User validateAdmin(Long adminId) {
@@ -357,6 +380,69 @@ public class PengirimanServiceImpl implements PengirimanService {
         Pengiriman savedPengiriman = pengirimanRepository.save(pengiriman);
         payrollRequestSender.sendPayrollRequest(savedPengiriman, muatanKgDiakui);
         return savedPengiriman;
+    }
+
+    @Override
+    public PengirimanAssignment setujuiAssignmentFinalAdmin(Long assignmentId, Long adminId) {
+        validateAdmin(adminId);
+        PengirimanAssignment assignment = pengirimanAssignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Penugasan pengiriman tidak ditemukan"));
+
+        if (assignment.getApproval() != ApprovalAssignment.APPROVED) {
+            throw new IllegalArgumentException("Penugasan belum disetujui oleh mandor");
+        }
+
+        assignment.setAdminFinalApproval(ApprovalAssignment.APPROVED);
+        assignment.setAdminFinalNote(null);
+        assignment.setAdminFinalReviewedAt(LocalDateTime.now());
+        PengirimanAssignment saved = pengirimanAssignmentRepository.save(assignment);
+        sendPayrollRequestForAssignment(saved);
+        return saved;
+    }
+
+    @Override
+    public PengirimanAssignment tolakAssignmentFinalAdmin(Long assignmentId, Long adminId, String alasanPenolakan) {
+        validateAdmin(adminId);
+        PengirimanAssignment assignment = pengirimanAssignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Penugasan pengiriman tidak ditemukan"));
+
+        if (assignment.getApproval() != ApprovalAssignment.APPROVED) {
+            throw new IllegalArgumentException("Penugasan belum disetujui oleh mandor");
+        }
+
+        String normalizedReason = normalizeAlasanPenolakan(alasanPenolakan);
+        assignment.setAdminFinalApproval(ApprovalAssignment.REJECTED);
+        assignment.setAdminFinalNote(normalizedReason);
+        assignment.setKilogramDiakui(null);
+        assignment.setAdminFinalReviewedAt(LocalDateTime.now());
+        return pengirimanAssignmentRepository.save(assignment);
+    }
+
+    @Override
+    public PengirimanAssignment tolakAssignmentFinalParsialAdmin(
+            Long assignmentId,
+            Long adminId,
+            double muatanKgDiakui,
+            String alasanPenolakan) {
+        validateAdmin(adminId);
+        PengirimanAssignment assignment = pengirimanAssignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Penugasan pengiriman tidak ditemukan"));
+
+        if (assignment.getApproval() != ApprovalAssignment.APPROVED) {
+            throw new IllegalArgumentException("Penugasan belum disetujui oleh mandor");
+        }
+
+        validateMuatanDiakui(muatanKgDiakui, assignment.getMuatanKg());
+        String normalizedReason = normalizeAlasanPenolakan(alasanPenolakan);
+
+        assignment.setAdminFinalApproval(ApprovalAssignment.PARTIALLY_REJECTED);
+        assignment.setAdminFinalNote(normalizedReason);
+        assignment.setKilogramDiakui(muatanKgDiakui);
+        assignment.setAdminFinalReviewedAt(LocalDateTime.now());
+
+        PengirimanAssignment saved = pengirimanAssignmentRepository.save(assignment);
+        sendPayrollRequestForAssignment(saved, muatanKgDiakui);
+        return saved;
     }
 
     @Override

@@ -1,13 +1,13 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.dto;
 
-import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 
 class ApprovedPengirimanResponseTest {
 
@@ -18,9 +18,17 @@ class ApprovedPengirimanResponseTest {
         LocalDateTime waktu = LocalDateTime.now();
 
         ApprovedPengirimanResponse response = new ApprovedPengirimanResponse(
-                pengirimanId, supirTrukId, 1L, "Mandor A", 200.0, "Pabrik A",
-                waktu, StatusPengiriman.DISETUJUI);
+        10L,
+        pengirimanId,
+        supirTrukId,
+        1L,
+        "Mandor A",
+        200.0,
+        "Pabrik A",
+        waktu,
+        StatusPengiriman.DISETUJUI);
 
+    assertEquals(10L, response.getAssignmentId());
         assertEquals(pengirimanId, response.getPengirimanId());
         assertEquals(supirTrukId, response.getSupirTrukId());
         assertEquals(1L, response.getMandorId());
