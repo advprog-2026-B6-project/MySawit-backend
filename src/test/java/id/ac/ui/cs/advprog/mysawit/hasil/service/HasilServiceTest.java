@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -12,10 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.exception.DailySubmissionLimitException;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
+import id.ac.ui.cs.advprog.mysawit.hasil.repository.HasilRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.repository.InMemoryHasilRepository;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollCreateRequest;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollResponse;
@@ -59,6 +62,17 @@ class HasilServiceTest {
         assertThrows(
                 DailySubmissionLimitException.class,
                 () -> service.create("worker-1", 90.0, "Panen siang", List.of("foto-siang.jpg"))
+        );
+    }
+
+    @Test
+    void createMapsDatabaseUniqueViolationToDailyLimit() {
+        Clock fixedClock = Clock.fixed(Instant.parse("2026-03-06T01:00:00Z"), ZoneId.of("UTC"));
+        HasilService duplicateSafeService = new HasilServiceImpl(new DuplicateOnSaveHasilRepository(), fixedClock);
+
+        assertThrows(
+                DailySubmissionLimitException.class,
+                () -> duplicateSafeService.create("worker-1", 90.0, "Panen siang", List.of("foto-siang.jpg"))
         );
     }
 
@@ -152,6 +166,33 @@ class HasilServiceTest {
         @Override
         public java.math.BigDecimal calculateWage(String role, java.math.BigDecimal totalKg) {
             return java.math.BigDecimal.ZERO;
+        }
+    }
+
+    private static class DuplicateOnSaveHasilRepository implements HasilRepository {
+        @Override
+        public Hasil save(Hasil report) {
+            throw new DataIntegrityViolationException("duplicate worker/date");
+        }
+
+        @Override
+        public Optional<Hasil> findById(String id) {
+            return Optional.empty();
+        }
+
+        @Override
+        public List<Hasil> findAll() {
+            return List.of();
+        }
+
+        @Override
+        public Optional<Hasil> findByWorkerIdAndDate(String workerId, java.time.LocalDate hasilDate) {
+            return Optional.empty();
+        }
+
+        @Override
+        public boolean existsByWorkerIdAndDate(String workerId, java.time.LocalDate hasilDate) {
+            return false;
         }
     }
 }
