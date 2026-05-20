@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -32,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class PengirimanControllerTest {
@@ -145,6 +147,32 @@ class PengirimanControllerTest {
 
         ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
 
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void testBuatPengirimanWithNullMandorIdAuthenticationNotAuthenticated() {
+        BuatPengirimanRequest request = new BuatPengirimanRequest(
+                null, supirTrukId, 300.0, "Pabrik A");
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.isAuthenticated()).thenReturn(false);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void testBuatPengirimanWithNullMandorIdUserNotFound() {
+        BuatPengirimanRequest request = new BuatPengirimanRequest(
+                null, supirTrukId, 300.0, "Pabrik A");
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("missing", null, List.of()));
+        when(userRepository.findByUsername("missing")).thenReturn(Optional.empty());
+
+        ResponseEntity<?> response = pengirimanController.buatPengiriman(request);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 

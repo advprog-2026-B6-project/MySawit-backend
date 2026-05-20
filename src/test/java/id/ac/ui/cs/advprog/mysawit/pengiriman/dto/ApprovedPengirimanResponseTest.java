@@ -43,12 +43,28 @@ class ApprovedPengirimanResponseTest {
     void testApprovedPengirimanResponseSetters() {
         ApprovedPengirimanResponse response = new ApprovedPengirimanResponse();
         UUID pengirimanId = UUID.randomUUID();
+        UUID supirTrukId = UUID.randomUUID();
+        LocalDateTime waktu = LocalDateTime.now();
 
+        response.setAssignmentId(99L);
         response.setPengirimanId(pengirimanId);
+        response.setSupirTrukId(supirTrukId);
+        response.setMandorId(5L);
         response.setMandorName("Mandor B");
+        response.setMuatanKg(150.0);
+        response.setTujuan("Pabrik B");
+        response.setWaktuDisetujui(waktu);
+        response.setStatus(StatusPengiriman.DITOLAK);
 
+        assertEquals(99L, response.getAssignmentId());
         assertEquals(pengirimanId, response.getPengirimanId());
+        assertEquals(supirTrukId, response.getSupirTrukId());
+        assertEquals(5L, response.getMandorId());
         assertEquals("Mandor B", response.getMandorName());
+        assertEquals(150.0, response.getMuatanKg());
+        assertEquals("Pabrik B", response.getTujuan());
+        assertEquals(waktu, response.getWaktuDisetujui());
+        assertEquals(StatusPengiriman.DITOLAK, response.getStatus());
         assertNotNull(response);
     }
 }
