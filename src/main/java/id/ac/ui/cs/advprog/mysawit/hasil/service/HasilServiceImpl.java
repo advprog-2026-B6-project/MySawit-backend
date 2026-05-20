@@ -9,7 +9,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.exception.DailySubmissionLimitException;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
@@ -40,6 +42,7 @@ public class HasilServiceImpl implements HasilService {
     }
 
     @Override
+    @Transactional
     public Hasil create(String workerId, double kilogram, String news, List<String> photoUrls) {
         if (workerId == null || workerId.isBlank()) {
             throw new IllegalArgumentException("workerId is required");
@@ -69,15 +72,21 @@ public class HasilServiceImpl implements HasilService {
             true,
             HasilStatus.SUBMITTED
         );
-        return hasilRepository.save(report);
+        try {
+            return hasilRepository.save(report);
+        } catch (DataIntegrityViolationException exception) {
+            throw new DailySubmissionLimitException("Buruh hanya bisa submit 1 kali per hari");
+        }
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Hasil> findAll() {
         return hasilRepository.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Hasil> findAvailableForPengiriman() {
         return hasilRepository.findAll().stream()
                 .filter(Hasil::isVisibleForPengiriman)
@@ -85,6 +94,7 @@ public class HasilServiceImpl implements HasilService {
     }
 
     @Override
+    @Transactional
     public Hasil approve(String reportId) {
         Hasil report = getSubmittedReport(reportId);
         Hasil approvedReport = hasilRepository.save(report.approveForPengiriman());
@@ -93,6 +103,7 @@ public class HasilServiceImpl implements HasilService {
     }
 
     @Override
+    @Transactional
     public Hasil reject(String reportId, String rejectionReason) {
         if (rejectionReason == null || rejectionReason.isBlank()) {
             throw new IllegalArgumentException("rejectionReason is required");
@@ -102,6 +113,7 @@ public class HasilServiceImpl implements HasilService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Hasil> findByWorkerAndDate(String workerId, LocalDate hasilDate) {
         return hasilRepository.findByWorkerIdAndDate(workerId, hasilDate);
     }
