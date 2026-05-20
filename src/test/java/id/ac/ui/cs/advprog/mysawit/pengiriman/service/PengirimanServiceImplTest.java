@@ -25,9 +25,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.ApprovalAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanAssignmentRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
 
@@ -36,6 +39,9 @@ class PengirimanServiceImplTest {
 
     @Mock
     private PengirimanRepository pengirimanRepository;
+
+    @Mock
+    private PengirimanAssignmentRepository pengirimanAssignmentRepository;
 
     @Mock
     private SupirTrukRepository supirTrukRepository;
@@ -69,6 +75,8 @@ class PengirimanServiceImplTest {
                 .build();
         mandorUser = new User("Ahmad Mandor", "ahmad", "secret", Role.MANDOR, "CERT-001");
         adminUser = new User("Admin Utama", "admin", "secret", Role.ADMIN, null);
+        mandorUser.setId(mandorId);
+        adminUser.setId(adminId);
     }
 
     @Test
@@ -625,16 +633,28 @@ class PengirimanServiceImplTest {
 
     @Test
     void testGetPengirimanDisetujuiWithFilter() {
-        Pengiriman pengiriman1 = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
-        pengiriman1.setStatus(StatusPengiriman.DISETUJUI);
-        pengiriman1.setWaktuDisetujui(LocalDateTime.of(2026, 5, 2, 10, 0));
+    PengirimanAssignment assignment1 = PengirimanAssignment.builder()
+        .id(1L)
+        .mandorEmail("ahmad@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(200.0)
+        .tujuan("Pabrik A")
+        .approval(ApprovalAssignment.APPROVED)
+        .createdAt(LocalDateTime.of(2026, 5, 2, 10, 0))
+        .build();
 
-        Pengiriman pengiriman2 = createPengiriman(supirTrukId, 2L, 300.0, "Pabrik B");
-        pengiriman2.setStatus(StatusPengiriman.DISETUJUI);
-        pengiriman2.setWaktuDisetujui(LocalDateTime.of(2026, 5, 4, 10, 0));
+    PengirimanAssignment assignment2 = PengirimanAssignment.builder()
+        .id(2L)
+        .mandorEmail("budi@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(300.0)
+        .tujuan("Pabrik B")
+        .approval(ApprovalAssignment.APPROVED)
+        .createdAt(LocalDateTime.of(2026, 5, 4, 10, 0))
+        .build();
 
-        when(pengirimanRepository.findAll()).thenReturn(Arrays.asList(pengiriman1, pengiriman2));
-    when(userRepository.findById(mandorId)).thenReturn(Optional.of(mandorUser));
+    when(pengirimanAssignmentRepository.findAll()).thenReturn(Arrays.asList(assignment1, assignment2));
+    when(userRepository.findByUsername("ahmad@mysawit.id")).thenReturn(Optional.of(mandorUser));
 
         List<id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovedPengirimanResponse> result =
                 pengirimanService.getPengirimanDisetujui("Ahmad",
@@ -651,6 +671,216 @@ class PengirimanServiceImplTest {
                         LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1)));
 
         assertTrue(exception.getMessage().contains("Tanggal mulai"));
+    }
+
+    @Test
+    void testGetPengirimanDisetujuiMandorNotFound() {
+    PengirimanAssignment assignment = PengirimanAssignment.builder()
+        .id(3L)
+        .mandorEmail("unknown@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(180.0)
+        .tujuan("Pabrik C")
+        .approval(ApprovalAssignment.APPROVED)
+        .createdAt(LocalDateTime.of(2026, 5, 2, 9, 0))
+        .build();
+
+    when(pengirimanAssignmentRepository.findAll()).thenReturn(List.of(assignment));
+    when(userRepository.findByUsername("unknown@mysawit.id")).thenReturn(Optional.empty());
+
+    List<id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovedPengirimanResponse> result =
+        pengirimanService.getPengirimanDisetujui(null, null, null);
+
+    assertEquals(1, result.size());
+    assertEquals("unknown@mysawit.id", result.get(0).getMandorName());
+    }
+
+    @Test
+    void testSetujuiPengirimanAdminStatusInvalid() {
+    Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
+    pengiriman.setStatus(StatusPengiriman.MENGIRIM);
+    UUID pengirimanId = pengiriman.getId();
+
+    when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        pengirimanService.setujuiPengirimanAdmin(pengirimanId, adminId));
+
+    assertTrue(exception.getMessage().contains("belum sampai"));
+    }
+
+    @Test
+    void testSetujuiPengirimanAdminNullAdmin() {
+    Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
+    pengiriman.setStatus(StatusPengiriman.TIBA);
+    UUID pengirimanId = pengiriman.getId();
+
+    when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        pengirimanService.setujuiPengirimanAdmin(pengirimanId, null));
+
+    assertTrue(exception.getMessage().contains("Admin tidak ditemukan"));
+    }
+
+    @Test
+    void testTolakPengirimanAdminEmptyReason() {
+    Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
+    pengiriman.setStatus(StatusPengiriman.TIBA);
+    UUID pengirimanId = pengiriman.getId();
+
+    when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        pengirimanService.tolakPengirimanAdmin(pengirimanId, adminId, " "));
+
+    assertTrue(exception.getMessage().contains("wajib diisi"));
+    }
+
+    @Test
+    void testTolakPengirimanParsialAdminInvalidKgLow() {
+    Pengiriman pengiriman = createPengiriman(supirTrukId, mandorId, 200.0, "Pabrik A");
+    pengiriman.setStatus(StatusPengiriman.TIBA);
+    UUID pengirimanId = pengiriman.getId();
+
+    when(pengirimanRepository.findById(pengirimanId)).thenReturn(Optional.of(pengiriman));
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        pengirimanService.tolakPengirimanParsialAdmin(pengirimanId, adminId, 0, "Rusak"));
+
+    assertTrue(exception.getMessage().contains("lebih dari 0"));
+    }
+
+    @Test
+    void testSetujuiAssignmentFinalAdminSuccess() {
+    PengirimanAssignment assignment = PengirimanAssignment.builder()
+        .id(5L)
+        .mandorEmail("mandor@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(150.0)
+        .tujuan("Pabrik A")
+        .approval(ApprovalAssignment.APPROVED)
+        .build();
+
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    when(pengirimanAssignmentRepository.findById(5L)).thenReturn(Optional.of(assignment));
+    when(pengirimanAssignmentRepository.save(any(PengirimanAssignment.class)))
+        .thenAnswer(i -> i.getArguments()[0]);
+    when(userRepository.findByUsername("mandor@mysawit.id")).thenReturn(Optional.of(mandorUser));
+
+    PengirimanAssignment result = pengirimanService.setujuiAssignmentFinalAdmin(5L, adminId);
+
+    assertEquals(ApprovalAssignment.APPROVED, result.getAdminFinalApproval());
+    verify(payrollRequestSender).sendPayrollRequest(any(id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest.class));
+    }
+
+    @Test
+    void testSetujuiAssignmentFinalAdminNotApproved() {
+    PengirimanAssignment assignment = PengirimanAssignment.builder()
+        .id(6L)
+        .mandorEmail("mandor@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(150.0)
+        .tujuan("Pabrik A")
+        .approval(ApprovalAssignment.REJECTED)
+        .build();
+
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    when(pengirimanAssignmentRepository.findById(6L)).thenReturn(Optional.of(assignment));
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        pengirimanService.setujuiAssignmentFinalAdmin(6L, adminId));
+
+    assertTrue(exception.getMessage().contains("belum disetujui"));
+    }
+
+    @Test
+    void testTolakAssignmentFinalAdminSuccess() {
+    PengirimanAssignment assignment = PengirimanAssignment.builder()
+        .id(7L)
+        .mandorEmail("mandor@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(150.0)
+        .tujuan("Pabrik A")
+        .approval(ApprovalAssignment.APPROVED)
+        .build();
+
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    when(pengirimanAssignmentRepository.findById(7L)).thenReturn(Optional.of(assignment));
+    when(pengirimanAssignmentRepository.save(any(PengirimanAssignment.class)))
+        .thenAnswer(i -> i.getArguments()[0]);
+
+    PengirimanAssignment result = pengirimanService.tolakAssignmentFinalAdmin(7L, adminId, "Tidak sesuai");
+
+    assertEquals(ApprovalAssignment.REJECTED, result.getAdminFinalApproval());
+    assertEquals("Tidak sesuai", result.getAdminFinalNote());
+    }
+
+    @Test
+    void testTolakAssignmentFinalAdminEmptyReason() {
+    PengirimanAssignment assignment = PengirimanAssignment.builder()
+        .id(8L)
+        .mandorEmail("mandor@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(150.0)
+        .tujuan("Pabrik A")
+        .approval(ApprovalAssignment.APPROVED)
+        .build();
+
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    when(pengirimanAssignmentRepository.findById(8L)).thenReturn(Optional.of(assignment));
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        pengirimanService.tolakAssignmentFinalAdmin(8L, adminId, " "));
+
+    assertTrue(exception.getMessage().contains("wajib diisi"));
+    }
+
+    @Test
+    void testTolakAssignmentFinalParsialAdminSuccess() {
+    PengirimanAssignment assignment = PengirimanAssignment.builder()
+        .id(9L)
+        .mandorEmail("mandor@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(150.0)
+        .tujuan("Pabrik A")
+        .approval(ApprovalAssignment.APPROVED)
+        .build();
+
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    when(pengirimanAssignmentRepository.findById(9L)).thenReturn(Optional.of(assignment));
+    when(pengirimanAssignmentRepository.save(any(PengirimanAssignment.class)))
+        .thenAnswer(i -> i.getArguments()[0]);
+    when(userRepository.findByUsername("mandor@mysawit.id")).thenReturn(Optional.empty());
+
+    PengirimanAssignment result = pengirimanService.tolakAssignmentFinalParsialAdmin(9L, adminId, 80.0, "Rusak");
+
+    assertEquals(ApprovalAssignment.PARTIALLY_REJECTED, result.getAdminFinalApproval());
+    assertEquals(80.0, result.getKilogramDiakui());
+    verify(payrollRequestSender).sendPayrollRequest(any(id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest.class));
+    }
+
+    @Test
+    void testTolakAssignmentFinalParsialAdminInvalidKg() {
+    PengirimanAssignment assignment = PengirimanAssignment.builder()
+        .id(10L)
+        .mandorEmail("mandor@mysawit.id")
+        .supirEmail("supir@mysawit.id")
+        .muatanKg(150.0)
+        .tujuan("Pabrik A")
+        .approval(ApprovalAssignment.APPROVED)
+        .build();
+
+    when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    when(pengirimanAssignmentRepository.findById(10L)).thenReturn(Optional.of(assignment));
+
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        pengirimanService.tolakAssignmentFinalParsialAdmin(10L, adminId, 150.0, "Rusak"));
+
+    assertTrue(exception.getMessage().contains("lebih kecil"));
     }
 
     @Test
