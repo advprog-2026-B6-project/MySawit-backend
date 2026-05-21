@@ -18,6 +18,7 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanAssignmentRep
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.PayrollRequestFactory;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.PengirimanValidationRules;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -27,15 +28,19 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
     private final UserRepository userRepository;
     private final PayrollRequestSender payrollRequestSender;
     private final SupirIdentityMapper supirIdentityMapper;
+    private final PayrollRequestFactory fullPayrollRequestFactory;
 
     public PengirimanAssignmentServiceImpl(PengirimanAssignmentRepository repository,
                                            UserRepository userRepository,
                                            PayrollRequestSender payrollRequestSender,
-                                           SupirIdentityMapper supirIdentityMapper) {
+                                           SupirIdentityMapper supirIdentityMapper,
+                                           @Qualifier("fullPayrollRequestFactory")
+                                           PayrollRequestFactory fullPayrollRequestFactory) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.payrollRequestSender = payrollRequestSender;
         this.supirIdentityMapper = supirIdentityMapper;
+        this.fullPayrollRequestFactory = fullPayrollRequestFactory;
     }
 
     @Override
@@ -145,8 +150,8 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
 
     private void sendPayrollRequestForAssignment(PengirimanAssignment assignment) {
         User mandor = userRepository.findByUsername(assignment.getMandorEmail()).orElse(null);
-        var request = PayrollRequestFactory.fromAssignment(
-                assignment, mandor, assignment.getMuatanKg(), supirIdentityMapper);
+        var request = fullPayrollRequestFactory.createFromAssignment(
+                assignment, mandor, supirIdentityMapper);
 
         payrollRequestSender.sendPayrollRequest(request);
     }

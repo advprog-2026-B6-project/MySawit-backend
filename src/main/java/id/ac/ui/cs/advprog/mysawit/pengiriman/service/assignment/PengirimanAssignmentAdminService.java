@@ -15,6 +15,7 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.service.exception.PengirimanStateE
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.PayrollRequestFactory;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.PengirimanValidationRules;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,15 +32,23 @@ public class PengirimanAssignmentAdminService {
     private final UserRepository userRepository;
     private final PayrollRequestSender payrollRequestSender;
     private final SupirIdentityMapper supirIdentityMapper;
+    private final PayrollRequestFactory fullPayrollRequestFactory;
+    private final PayrollRequestFactory partialPayrollRequestFactory;
 
     public PengirimanAssignmentAdminService(PengirimanAssignmentRepository pengirimanAssignmentRepository,
                                             UserRepository userRepository,
                                             PayrollRequestSender payrollRequestSender,
-                                            SupirIdentityMapper supirIdentityMapper) {
+                                            SupirIdentityMapper supirIdentityMapper,
+                                            @Qualifier("fullPayrollRequestFactory")
+                                            PayrollRequestFactory fullPayrollRequestFactory,
+                                            @Qualifier("partialPayrollRequestFactory")
+                                            PayrollRequestFactory partialPayrollRequestFactory) {
         this.pengirimanAssignmentRepository = pengirimanAssignmentRepository;
         this.userRepository = userRepository;
         this.payrollRequestSender = payrollRequestSender;
         this.supirIdentityMapper = supirIdentityMapper;
+        this.fullPayrollRequestFactory = fullPayrollRequestFactory;
+        this.partialPayrollRequestFactory = partialPayrollRequestFactory;
     }
 
     public List<ApprovedPengirimanResponse> getPengirimanDisetujui(String mandorName,
@@ -89,7 +98,7 @@ public class PengirimanAssignmentAdminService {
         assignment.setAdminFinalNote(null);
         assignment.setAdminFinalReviewedAt(LocalDateTime.now());
         PengirimanAssignment saved = pengirimanAssignmentRepository.save(assignment);
-        sendPayrollRequestForAssignment(saved, saved.getMuatanKg());
+        sendFullPayrollRequestForAssignment(saved);
         return saved;
     }
 
@@ -122,7 +131,7 @@ public class PengirimanAssignmentAdminService {
         assignment.setAdminFinalReviewedAt(LocalDateTime.now());
 
         PengirimanAssignment saved = pengirimanAssignmentRepository.save(assignment);
-        sendPayrollRequestForAssignment(saved, muatanKgDiakui);
+        sendPartialPayrollRequestForAssignment(saved);
         return saved;
     }
 
@@ -150,9 +159,15 @@ public class PengirimanAssignmentAdminService {
         return response;
     }
 
-    private void sendPayrollRequestForAssignment(PengirimanAssignment assignment, double muatanKgDiakui) {
+    private void sendFullPayrollRequestForAssignment(PengirimanAssignment assignment) {
         User mandor = userRepository.findByUsername(assignment.getMandorEmail()).orElse(null);
-        var request = PayrollRequestFactory.fromAssignment(assignment, mandor, muatanKgDiakui, supirIdentityMapper);
+        var request = fullPayrollRequestFactory.createFromAssignment(assignment, mandor, supirIdentityMapper);
+        payrollRequestSender.sendPayrollRequest(request);
+    }
+
+    private void sendPartialPayrollRequestForAssignment(PengirimanAssignment assignment) {
+        User mandor = userRepository.findByUsername(assignment.getMandorEmail()).orElse(null);
+        var request = partialPayrollRequestFactory.createFromAssignment(assignment, mandor, supirIdentityMapper);
         payrollRequestSender.sendPayrollRequest(request);
     }
 
