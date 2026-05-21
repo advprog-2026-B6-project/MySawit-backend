@@ -17,5 +17,5 @@ public interface KebunSawitJpaRepository extends JpaRepository<KebunSawitEntity,
             WHERE LOWER(kebun.namaKebun) LIKE LOWER(CONCAT('%', :nama, '%'))
             AND LOWER(kebun.kodeUnik) LIKE LOWER(CONCAT('%', :kode, '%'))
             """)
-    List<KebunSawitEntity> search(@Param("nama") String searchNama, @Param("kode") String searchKode);
+    List<KebunSawitEntity> search(@Param("nama") String nama, @Param("kode") String kode);
 }
