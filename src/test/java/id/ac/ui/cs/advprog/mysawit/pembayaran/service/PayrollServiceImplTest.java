@@ -53,9 +53,9 @@ public class PayrollServiceImplTest {
     @BeforeEach
     void setUp() {
         strategies = new HashMap<>();
-        strategies.put("BURUH", new BuruhWageStrategy());
-        strategies.put("SUPIR", new SupirWageStrategy());
-        strategies.put("MANDOR", new MandorWageStrategy());
+        strategies.put("buruh", new BuruhWageStrategy());
+        strategies.put("supir", new SupirWageStrategy());
+        strategies.put("mandor", new MandorWageStrategy());
         payrollService = new PayrollServiceImpl(payrollRepository, userRepository, wageSettingService, strategies);
     }
 
