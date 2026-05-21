@@ -30,7 +30,8 @@ class LocalPayrollRequestClientTest {
         PayrollService payrollService = Mockito.mock(PayrollService.class);
         UserRepository userRepository = Mockito.mock(UserRepository.class);
         SupirIdentityMapper supirIdentityMapper = Mockito.mock(SupirIdentityMapper.class);
-        LocalPayrollRequestClient client = new LocalPayrollRequestClient(payrollService, userRepository, supirIdentityMapper);
+        LocalPayrollRequestClient client = new LocalPayrollRequestClient(
+                payrollService, userRepository, supirIdentityMapper);
 
         User supir = new User("Supir A", "supir-a", "secret", Role.SUPIR, null);
         UUID supirTrukId = UUID.nameUUIDFromBytes(supir.getUsername().getBytes());
@@ -56,7 +57,8 @@ class LocalPayrollRequestClientTest {
         PayrollService payrollService = Mockito.mock(PayrollService.class);
         UserRepository userRepository = Mockito.mock(UserRepository.class);
         SupirIdentityMapper supirIdentityMapper = Mockito.mock(SupirIdentityMapper.class);
-        LocalPayrollRequestClient client = new LocalPayrollRequestClient(payrollService, userRepository, supirIdentityMapper);
+        LocalPayrollRequestClient client = new LocalPayrollRequestClient(
+                payrollService, userRepository, supirIdentityMapper);
 
         User mandor = new User("Mandor", "mandor", "secret", Role.MANDOR, null);
         when(userRepository.findAll()).thenReturn(List.of(mandor));

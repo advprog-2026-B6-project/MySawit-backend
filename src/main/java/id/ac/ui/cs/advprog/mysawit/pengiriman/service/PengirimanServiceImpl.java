@@ -105,7 +105,10 @@ public class PengirimanServiceImpl implements PengirimanService {
     }
 
     @Override
-    public List<Pengiriman> getRiwayatPengirimanSupir(UUID supirTrukId, LocalDate tanggalMulai, LocalDate tanggalSelesai) {
+    public List<Pengiriman> getRiwayatPengirimanSupir(
+            UUID supirTrukId,
+            LocalDate tanggalMulai,
+            LocalDate tanggalSelesai) {
         return workflowService.getRiwayatPengirimanSupir(supirTrukId, tanggalMulai, tanggalSelesai);
     }
 

@@ -60,7 +60,8 @@ public class PengirimanWorkflowService {
     public Pengiriman ubahStatusPengiriman(UUID pengirimanId, UUID supirTrukId, StatusPengiriman statusBaru) {
         Pengiriman pengiriman = findPengirimanById(pengirimanId);
         if (!pengiriman.getSupirTrukId().equals(supirTrukId)) {
-            throw new PengirimanAuthorizationException("Hanya supir yang ditugaskan yang dapat mengubah status pengiriman");
+            throw new PengirimanAuthorizationException(
+                    "Hanya supir yang ditugaskan yang dapat mengubah status pengiriman");
         }
 
         PengirimanValidationRules.validateStatusTransition(pengiriman.getStatus(), statusBaru);
@@ -154,7 +155,10 @@ public class PengirimanWorkflowService {
         return pengirimanRepository.findBySupirTrukId(supirTrukId);
     }
 
-    public List<Pengiriman> getRiwayatPengirimanSupir(UUID supirTrukId, LocalDate tanggalMulai, LocalDate tanggalSelesai) {
+    public List<Pengiriman> getRiwayatPengirimanSupir(
+            UUID supirTrukId,
+            LocalDate tanggalMulai,
+            LocalDate tanggalSelesai) {
         PengirimanValidationRules.validateDateRange(tanggalMulai, tanggalSelesai);
         return pengirimanRepository.findRiwayatSupir(supirTrukId, tanggalMulai, tanggalSelesai);
     }
@@ -162,7 +166,8 @@ public class PengirimanWorkflowService {
     public String getAlasanPenolakan(UUID pengirimanId, UUID supirTrukId) {
         Pengiriman pengiriman = findPengirimanById(pengirimanId);
         if (!pengiriman.getSupirTrukId().equals(supirTrukId)) {
-            throw new PengirimanAuthorizationException("Hanya supir yang ditugaskan yang dapat melihat alasan penolakan");
+            throw new PengirimanAuthorizationException(
+                    "Hanya supir yang ditugaskan yang dapat melihat alasan penolakan");
         }
         if (pengiriman.getStatus() != StatusPengiriman.DITOLAK) {
             throw new PengirimanStateException("Pengiriman tidak berstatus ditolak");
