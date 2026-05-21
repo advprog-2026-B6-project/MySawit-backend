@@ -15,6 +15,10 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.model.ApprovalAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanAssignmentRepository;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.PayrollRequestFactory;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.PengirimanValidationRules;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentService {
@@ -22,16 +26,20 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
     private final PengirimanAssignmentRepository repository;
     private final UserRepository userRepository;
     private final PayrollRequestSender payrollRequestSender;
+    private final SupirIdentityMapper supirIdentityMapper;
 
     public PengirimanAssignmentServiceImpl(PengirimanAssignmentRepository repository,
                                            UserRepository userRepository,
-                                           PayrollRequestSender payrollRequestSender) {
+                                           PayrollRequestSender payrollRequestSender,
+                                           SupirIdentityMapper supirIdentityMapper) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.payrollRequestSender = payrollRequestSender;
+        this.supirIdentityMapper = supirIdentityMapper;
     }
 
     @Override
+    @Transactional
     public PengirimanAssignmentResponse createAssignment(PengirimanAssignmentRequest request, String mandorEmail) {
         validateRequest(request, mandorEmail);
         PengirimanAssignment assignment = PengirimanAssignmentMapper.toEntity(request);
@@ -89,6 +97,7 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
     }
 
     @Override
+    @Transactional
     public PengirimanAssignmentResponse updateStatus(Long assignmentId, String supirEmail, StatusAssignment status) {
         if (status == null) {
             throw new IllegalArgumentException("Status wajib diisi");
@@ -107,6 +116,7 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
     }
 
     @Override
+    @Transactional
     public PengirimanAssignmentResponse updateApproval(
             Long assignmentId, String mandorEmail, ApprovalAssignment approval, String note) {
         if (approval == null) {
@@ -135,7 +145,8 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
 
     private void sendPayrollRequestForAssignment(PengirimanAssignment assignment) {
         User mandor = userRepository.findByUsername(assignment.getMandorEmail()).orElse(null);
-        var request = PayrollRequestFactory.fromAssignment(assignment, mandor, assignment.getMuatanKg());
+        var request = PayrollRequestFactory.fromAssignment(
+                assignment, mandor, assignment.getMuatanKg(), supirIdentityMapper);
 
         payrollRequestSender.sendPayrollRequest(request);
     }
