@@ -18,11 +18,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import id.ac.ui.cs.advprog.mysawit.hasil.exception.DailySubmissionLimitException;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
+import id.ac.ui.cs.advprog.mysawit.hasil.payroll.HasilPayrollPublisher;
 import id.ac.ui.cs.advprog.mysawit.hasil.repository.HasilRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.repository.InMemoryHasilRepository;
-import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollCreateRequest;
-import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollResponse;
-import id.ac.ui.cs.advprog.mysawit.pembayaran.service.PayrollService;
 
 class HasilServiceTest {
     private HasilService service;
@@ -89,9 +87,9 @@ class HasilServiceTest {
 
         assertEquals(HasilStatus.VERIFIED, approved.getStatus());
         assertTrue(approved.isVisibleForPengiriman());
-        PayrollCreateRequest request = payrollService.awaitFirstRequest();
-        assertEquals("worker-1", request.getUsername());
-        assertEquals(0, request.getTotalKg().compareTo(java.math.BigDecimal.valueOf(110.0)));
+        Hasil payrollReport = payrollService.awaitFirstRequest();
+        assertEquals("worker-1", payrollReport.getWorkerId());
+        assertEquals(110.0, payrollReport.getWeightKg());
     }
 
     @Test
@@ -123,49 +121,24 @@ class HasilServiceTest {
         assertThrows(IllegalArgumentException.class, () -> service.approve(report.getId()));
     }
 
-    private static class FakePayrollService implements PayrollService {
-        private final List<PayrollCreateRequest> requests = new ArrayList<>();
+    private static class FakePayrollService implements HasilPayrollPublisher {
+        private final List<Hasil> requests = new ArrayList<>();
 
         @Override
-        public PayrollResponse createPayroll(PayrollCreateRequest request) {
+        public void publishApproved(Hasil report) {
             synchronized (requests) {
-                requests.add(request);
+                requests.add(report);
                 requests.notifyAll();
             }
-            return null;
         }
 
-        PayrollCreateRequest awaitFirstRequest() throws InterruptedException {
+        Hasil awaitFirstRequest() throws InterruptedException {
             synchronized (requests) {
                 if (requests.isEmpty()) {
                     requests.wait(TimeUnit.SECONDS.toMillis(2));
                 }
                 return requests.get(0);
             }
-        }
-
-        @Override
-        public List<PayrollResponse> getPayrollsByUsernameForAdmin(
-                String username,
-                java.time.LocalDate startDate,
-                java.time.LocalDate endDate
-        ) {
-            return List.of();
-        }
-
-        @Override
-        public List<PayrollResponse> getPayrollsForWorker(
-                String username,
-                java.time.LocalDate startDate,
-                java.time.LocalDate endDate,
-                String status
-        ) {
-            return List.of();
-        }
-
-        @Override
-        public java.math.BigDecimal calculateWage(String role, java.math.BigDecimal totalKg) {
-            return java.math.BigDecimal.ZERO;
         }
     }
 
