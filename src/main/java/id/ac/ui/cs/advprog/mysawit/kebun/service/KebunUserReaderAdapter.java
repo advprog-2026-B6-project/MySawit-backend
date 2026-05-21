@@ -46,7 +46,7 @@ public class KebunUserReaderAdapter implements KebunUserReader {
                 user.getId(),
                 user.getFullname(),
                 user.getUsername(),
-                user.getRole() != null ? user.getRole().name() : null,
+                user.getRole(),
                 user.getCertificationNumber()
         );
     }
