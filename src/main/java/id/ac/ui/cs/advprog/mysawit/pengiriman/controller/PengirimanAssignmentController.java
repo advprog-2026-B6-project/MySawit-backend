@@ -4,9 +4,9 @@ import java.util.List;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,15 +45,9 @@ public class PengirimanAssignmentController {
     @PostMapping
     public ResponseEntity<ApiResponse<PengirimanAssignmentResponse>> createAssignment(
             @RequestBody PengirimanAssignmentRequest request) {
-        try {
-            PengirimanAssignmentResponse response = assignmentService.createAssignment(request, getCurrentEmail());
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Penugasan pengiriman berhasil dibuat", response));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
+        PengirimanAssignmentResponse response = assignmentService.createAssignment(request, getCurrentEmail());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Penugasan pengiriman berhasil dibuat", response));
     }
 
     @GetMapping
@@ -64,109 +58,71 @@ public class PengirimanAssignmentController {
 
     @GetMapping("/me/mandor")
     public ResponseEntity<ApiResponse<List<PengirimanAssignmentResponse>>> getAssignmentsMandorSaya() {
-        try {
-            List<PengirimanAssignmentResponse> assignments =
-                    assignmentService.getAssignmentsByMandorEmail(getCurrentEmail());
-            return ResponseEntity.ok(ApiResponse.success("Daftar penugasan mandor berhasil diambil", assignments));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
-        }
+        List<PengirimanAssignmentResponse> assignments =
+                assignmentService.getAssignmentsByMandorEmail(getCurrentEmail());
+        return ResponseEntity.ok(ApiResponse.success("Daftar penugasan mandor berhasil diambil", assignments));
     }
 
     @GetMapping("/me/supir")
     public ResponseEntity<ApiResponse<List<PengirimanAssignmentResponse>>> getAssignmentsSupirSaya() {
-        try {
-            List<PengirimanAssignmentResponse> assignments =
-                    assignmentService.getAssignmentsBySupirEmail(getCurrentEmail());
-            return ResponseEntity.ok(ApiResponse.success("Daftar penugasan supir berhasil diambil", assignments));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
-        }
+        List<PengirimanAssignmentResponse> assignments =
+                assignmentService.getAssignmentsBySupirEmail(getCurrentEmail());
+        return ResponseEntity.ok(ApiResponse.success("Daftar penugasan supir berhasil diambil", assignments));
     }
 
     @GetMapping("/me/supir/riwayat")
     public ResponseEntity<ApiResponse<List<PengirimanAssignmentResponse>>> getRiwayatAssignmentsSupirSaya(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tanggalMulai,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tanggalSelesai) {
-        try {
-            List<PengirimanAssignmentResponse> assignments = assignmentService.getRiwayatAssignmentsBySupirEmail(
-                    getCurrentEmail(), tanggalMulai, tanggalSelesai);
-            return ResponseEntity.ok(ApiResponse.success("Riwayat penugasan supir berhasil diambil", assignments));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
+        List<PengirimanAssignmentResponse> assignments = assignmentService.getRiwayatAssignmentsBySupirEmail(
+                getCurrentEmail(), tanggalMulai, tanggalSelesai);
+        return ResponseEntity.ok(ApiResponse.success("Riwayat penugasan supir berhasil diambil", assignments));
     }
 
     @GetMapping("/me/mandor/supir/{supirId}")
     public ResponseEntity<ApiResponse<List<PengirimanAssignmentResponse>>> getAssignmentsSupirByMandor(
             @PathVariable UUID supirId) {
-        try {
-            String mandorEmail = getCurrentEmail();
-            String supirEmail = resolveSupirEmailById(supirId);
-            List<PengirimanAssignmentResponse> assignments =
-                    assignmentService.getAssignmentsByMandorAndSupirEmail(mandorEmail, supirEmail);
-            return ResponseEntity.ok(ApiResponse.success("Daftar penugasan supir berhasil diambil", assignments));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
+        String mandorEmail = getCurrentEmail();
+        String supirEmail = resolveSupirEmailById(supirId);
+        List<PengirimanAssignmentResponse> assignments =
+                assignmentService.getAssignmentsByMandorAndSupirEmail(mandorEmail, supirEmail);
+        return ResponseEntity.ok(ApiResponse.success("Daftar penugasan supir berhasil diambil", assignments));
     }
 
     @GetMapping("/me/mandor/supir-email/{supirEmail}")
     public ResponseEntity<ApiResponse<SupirAssignmentProfileResponse>> getSupirProfileByEmailForMandor(
             @PathVariable String supirEmail) {
-        try {
-            String mandorEmail = getCurrentEmail();
-            var supirUser = userRepository.findByUsername(supirEmail)
-                    .filter(user -> user.getRole() == Role.SUPIR)
-                    .orElseThrow(() -> new IllegalArgumentException("Supir tidak ditemukan"));
-            List<PengirimanAssignmentResponse> assignments =
-                    assignmentService.getAssignmentsByMandorAndSupirEmail(mandorEmail, supirEmail);
-            SupirAssignmentProfileResponse response = new SupirAssignmentProfileResponse(
-                    supirUser.getUsername(),
-                    supirUser.getUsername(),
-                    assignments);
-            return ResponseEntity.ok(ApiResponse.success("Profil supir berhasil diambil", response));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
+        String mandorEmail = getCurrentEmail();
+        var supirUser = userRepository.findByUsername(supirEmail)
+                .filter(user -> user.getRole() == Role.SUPIR)
+                .orElseThrow(() -> new IllegalArgumentException("Supir tidak ditemukan"));
+        List<PengirimanAssignmentResponse> assignments =
+                assignmentService.getAssignmentsByMandorAndSupirEmail(mandorEmail, supirEmail);
+        SupirAssignmentProfileResponse response = new SupirAssignmentProfileResponse(
+                supirUser.getUsername(),
+                supirUser.getUsername(),
+                assignments);
+        return ResponseEntity.ok(ApiResponse.success("Profil supir berhasil diambil", response));
     }
 
     @PutMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PengirimanAssignmentResponse>> updateStatus(
             @PathVariable Long id,
             @RequestBody UpdateAssignmentStatusRequest request) {
-        try {
-            PengirimanAssignmentResponse response = assignmentService.updateStatus(
-                    id,
-                    getCurrentEmail(),
-                    request.getStatus());
-            return ResponseEntity.ok(ApiResponse.success("Status penugasan berhasil diubah", response));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
+        PengirimanAssignmentResponse response = assignmentService.updateStatus(
+                id,
+                getCurrentEmail(),
+                request.getStatus());
+        return ResponseEntity.ok(ApiResponse.success("Status penugasan berhasil diubah", response));
     }
 
     @PutMapping("/{id}/approval")
     public ResponseEntity<ApiResponse<PengirimanAssignmentResponse>> updateApproval(
             @PathVariable Long id,
             @RequestBody UpdateAssignmentApprovalRequest request) {
-        try {
-            PengirimanAssignmentResponse response = assignmentService.updateApproval(
-                    id, getCurrentEmail(), request.getApproval(), request.getNote());
-            return ResponseEntity.ok(ApiResponse.success("Approval penugasan berhasil diperbarui", response));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
+        PengirimanAssignmentResponse response = assignmentService.updateApproval(
+                id, getCurrentEmail(), request.getApproval(), request.getNote());
+        return ResponseEntity.ok(ApiResponse.success("Approval penugasan berhasil diperbarui", response));
     }
 
     private String getCurrentEmail() {

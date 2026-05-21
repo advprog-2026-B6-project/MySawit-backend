@@ -12,7 +12,6 @@ import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.ApprovedPengirimanResponse;
-import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.ApprovalAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.Pengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment;
@@ -45,15 +44,7 @@ public class PengirimanServiceImpl implements PengirimanService {
 
     @Override
     public Pengiriman buatPengiriman(Long mandorId, UUID supirTrukId, double muatanKg, String tujuan) {
-        if (muatanKg > Pengiriman.MAX_MUATAN_KG) {
-            throw new IllegalArgumentException(
-                "Muatan melebihi batas maksimal. Maksimal muatan adalah " 
-                + Pengiriman.MAX_MUATAN_KG + " kg");
-        }
-
-        if (muatanKg <= 0) {
-            throw new IllegalArgumentException("Muatan harus lebih dari 0 kg");
-        }
+        PengirimanValidationRules.validateMuatanPengiriman(muatanKg, Pengiriman.MAX_MUATAN_KG);
 
         //validasi mandor: harus punya role mandor
         User mandor = userRepository.findById(mandorId)
@@ -90,7 +81,7 @@ public class PengirimanServiceImpl implements PengirimanService {
                 "Hanya supir yang ditugaskan yang dapat mengubah status pengiriman");
         }
 
-        validateStatusTransition(pengiriman.getStatus(), statusBaru);
+        PengirimanValidationRules.validateStatusTransition(pengiriman.getStatus(), statusBaru);
 
         pengiriman.setStatus(statusBaru);
 
@@ -104,25 +95,6 @@ public class PengirimanServiceImpl implements PengirimanService {
         return pengirimanRepository.save(pengiriman);
     }
 
-    private void validateStatusTransition(StatusPengiriman statusSaatIni, 
-                                           StatusPengiriman statusBaru) {
-
-        boolean valid = switch (statusSaatIni) {
-            case MENUNGGU -> statusBaru == StatusPengiriman.MEMUAT;
-            case MEMUAT -> statusBaru == StatusPengiriman.MENGIRIM;
-            case MENGIRIM -> statusBaru == StatusPengiriman.TIBA;
-            case TIBA -> false;
-            case DISETUJUI -> false;
-            case DITOLAK -> false;
-        };
-
-        if (!valid) {
-            throw new IllegalArgumentException(
-                "Transisi status tidak valid dari " + statusSaatIni.getDisplayName() 
-                + " ke " + statusBaru.getDisplayName());
-        }
-    }
-
     @Override
     public List<Pengiriman> getDaftarPengirimanSupir(UUID supirTrukId) {
         return pengirimanRepository.findBySupirTrukId(supirTrukId);
@@ -132,9 +104,7 @@ public class PengirimanServiceImpl implements PengirimanService {
     public List<Pengiriman> getRiwayatPengirimanSupir(UUID supirTrukId,
                                                       LocalDate tanggalMulai,
                                                       LocalDate tanggalSelesai) {
-        if (tanggalMulai != null && tanggalSelesai != null && tanggalMulai.isAfter(tanggalSelesai)) {
-            throw new IllegalArgumentException("Tanggal mulai tidak boleh setelah tanggal selesai");
-        }
+        PengirimanValidationRules.validateDateRange(tanggalMulai, tanggalSelesai);
 
         return pengirimanRepository.findRiwayatSupir(supirTrukId, tanggalMulai, tanggalSelesai);
     }
@@ -163,9 +133,7 @@ public class PengirimanServiceImpl implements PengirimanService {
     public List<ApprovedPengirimanResponse> getPengirimanDisetujui(String mandorName,
                                                                    LocalDate tanggalMulai,
                                                                    LocalDate tanggalSelesai) {
-        if (tanggalMulai != null && tanggalSelesai != null && tanggalMulai.isAfter(tanggalSelesai)) {
-            throw new IllegalArgumentException("Tanggal mulai tidak boleh setelah tanggal selesai");
-        }
+        PengirimanValidationRules.validateDateRange(tanggalMulai, tanggalSelesai);
 
         String normalizedMandorQuery = mandorName == null ? "" : mandorName.trim().toLowerCase();
 
@@ -228,16 +196,7 @@ public class PengirimanServiceImpl implements PengirimanService {
 
     private void sendPayrollRequestForAssignment(PengirimanAssignment assignment, double muatanKgDiakui) {
         User mandor = userRepository.findByUsername(assignment.getMandorEmail()).orElse(null);
-        UUID supirTrukId = UUID.nameUUIDFromBytes(assignment.getSupirEmail().getBytes());
-
-        PayrollRequest request = PayrollRequest.builder()
-                .pengirimanId(null)
-                .supirTrukId(supirTrukId)
-                .mandorId(mandor != null ? mandor.getId() : null)
-                .muatanKg(muatanKgDiakui)
-                .tujuan(assignment.getTujuan())
-                .waktuDisetujui(LocalDateTime.now())
-                .build();
+        var request = PayrollRequestFactory.fromAssignment(assignment, mandor, muatanKgDiakui);
 
         payrollRequestSender.sendPayrollRequest(request);
     }
@@ -268,19 +227,11 @@ public class PengirimanServiceImpl implements PengirimanService {
     }
 
     private String normalizeAlasanPenolakan(String alasanPenolakan) {
-        if (alasanPenolakan == null || alasanPenolakan.trim().isEmpty()) {
-            throw new IllegalArgumentException("Alasan penolakan wajib diisi");
-        }
-        return alasanPenolakan.trim();
+        return PengirimanValidationRules.normalizeRequiredReason(alasanPenolakan);
     }
 
     private void validateMuatanDiakui(double muatanKgDiakui, double muatanKg) {
-        if (muatanKgDiakui <= 0) {
-            throw new IllegalArgumentException("Kilogram diakui harus lebih dari 0 kg");
-        }
-        if (muatanKgDiakui >= muatanKg) {
-            throw new IllegalArgumentException("Kilogram diakui harus lebih kecil dari muatan");
-        }
+        PengirimanValidationRules.validateMuatanDiakui(muatanKgDiakui, muatanKg);
     }
 
     @Override
@@ -400,9 +351,7 @@ public class PengirimanServiceImpl implements PengirimanService {
         PengirimanAssignment assignment = pengirimanAssignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Penugasan pengiriman tidak ditemukan"));
 
-        if (assignment.getApproval() != ApprovalAssignment.APPROVED) {
-            throw new IllegalArgumentException("Penugasan belum disetujui oleh mandor");
-        }
+        PengirimanValidationRules.validateAssignmentApprovedByMandor(assignment);
         validateAdminFinalApprovalMutable(assignment);
 
         assignment.setAdminFinalApproval(ApprovalAssignment.APPROVED);
@@ -419,9 +368,7 @@ public class PengirimanServiceImpl implements PengirimanService {
         PengirimanAssignment assignment = pengirimanAssignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Penugasan pengiriman tidak ditemukan"));
 
-        if (assignment.getApproval() != ApprovalAssignment.APPROVED) {
-            throw new IllegalArgumentException("Penugasan belum disetujui oleh mandor");
-        }
+        PengirimanValidationRules.validateAssignmentApprovedByMandor(assignment);
         validateAdminFinalApprovalMutable(assignment);
 
         String normalizedReason = normalizeAlasanPenolakan(alasanPenolakan);
@@ -442,9 +389,7 @@ public class PengirimanServiceImpl implements PengirimanService {
         PengirimanAssignment assignment = pengirimanAssignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Penugasan pengiriman tidak ditemukan"));
 
-        if (assignment.getApproval() != ApprovalAssignment.APPROVED) {
-            throw new IllegalArgumentException("Penugasan belum disetujui oleh mandor");
-        }
+        PengirimanValidationRules.validateAssignmentApprovedByMandor(assignment);
         validateAdminFinalApprovalMutable(assignment);
 
         validateMuatanDiakui(muatanKgDiakui, assignment.getMuatanKg());

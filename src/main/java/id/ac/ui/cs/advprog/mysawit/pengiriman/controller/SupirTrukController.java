@@ -49,27 +49,17 @@ public class SupirTrukController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SupirTruk>> getSupirTrukById(@PathVariable UUID id) {
-        try {
-            SupirTruk supirTruk = supirTrukService.getSupirTrukById(id);
-            return ResponseEntity.ok(
-                    ApiResponse.success("Supir truk berhasil diambil", supirTruk));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        SupirTruk supirTruk = supirTrukService.getSupirTrukById(id);
+        return ResponseEntity.ok(
+                ApiResponse.success("Supir truk berhasil diambil", supirTruk));
     }
 
     @GetMapping("/{id}/pengiriman")
     public ResponseEntity<ApiResponse<List<Pengiriman>>> getPengirimanSupirTruk(@PathVariable UUID id) {
-        try {
-            supirTrukService.getSupirTrukById(id);
-            List<Pengiriman> pengirimanList = pengirimanService.getDaftarPengirimanSupir(id);
-            return ResponseEntity.ok(
-                    ApiResponse.success("Daftar pengiriman supir berhasil diambil", pengirimanList));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        supirTrukService.getSupirTrukById(id);
+        List<Pengiriman> pengirimanList = pengirimanService.getDaftarPengirimanSupir(id);
+        return ResponseEntity.ok(
+                ApiResponse.success("Daftar pengiriman supir berhasil diambil", pengirimanList));
     }
 
     @GetMapping("/{id}/pengiriman/riwayat")
@@ -79,31 +69,21 @@ public class SupirTrukController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tanggalMulai,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tanggalSelesai) {
-        try {
-            supirTrukService.getSupirTrukById(id);
-            List<Pengiriman> pengirimanList = pengirimanService.getRiwayatPengirimanSupir(
-                    id, tanggalMulai, tanggalSelesai);
-            return ResponseEntity.ok(
-                    ApiResponse.success("Riwayat pengiriman supir berhasil diambil", pengirimanList));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        supirTrukService.getSupirTrukById(id);
+        List<Pengiriman> pengirimanList = pengirimanService.getRiwayatPengirimanSupir(
+                id, tanggalMulai, tanggalSelesai);
+        return ResponseEntity.ok(
+                ApiResponse.success("Riwayat pengiriman supir berhasil diambil", pengirimanList));
     }
 
     @GetMapping("/{supirId}/pengiriman/{pengirimanId}/alasan-penolakan")
     public ResponseEntity<ApiResponse<String>> getAlasanPenolakanPengiriman(
             @PathVariable UUID supirId,
             @PathVariable UUID pengirimanId) {
-        try {
-            supirTrukService.getSupirTrukById(supirId);
-            String alasan = pengirimanService.getAlasanPenolakan(pengirimanId, supirId);
-            return ResponseEntity.ok(
-                    ApiResponse.success("Alasan penolakan berhasil diambil", alasan));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        supirTrukService.getSupirTrukById(supirId);
+        String alasan = pengirimanService.getAlasanPenolakan(pengirimanId, supirId);
+        return ResponseEntity.ok(
+                ApiResponse.success("Alasan penolakan berhasil diambil", alasan));
     }
 
     @PostMapping

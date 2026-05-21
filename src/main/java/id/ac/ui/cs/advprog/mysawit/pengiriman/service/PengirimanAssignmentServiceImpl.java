@@ -2,15 +2,12 @@ package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
 import java.util.List;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
-import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PengirimanAssignmentRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PengirimanAssignmentResponse;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.mapper.PengirimanAssignmentMapper;
@@ -67,9 +64,7 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
     @Override
     public List<PengirimanAssignmentResponse> getRiwayatAssignmentsBySupirEmail(
             String supirEmail, LocalDate tanggalMulai, LocalDate tanggalSelesai) {
-        if (tanggalMulai != null && tanggalSelesai != null && tanggalMulai.isAfter(tanggalSelesai)) {
-            throw new IllegalArgumentException("Tanggal mulai tidak boleh setelah tanggal selesai");
-        }
+        PengirimanValidationRules.validateDateRange(tanggalMulai, tanggalSelesai);
 
         return repository.findBySupirEmail(supirEmail).stream()
                 .filter(a -> a.getApproval() != null || a.getStatus() == StatusAssignment.TIBA)
@@ -140,16 +135,7 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
 
     private void sendPayrollRequestForAssignment(PengirimanAssignment assignment) {
         User mandor = userRepository.findByUsername(assignment.getMandorEmail()).orElse(null);
-        UUID supirTrukId = UUID.nameUUIDFromBytes(assignment.getSupirEmail().getBytes());
-
-        PayrollRequest request = PayrollRequest.builder()
-                .pengirimanId(null)
-                .supirTrukId(supirTrukId)
-                .mandorId(mandor != null ? mandor.getId() : null)
-                .muatanKg(assignment.getMuatanKg())
-                .tujuan(assignment.getTujuan())
-                .waktuDisetujui(LocalDateTime.now())
-                .build();
+        var request = PayrollRequestFactory.fromAssignment(assignment, mandor, assignment.getMuatanKg());
 
         payrollRequestSender.sendPayrollRequest(request);
     }
@@ -161,9 +147,7 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
         if (request.getSupirEmail() == null || request.getSupirEmail().isBlank()) {
             throw new IllegalArgumentException("Supir email wajib diisi");
         }
-        if (request.getMuatanKg() <= 0 || request.getMuatanKg() > 400) {
-            throw new IllegalArgumentException("Muatan harus antara 0 - 400 kg");
-        }
+        PengirimanValidationRules.validateMuatanAssignment(request.getMuatanKg());
         if (request.getTujuan() == null || request.getTujuan().isBlank()) {
             throw new IllegalArgumentException("Tujuan wajib diisi");
         }

@@ -40,20 +40,15 @@ public class PengirimanController {
     @PostMapping
     public ResponseEntity<ApiResponse<Pengiriman>> buatPengiriman(
             @RequestBody BuatPengirimanRequest request) {
-        try {
-            Long mandorId = resolveMandorId(request.getMandorId());
-            Pengiriman pengiriman = pengirimanService.buatPengiriman(
-                    mandorId,
-                    request.getSupirTrukId(),
-                    request.getMuatanKg(),
-                    request.getTujuan()
-            );
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Pengiriman berhasil dibuat", pengiriman));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        Long mandorId = resolveMandorId(request.getMandorId());
+        Pengiriman pengiriman = pengirimanService.buatPengiriman(
+                mandorId,
+                request.getSupirTrukId(),
+                request.getMuatanKg(),
+                request.getTujuan()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Pengiriman berhasil dibuat", pengiriman));
     }
 
     private Long resolveMandorId(Long mandorId) {
@@ -76,62 +71,42 @@ public class PengirimanController {
     public ResponseEntity<ApiResponse<Pengiriman>> ubahStatusPengiriman(
             @PathVariable UUID id,
             @RequestBody UbahStatusRequest request) {
-        try {
-            Pengiriman pengiriman = pengirimanService.ubahStatusPengiriman(
-                    id,
-                    request.getSupirTrukId(),
-                    request.getStatusBaru()
-            );
-            return ResponseEntity.ok(
-                    ApiResponse.success("Status pengiriman berhasil diubah", pengiriman));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        Pengiriman pengiriman = pengirimanService.ubahStatusPengiriman(
+                id,
+                request.getSupirTrukId(),
+                request.getStatusBaru()
+        );
+        return ResponseEntity.ok(
+                ApiResponse.success("Status pengiriman berhasil diubah", pengiriman));
     }
 
     @PutMapping("/{id}/approve")
     public ResponseEntity<ApiResponse<Pengiriman>> approvePengiriman(
             @PathVariable UUID id,
             @RequestBody ApprovePengirimanRequest request) {
-        try {
-            Pengiriman pengiriman = pengirimanService.setujuiPengiriman(id, request.getMandorId());
-            return ResponseEntity.ok(
-                    ApiResponse.success("Pengiriman berhasil disetujui", pengiriman));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        Pengiriman pengiriman = pengirimanService.setujuiPengiriman(id, request.getMandorId());
+        return ResponseEntity.ok(
+                ApiResponse.success("Pengiriman berhasil disetujui", pengiriman));
     }
 
     @PutMapping("/{id}/reject")
     public ResponseEntity<ApiResponse<Pengiriman>> rejectPengiriman(
             @PathVariable UUID id,
             @RequestBody RejectPengirimanRequest request) {
-        try {
-            Pengiriman pengiriman = pengirimanService.tolakPengiriman(
-                    id,
-                    request.getMandorId(),
-                    request.getAlasanPenolakan());
-            return ResponseEntity.ok(
-                    ApiResponse.success("Pengiriman berhasil ditolak", pengiriman));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        Pengiriman pengiriman = pengirimanService.tolakPengiriman(
+                id,
+                request.getMandorId(),
+                request.getAlasanPenolakan());
+        return ResponseEntity.ok(
+                ApiResponse.success("Pengiriman berhasil ditolak", pengiriman));
     }
 
     @GetMapping("/supir/{supirTrukId}")
     public ResponseEntity<ApiResponse<List<Pengiriman>>> getDaftarPengirimanSupir(
             @PathVariable UUID supirTrukId) {
-        try {
-            List<Pengiriman> pengirimanList = pengirimanService.getDaftarPengirimanSupir(supirTrukId);
-            return ResponseEntity.ok(
-                    ApiResponse.success("Daftar pengiriman supir berhasil diambil", pengirimanList));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        List<Pengiriman> pengirimanList = pengirimanService.getDaftarPengirimanSupir(supirTrukId);
+        return ResponseEntity.ok(
+                ApiResponse.success("Daftar pengiriman supir berhasil diambil", pengirimanList));
     }
 
     @GetMapping("/berlangsung")
@@ -143,14 +118,9 @@ public class PengirimanController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Pengiriman>> getPengirimanById(@PathVariable UUID id) {
-        try {
-            Pengiriman pengiriman = pengirimanService.getPengirimanById(id);
-            return ResponseEntity.ok(
-                    ApiResponse.success("Pengiriman berhasil diambil", pengiriman));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        Pengiriman pengiriman = pengirimanService.getPengirimanById(id);
+        return ResponseEntity.ok(
+                ApiResponse.success("Pengiriman berhasil diambil", pengiriman));
     }
 
     @GetMapping
