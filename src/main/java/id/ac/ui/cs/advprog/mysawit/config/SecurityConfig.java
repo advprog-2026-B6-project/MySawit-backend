@@ -58,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/hasil-reports/**").authenticated() // ganti permitall kalau err
                         .requestMatchers("/api/admin/wages/**").permitAll() // sementara
                         .requestMatchers("/users/**").permitAll()
+                        .requestMatchers("/pengiriman/**").permitAll() // sementara
                         .anyRequest().authenticated());
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

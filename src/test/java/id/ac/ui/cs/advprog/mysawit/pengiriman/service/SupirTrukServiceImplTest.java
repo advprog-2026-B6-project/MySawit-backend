@@ -2,6 +2,9 @@ package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.SupirTruk;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
+import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
+import id.ac.ui.cs.advprog.mysawit.auth.model.User;
+import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +31,9 @@ class SupirTrukServiceImplTest {
 
     @Mock
     private SupirTrukRepository supirTrukRepository;
+
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private SupirTrukServiceImpl supirTrukService;
@@ -88,6 +94,22 @@ class SupirTrukServiceImplTest {
 
         assertEquals(2, result.size());
         verify(supirTrukRepository).findAll();
+    }
+
+    @Test
+    void testGetAllSupirTrukFallbackToUserRepository() {
+        User supirUser = new User("Supir A", "supir-a", "secret", Role.SUPIR, "B-9911");
+        User supirUserNoCert = new User("Supir B", "supir-b", "secret", Role.SUPIR, null);
+        User mandorUser = new User("Mandor", "mandor", "secret", Role.MANDOR, null);
+
+        when(supirTrukRepository.findAll()).thenReturn(List.of());
+        when(userRepository.findAll()).thenReturn(Arrays.asList(supirUser, supirUserNoCert, mandorUser));
+
+        List<SupirTruk> result = supirTrukService.getAllSupirTruk();
+
+        assertEquals(2, result.size());
+        assertTrue(result.stream().anyMatch(supir -> "B-9911".equals(supir.getPlatNomorTruk())));
+        assertTrue(result.stream().anyMatch(supir -> "-".equals(supir.getPlatNomorTruk())));
     }
 
     @Test

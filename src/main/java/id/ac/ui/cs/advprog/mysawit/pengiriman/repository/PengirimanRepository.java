@@ -11,6 +11,8 @@ public interface PengirimanRepository {
     Optional<Pengiriman> findById(UUID id);
     List<Pengiriman> findAll();
     List<Pengiriman> findBySupirTrukId(UUID supirTrukId);
+    List<Pengiriman> findRiwayatSupir(UUID supirTrukId, java.time.LocalDate tanggalMulai,
+                                      java.time.LocalDate tanggalSelesai);
     List<Pengiriman> findAllSedangBerlangsung();
     void deleteById(UUID id);
 }
