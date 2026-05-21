@@ -1,16 +1,15 @@
 package id.ac.ui.cs.advprog.mysawit.pengiriman.model;
 
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 class PengirimanTest {
 
@@ -25,6 +24,7 @@ class PengirimanTest {
         assertNull(pengiriman.getWaktuDisetujui());
         assertNull(pengiriman.getWaktuDitolak());
         assertNull(pengiriman.getAlasanPenolakan());
+        assertNull(pengiriman.getMuatanKgDiakui());
     }
 
     @Test
@@ -219,11 +219,11 @@ class PengirimanTest {
     LocalDateTime waktuDisetujui = LocalDateTime.now();
     LocalDateTime waktuDitolak = LocalDateTime.now();
 
-        Pengiriman pengiriman = new Pengiriman(
-                id, supirId, mandorId, 200.0, "Tujuan Test",
+    Pengiriman pengiriman = new Pengiriman(
+        id, supirId, mandorId, 200.0, "Tujuan Test",
         StatusPengiriman.MEMUAT, waktuDibuat, waktuDiperbarui, waktuDisetujui,
-        waktuDitolak, "Alasan"
-        );
+        waktuDitolak, "Alasan", null
+    );
 
         assertEquals(id, pengiriman.getId());
         assertEquals(supirId, pengiriman.getSupirTrukId());
@@ -236,6 +236,7 @@ class PengirimanTest {
         assertEquals(waktuDisetujui, pengiriman.getWaktuDisetujui());
         assertEquals(waktuDitolak, pengiriman.getWaktuDitolak());
         assertEquals("Alasan", pengiriman.getAlasanPenolakan());
+        assertNull(pengiriman.getMuatanKgDiakui());
     }
 
     @Test
@@ -247,16 +248,16 @@ class PengirimanTest {
     LocalDateTime waktuDisetujui = LocalDateTime.now();
     LocalDateTime waktuDitolak = LocalDateTime.now();
 
-        Pengiriman pengiriman1 = new Pengiriman(
-                id, supirId, mandorId, 200.0, "Tujuan",
+    Pengiriman pengiriman1 = new Pengiriman(
+        id, supirId, mandorId, 200.0, "Tujuan",
         StatusPengiriman.MENUNGGU, waktu, waktu, waktuDisetujui,
-        waktuDitolak, "Catatan"
-        );
-        Pengiriman pengiriman2 = new Pengiriman(
-                id, supirId, mandorId, 200.0, "Tujuan",
+        waktuDitolak, "Catatan", null
+    );
+    Pengiriman pengiriman2 = new Pengiriman(
+        id, supirId, mandorId, 200.0, "Tujuan",
         StatusPengiriman.MENUNGGU, waktu, waktu, waktuDisetujui,
-        waktuDitolak, "Catatan"
-        );
+        waktuDitolak, "Catatan", null
+    );
 
         assertEquals(pengiriman1, pengiriman2);
         assertEquals(pengiriman1.hashCode(), pengiriman2.hashCode());
