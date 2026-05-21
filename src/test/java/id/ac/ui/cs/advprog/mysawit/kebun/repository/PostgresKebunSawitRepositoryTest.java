@@ -25,7 +25,7 @@ class PostgresKebunSawitRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        repository = new PostgresKebunSawitRepository(jpaRepository, new KebunSawitEntityMapper());
+        repository = new PostgresKebunSawitRepository(jpaRepository);
     }
 
     private KebunSawit createDomain(String id, String kode) {
