@@ -41,7 +41,8 @@ public class PaymentServiceImpl implements PaymentService {
 
         } catch (MidtransError e) {
             logger.error("Midtrans specific error occurred during snap token generation", e);
-            throw new IllegalStateException("Failed to generate Midtrans Snap Token. Please try again later.", e);
+            throw new IllegalStateException(
+                    "Failed to generate Midtrans Snap Token. Please try again later.", e);
         } catch (Exception e) {
             logger.error("Unexpected error during Midtrans API call", e);
             throw new IllegalStateException("An unexpected error occurred during payment processing.", e);

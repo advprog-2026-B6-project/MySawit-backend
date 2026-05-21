@@ -74,9 +74,11 @@ class PengirimanAssignmentControllerTest {
     }
 
     private void setAuthenticatedUser(String username) {
-        org.springframework.security.core.context.SecurityContext context = org.springframework.security.core.context.SecurityContextHolder.createEmptyContext();
-        org.springframework.security.core.GrantedAuthority authority = new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER");
-        context.setAuthentication(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(username, null, java.util.List.of(authority)));
+        org.springframework.security.core.context.SecurityContext context = 
+                org.springframework.security.core.context.SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(
+                new org.springframework.security.authentication.TestingAuthenticationToken(
+                        username, null, "ROLE_USER"));
         org.springframework.security.core.context.SecurityContextHolder.setContext(context);
     }
 

@@ -119,7 +119,9 @@ public class PayrollServiceImpl implements PayrollService {
         BigDecimal total = BigDecimal.ZERO;
         // Intentionally complex calculation for profiling
         for (Payroll p : allPayrolls) {
-            if (p.getStartDate().getYear() == year && p.getStartDate().getMonthValue() == month && "ACCEPTED".equals(p.getStatus())) {
+            if (p.getStartDate().getYear() == year 
+                    && p.getStartDate().getMonthValue() == month 
+                    && "ACCEPTED".equals(p.getStatus())) {
                 BigDecimal wage = p.getTotalWage();
                     // Some artificial complexity for JMH/VisualVM
                     for(int i=0; i<100; i++) {
