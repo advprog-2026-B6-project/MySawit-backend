@@ -27,11 +27,14 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final MonitoringTokenFilter monitoringTokenFilter;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-            CustomUserDetailsService userDetailsService) {
+            CustomUserDetailsService userDetailsService,
+            MonitoringTokenFilter monitoringTokenFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userDetailsService = userDetailsService;
+        this.monitoringTokenFilter = monitoringTokenFilter;
     }
 
     @Value("${ALLOWED_ORIGINS:http://localhost:3000,https://my-sawit-frontend.vercel.app}")
@@ -45,6 +48,11 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(
+                                "/actuator",
+                                "/actuator/health",
+                                "/actuator/info",
+                                "/actuator/prometheus").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/kebun/**").permitAll() // sementara
                         .requestMatchers("/hasil-reports/**").authenticated() // ganti permitall kalau err
@@ -53,6 +61,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated());
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(monitoringTokenFilter, JwtAuthenticationFilter.class);
         return http.build();
     }
 
