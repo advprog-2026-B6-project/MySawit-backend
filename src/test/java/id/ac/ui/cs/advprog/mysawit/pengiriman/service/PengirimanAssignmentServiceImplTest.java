@@ -24,6 +24,8 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanAssignmentRep
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.PayrollRequestFactory;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +42,9 @@ class PengirimanAssignmentServiceImplTest {
 
     @Mock
     private SupirIdentityMapper supirIdentityMapper;
+
+    @Mock
+    private PayrollRequestFactory fullPayrollRequestFactory;
 
     @InjectMocks
     private PengirimanAssignmentServiceImpl service;
@@ -194,7 +199,8 @@ class PengirimanAssignmentServiceImplTest {
     when(repository.save(any(PengirimanAssignment.class))).thenAnswer(i -> i.getArguments()[0]);
     when(userRepository.findByUsername("mandor@mysawit.id"))
         .thenReturn(java.util.Optional.of(new User("Mandor", "mandor", "secret", Role.MANDOR, null)));
-    when(supirIdentityMapper.toSupirId(anyString())).thenReturn(java.util.UUID.randomUUID());
+    when(fullPayrollRequestFactory.createFromAssignment(any(), any(), any()))
+            .thenReturn(PayrollRequest.builder().muatanKg(100.0).build());
 
     var response = service.updateApproval(2L, "mandor@mysawit.id", ApprovalAssignment.APPROVED, null);
 
