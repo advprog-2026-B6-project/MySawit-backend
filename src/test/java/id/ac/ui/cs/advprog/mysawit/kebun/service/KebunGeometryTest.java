@@ -68,6 +68,12 @@ class KebunGeometryTest {
         }
 
         @Test
+        void zeroHeightWithPositiveWidth_shouldReturnFalse() {
+            KebunSawit kebun = makeKebun(0, 5, 0, 5, 10, 5, 10, 5);
+            assertFalse(geometry.isAxisAlignedSquare(kebun));
+        }
+
+        @Test
         void leftSidesNotAligned_shouldReturnFalse() {
             // kiriAtas.x != kiriBawah.x
             KebunSawit kebun = makeKebun(0, 200, 1, 0, 200, 200, 200, 0);

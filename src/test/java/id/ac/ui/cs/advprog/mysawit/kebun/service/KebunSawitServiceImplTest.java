@@ -388,6 +388,18 @@ class KebunSawitServiceImplTest {
             assertEquals(1, result.size());
             assertEquals("KB-0001", result.get(0).getKodeUnik());
         }
+
+        @Test
+        void findByKodeUnik_delegatesToRepository() {
+            KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
+            when(repository.findByKodeUnik("KB-0001")).thenReturn(Optional.of(kebun));
+
+            Optional<KebunSawit> result = service.findByKodeUnik("KB-0001");
+
+            assertTrue(result.isPresent());
+            assertEquals("id-1", result.get().getId());
+            verify(repository).findByKodeUnik("KB-0001");
+        }
     }
 
     // GET DETAIL TESTS
