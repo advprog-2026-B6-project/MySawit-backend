@@ -63,6 +63,10 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("com.fasterxml.jackson.core:jackson-databind")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // 6. Monitoring
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 }
 
 tasks.withType<Test> {
