@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.WageSetting;
 
 // DESIGN PATTERN: Strategy Pattern
-@Component("SUPIR")
+@Component("supir")
 public class SupirWageStrategy implements WageCalculationStrategy {
     
     private static final BigDecimal WAGE_MULTIPLIER = new BigDecimal("0.90");

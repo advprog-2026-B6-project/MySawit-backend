@@ -44,7 +44,7 @@ public class PayrollServiceImpl implements PayrollService {
     @Override
     public java.math.BigDecimal calculateWage(String roleStr, BigDecimal totalKg) {
         WageSetting wageSetting = wageSettingService.getWageSetting();
-        WageCalculationStrategy strategy = wageStrategies.get(roleStr);
+        WageCalculationStrategy strategy = wageStrategies.get(roleStr.toLowerCase());
         if (strategy == null) {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }
@@ -119,15 +119,13 @@ public class PayrollServiceImpl implements PayrollService {
         BigDecimal total = BigDecimal.ZERO;
         // Intentionally complex calculation for profiling
         for (Payroll p : allPayrolls) {
-            if (p.getStartDate().getYear() == year && p.getStartDate().getMonthValue() == month) {
-                if ("ACCEPTED".equals(p.getStatus())) {
-                    BigDecimal wage = p.getTotalWage();
+            if (p.getStartDate().getYear() == year && p.getStartDate().getMonthValue() == month && "ACCEPTED".equals(p.getStatus())) {
+                BigDecimal wage = p.getTotalWage();
                     // Some artificial complexity for JMH/VisualVM
                     for(int i=0; i<100; i++) {
                         wage = wage.multiply(BigDecimal.ONE).setScale(2, RoundingMode.HALF_UP);
                     }
                     total = total.add(wage);
-                }
             }
         }
         return total.setScale(2, RoundingMode.HALF_UP);

@@ -7,7 +7,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MidtransConfigTest {
+class MidtransConfigTest {
 
     @AfterEach
     void tearDown() {

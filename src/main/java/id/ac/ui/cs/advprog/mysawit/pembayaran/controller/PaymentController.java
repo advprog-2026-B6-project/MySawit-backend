@@ -45,7 +45,7 @@ public class PaymentController {
 
     @PostMapping(value = "/webhook", consumes = "application/json")
     public ResponseEntity<String> handleMidtransNotification(@RequestBody MidtransNotification notification) {
-        logger.info("Received Midtrans notification for Order ID: {}", notification.getOrderId());
+        logger.info("Received Midtrans notification");
 
         String orderIdStr = notification.getOrderId();
         String statusCode = notification.getStatusCode();
@@ -56,7 +56,7 @@ public class PaymentController {
         String generatedSignature = calculateSHA512(signatureInput);
 
         if (!generatedSignature.equals(notification.getSignatureKey())) {
-            logger.warn("Invalid signature key for Order ID: {}", orderIdStr);
+            logger.warn("Invalid signature key for Order ID");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid signature key");
         }
 
@@ -68,7 +68,7 @@ public class PaymentController {
             Optional<Payroll> payrollOpt = payrollRepository.findById(payrollId);
 
             if (payrollOpt.isEmpty()) {
-                logger.error("Payroll not found for Order ID: {}", orderIdStr);
+                logger.error("Payroll not found for Order ID");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Payroll not found");
             }
 
@@ -76,18 +76,18 @@ public class PaymentController {
 
             if ("capture".equals(transactionStatus) || "settlement".equals(transactionStatus)) {
                 if ("challenge".equals(fraudStatus)) {
-                    logger.info("Transaction for Order ID {} is challenged.", orderIdStr);
+                    logger.info("Transaction for Order ID is challenged.");
                 } else {
                     payroll.setStatus("PAID");
                     payrollRepository.save(payroll);
-                    logger.info("Payroll {} is marked as PAID.", orderIdStr);
+                    logger.info("Payroll is marked as PAID.");
                 }
             } else if ("cancel".equals(transactionStatus) ||
                     "deny".equals(transactionStatus) ||
                     "expire".equals(transactionStatus)) {
                 payroll.setStatus("FAILED");
                 payrollRepository.save(payroll);
-                logger.info("Transaction for Order ID {} failed.", orderIdStr);
+                logger.info("Transaction for Order ID failed.");
             }
 
             return ResponseEntity.ok("OK");
@@ -111,7 +111,7 @@ public class PaymentController {
             }
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-512 algorithm not found", e);
+            throw new IllegalStateException("SHA-512 algorithm not found", e);
         }
     }
 }

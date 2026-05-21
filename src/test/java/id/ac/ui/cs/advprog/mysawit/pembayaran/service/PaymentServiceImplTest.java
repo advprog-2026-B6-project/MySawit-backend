@@ -17,7 +17,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
-public class PaymentServiceImplTest {
+class PaymentServiceImplTest {
 
     private PaymentServiceImpl paymentService;
     private MockedStatic<SnapApi> snapApiMockedStatic;
@@ -63,7 +63,7 @@ public class PaymentServiceImplTest {
     }
 
     @Test
-    void testCreateSnapTokenThrowsMidtransError() throws MidtransError {
+    void testCreateSnapTokenThrowsMidtransError() {
         // Arrange
         CheckoutRequest request = new CheckoutRequest();
         request.setOrderId(1L);
@@ -81,7 +81,7 @@ public class PaymentServiceImplTest {
     }
 
     @Test
-    void testCreateSnapTokenThrowsUnexpectedException() throws MidtransError {
+    void testCreateSnapTokenThrowsUnexpectedException() {
         // Arrange
         CheckoutRequest request = new CheckoutRequest();
         request.setOrderId(1L);

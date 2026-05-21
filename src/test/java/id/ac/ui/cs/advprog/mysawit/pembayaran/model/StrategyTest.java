@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class StrategyTest {
+class StrategyTest {
 
     @Test
     void testBuruhStrategy() {
