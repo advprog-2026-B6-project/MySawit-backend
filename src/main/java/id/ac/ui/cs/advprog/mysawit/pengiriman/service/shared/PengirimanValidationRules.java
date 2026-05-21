@@ -1,8 +1,9 @@
-package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
+package id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared;
 
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.ApprovalAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.PengirimanAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.exception.PengirimanStateException;
 
 import java.time.LocalDate;
 
@@ -41,7 +42,7 @@ public final class PengirimanValidationRules {
         };
 
         if (!valid) {
-            throw new IllegalArgumentException(
+            throw new PengirimanStateException(
                     "Transisi status tidak valid dari " + statusSaatIni.getDisplayName()
                             + " ke " + statusBaru.getDisplayName());
         }
@@ -65,7 +66,7 @@ public final class PengirimanValidationRules {
 
     public static void validateAssignmentApprovedByMandor(PengirimanAssignment assignment) {
         if (assignment.getApproval() != ApprovalAssignment.APPROVED) {
-            throw new IllegalArgumentException("Penugasan belum disetujui oleh mandor");
+            throw new PengirimanStateException("Penugasan belum disetujui oleh mandor");
         }
     }
 }

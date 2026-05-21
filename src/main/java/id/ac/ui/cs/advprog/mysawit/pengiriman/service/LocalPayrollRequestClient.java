@@ -12,6 +12,7 @@ import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollCreateRequest;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.service.PayrollService;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
 
 @Service
 @Primary
@@ -19,10 +20,14 @@ public class LocalPayrollRequestClient implements PayrollRequestClient {
 
     private final PayrollService payrollService;
     private final UserRepository userRepository;
+    private final SupirIdentityMapper supirIdentityMapper;
 
-    public LocalPayrollRequestClient(PayrollService payrollService, UserRepository userRepository) {
+    public LocalPayrollRequestClient(PayrollService payrollService,
+                                     UserRepository userRepository,
+                                     SupirIdentityMapper supirIdentityMapper) {
         this.payrollService = payrollService;
         this.userRepository = userRepository;
+        this.supirIdentityMapper = supirIdentityMapper;
     }
 
     @Override
@@ -49,7 +54,7 @@ public class LocalPayrollRequestClient implements PayrollRequestClient {
     private String resolveSupirUsername(UUID supirTrukId) {
         return userRepository.findAll().stream()
                 .filter(user -> user.getRole() == Role.SUPIR)
-                .filter(user -> UUID.nameUUIDFromBytes(user.getUsername().getBytes()).equals(supirTrukId))
+                .filter(user -> supirIdentityMapper.toSupirId(user.getUsername()).equals(supirTrukId))
                 .map(user -> user.getUsername())
                 .findFirst()
                 .orElse(null);

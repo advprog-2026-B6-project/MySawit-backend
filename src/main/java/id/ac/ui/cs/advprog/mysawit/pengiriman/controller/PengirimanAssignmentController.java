@@ -27,6 +27,7 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.SupirAssignmentProfileResponse
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.UpdateAssignmentApprovalRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.UpdateAssignmentStatusRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.PengirimanAssignmentService;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
 
 @RestController
 @RequestMapping("/api/pengiriman/assignments")
@@ -34,12 +35,15 @@ public class PengirimanAssignmentController {
 
     private final PengirimanAssignmentService assignmentService;
     private final UserRepository userRepository;
+    private final SupirIdentityMapper supirIdentityMapper;
 
     public PengirimanAssignmentController(
             PengirimanAssignmentService assignmentService,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            SupirIdentityMapper supirIdentityMapper) {
         this.assignmentService = assignmentService;
         this.userRepository = userRepository;
+        this.supirIdentityMapper = supirIdentityMapper;
     }
 
     @PostMapping
@@ -140,7 +144,7 @@ public class PengirimanAssignmentController {
     private String resolveSupirEmailById(UUID supirId) {
         return userRepository.findAll().stream()
                 .filter(user -> user.getRole() == Role.SUPIR)
-                .filter(user -> UUID.nameUUIDFromBytes(user.getUsername().getBytes()).equals(supirId))
+                .filter(user -> supirIdentityMapper.toSupirId(user.getUsername()).equals(supirId))
                 .map(user -> user.getUsername())
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Supir tidak ditemukan"));
