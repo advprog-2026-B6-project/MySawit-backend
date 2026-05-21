@@ -4,33 +4,39 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
+import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-
-import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
-import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "hasil_reports")
+@Table(
+        name = "hasil_reports",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_hasil_reports_worker_date",
+                columnNames = {"worker_id", "hasil_date"}
+        )
+)
 public class HasilEntity {
     @Id
     private String id;
 
-    @Column(nullable = false)
+    @Column(name = "worker_id", nullable = false)
     private String workerId;
 
-    @Column(nullable = false)
+    @Column(name = "hasil_date", nullable = false)
     private LocalDate hasilDate;
 
-    @Column(nullable = false)
+    @Column(name = "weight_kg", nullable = false)
     private double weightKg;
 
     @Column(nullable = false, length = 2000)
