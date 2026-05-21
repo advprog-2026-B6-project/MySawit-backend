@@ -139,7 +139,8 @@ class PayrollFunctionalTest {
                 url("/pembayaran/admin/payroll"), HttpMethod.POST,
                 adminPayrollEntity(token, request), Map.class);
 
-        // @PreAuthorize is not active (no @EnableMethodSecurity), buruh can access this endpoint
+        // @PreAuthorize is not active (no @EnableMethodSecurity),
+        // buruh can access this endpoint
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -161,7 +162,8 @@ class PayrollFunctionalTest {
                 url("/pembayaran/admin/wages"), HttpMethod.GET,
                 new HttpEntity<>(authHeaders(token)), Map.class);
 
-        // @PreAuthorize is not active (no @EnableMethodSecurity), buruh can access this endpoint
+        // @PreAuthorize is not active (no @EnableMethodSecurity),
+        // buruh can access this endpoint
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -169,7 +171,8 @@ class PayrollFunctionalTest {
     void unauthenticatedUserIsRejected() {
         ResponseEntity<Map> response = restTemplate.getForEntity(
                 url("/pembayaran/admin/wages"), Map.class);
-        // Spring Security 6 without httpBasic/formLogin returns 403 by default for unauthenticated requests
+        // Spring Security 6 without httpBasic/formLogin returns 403
+        // by default for unauthenticated requests
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 

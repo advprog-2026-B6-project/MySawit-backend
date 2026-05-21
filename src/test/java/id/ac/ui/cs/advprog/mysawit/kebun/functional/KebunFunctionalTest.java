@@ -143,7 +143,8 @@ class KebunFunctionalTest {
 
     @Test
     void unauthenticatedCannotCreateKebun() {
-        // /kebun/** is permitAll() in SecurityConfig, so unauthenticated requests succeed
+        // /kebun/** is permitAll() in SecurityConfig,
+        // so unauthenticated requests succeed
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         ResponseEntity<Map> response = restTemplate.exchange(

@@ -171,7 +171,8 @@ class HasilFunctionalTest {
     void unauthenticatedCannotAccessHasilEndpoint() {
         ResponseEntity<Map> response = restTemplate.getForEntity(
                 url("/hasil-reports/me/today"), Map.class);
-        // Spring Security 6 without httpBasic/formLogin returns 403 by default for unauthenticated requests
+        // Spring Security 6 without httpBasic/formLogin returns 403
+        // by default for unauthenticated requests
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 

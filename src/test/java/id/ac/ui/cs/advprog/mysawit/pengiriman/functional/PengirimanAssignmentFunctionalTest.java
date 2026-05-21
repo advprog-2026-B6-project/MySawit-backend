@@ -145,7 +145,8 @@ class PengirimanAssignmentFunctionalTest {
                 url("/api/pengiriman/assignments"), HttpMethod.POST,
                 new HttpEntity<>(body, headers), Map.class);
 
-        // Spring Security 6 without httpBasic/formLogin returns 403 by default for unauthenticated requests
+        // Spring Security 6 without httpBasic/formLogin returns 403
+        // by default for unauthenticated requests
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
