@@ -73,7 +73,7 @@ class PaymentServiceImplTest {
                 .thenThrow(new MidtransError("API Error"));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             paymentService.createSnapToken(request);
         });
 
@@ -91,7 +91,7 @@ class PaymentServiceImplTest {
                 .thenThrow(new NullPointerException("Unexpected Null"));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             paymentService.createSnapToken(request);
         });
 

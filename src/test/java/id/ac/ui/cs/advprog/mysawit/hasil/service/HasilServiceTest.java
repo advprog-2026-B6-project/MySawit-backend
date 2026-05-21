@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -166,20 +167,6 @@ class HasilServiceTest {
             return false;
         }
 
-        @Override
-        public PayrollResponse approvePayroll(Long id) {
-            return null;
-        }
-
-        @Override
-        public PayrollResponse rejectPayroll(Long id, String reason) {
-            return null;
-        }
-
-        @Override
-        public java.math.BigDecimal generateMonthlyRecap(int year, int month) {
-            return java.math.BigDecimal.ZERO;
-        }
     }
 }
 

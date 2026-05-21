@@ -74,8 +74,10 @@ class PengirimanAssignmentControllerTest {
     }
 
     private void setAuthenticatedUser(String username) {
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(username, null, List.of()));
+        org.springframework.security.core.Authentication auth = org.mockito.Mockito.mock(org.springframework.security.core.Authentication.class);
+        org.mockito.Mockito.when(auth.getName()).thenReturn(username);
+        org.mockito.Mockito.when(auth.isAuthenticated()).thenReturn(true);
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
     @Test
