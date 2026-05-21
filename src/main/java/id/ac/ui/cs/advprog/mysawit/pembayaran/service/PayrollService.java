@@ -10,7 +10,13 @@ public interface PayrollService {
     PayrollResponse createPayroll(PayrollCreateRequest request);
     List<PayrollResponse> getPayrollsByUsernameForAdmin(String username, LocalDate startDate, LocalDate endDate);
     List<PayrollResponse> getPayrollsForWorker(String username, LocalDate startDate, LocalDate endDate, String status);
-    
+
     // Method solely for wage calculation to allow for unit tests
     java.math.BigDecimal calculateWage(String role, java.math.BigDecimal totalKg);
+
+    PayrollResponse approvePayroll(Long id);
+    PayrollResponse rejectPayroll(Long id, String reason);
+
+    // Complex calculation for profiling
+    java.math.BigDecimal generateMonthlyRecap(int year, int month);
 }

@@ -165,6 +165,7 @@ class HasilServiceTest {
         public boolean existsByWorkerIdAndDate(String workerId, java.time.LocalDate hasilDate) {
             return false;
         }
+
     }
 }
 
