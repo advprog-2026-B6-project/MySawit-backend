@@ -9,6 +9,8 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanAssignmentRep
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.assignment.PengirimanAssignmentAdminService;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.FullPayrollRequestFactory;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.PartialPayrollRequestFactory;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.workflow.PengirimanWorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +41,12 @@ public class PengirimanServiceImpl implements PengirimanService {
         this.workflowService = new PengirimanWorkflowService(
                 pengirimanRepository, supirTrukRepository, userRepository, payrollRequestSender);
         this.assignmentAdminService = new PengirimanAssignmentAdminService(
-                pengirimanAssignmentRepository, userRepository, payrollRequestSender, new SupirIdentityMapper());
+                pengirimanAssignmentRepository,
+                userRepository,
+                payrollRequestSender,
+                new SupirIdentityMapper(),
+                new FullPayrollRequestFactory(),
+                new PartialPayrollRequestFactory());
     }
 
     @Override
