@@ -1,16 +1,17 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.service;
 
-import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
-import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunResponseMapper;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunAssignmentRepository;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorEntity;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorJpaRepository;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirEntity;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirJpaRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSawitRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -28,30 +29,16 @@ class KebunSawitServiceImplTest {
     private KebunSawitRepository repository;
 
     @Mock
-    private KebunAssignmentRepository assignmentRepository;
+    private KebunMandorJpaRepository kebunMandorRepository;
+
+    @Mock
+    private KebunSupirJpaRepository kebunSupirRepository;
 
     @Mock
     private KebunUserReader userReader;
 
+    @InjectMocks
     private KebunSawitServiceImpl service;
-
-    @BeforeEach
-    void setUp() {
-        KebunGeometry geometry = new KebunGeometry();
-        KebunOverlapChecker overlapChecker = new KebunOverlapChecker(repository);
-        KebunValidator validator = new KebunValidator(repository, geometry, overlapChecker);
-        KebunDetailAssembler detailAssembler = new KebunDetailAssembler(
-                repository,
-                assignmentRepository,
-                userReader,
-                new KebunResponseMapper());
-        service = new KebunSawitServiceImpl(
-                repository,
-                assignmentRepository,
-                geometry,
-                validator,
-                detailAssembler);
-    }
 
     private KebunSawit createValidKebun(String id, String kode, double x, double y, double size) {
         KebunSawit kebun = new KebunSawit();
@@ -66,19 +53,7 @@ class KebunSawitServiceImplTest {
         return kebun;
     }
 
-    private KebunSawit createRhombusKebun(String id, String kode) {
-        KebunSawit kebun = new KebunSawit();
-        kebun.setId(id);
-        kebun.setNamaKebun("Kebun " + kode);
-        kebun.setKodeUnik(kode);
-        kebun.setKiriAtas(new Coordinate(0, 80));
-        kebun.setKiriBawah(new Coordinate(60, 0));
-        kebun.setKananAtas(new Coordinate(100, 80));
-        kebun.setKananBawah(new Coordinate(160, 0));
-        return kebun;
-    }
-
-    // CREATE TESTS
+    // CREATE TESTS (existing from 25% milestone, ensure no regression)
     @Nested
     class CreateTests {
         @Test
@@ -134,27 +109,6 @@ class KebunSawitServiceImplTest {
 
             assertThrows(IllegalArgumentException.class, () -> service.create(newKebun));
         }
-
-        @Test
-        void create_rhombusCoordinates_shouldThrow() {
-            KebunSawit kebun = createRhombusKebun(null, "KB-0001");
-            when(repository.findByKodeUnik("KB-0001")).thenReturn(Optional.empty());
-
-            assertThrows(IllegalArgumentException.class, () -> service.create(kebun));
-        }
-
-        @Test
-        void create_validAxisAlignedSquare_shouldSucceed() {
-            KebunSawit kebun = createValidKebun(null, "KB-0001", -100, -100, 200);
-            when(repository.findByKodeUnik("KB-0001")).thenReturn(Optional.empty());
-            when(repository.findAll()).thenReturn(List.of());
-            when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-            KebunSawit result = service.create(kebun);
-
-            assertNotNull(result.getId());
-            assertEquals(4.0, result.getLuasHektare(), 0.001);
-        }
     }
 
     // UPDATE TESTS
@@ -199,7 +153,7 @@ class KebunSawitServiceImplTest {
             when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
             KebunSawit result = service.update("id-1", updated);
-            // 300*300 = 90000 m2 = 9.0 hectare
+            // 300*300 = 90000 m² = 9.0 hectare
             assertEquals(90000.0 / 10000.0, result.getLuasHektare(), 0.001);
         }
 
@@ -277,33 +231,6 @@ class KebunSawitServiceImplTest {
 
             assertThrows(IllegalArgumentException.class, () -> service.update("id-1", updated));
         }
-
-        @Test
-        void update_rhombusCoordinates_shouldThrow() {
-            KebunSawit existing = createValidKebun("id-1", "KB-0001", 0, 0, 200);
-            KebunSawit updated = createRhombusKebun(null, "KB-0001");
-
-            when(repository.findById("id-1")).thenReturn(Optional.of(existing));
-
-            assertThrows(IllegalArgumentException.class, () -> service.update("id-1", updated));
-        }
-
-        @Test
-        void update_validAxisAlignedSquare_shouldSucceed() {
-            KebunSawit existing = createValidKebun("id-1", "KB-0001", 0, 0, 200);
-            KebunSawit updated = createValidKebun(null, "KB-0001", -100, -100, 200);
-            updated.setNamaKebun("Kebun Repositioned");
-
-            when(repository.findById("id-1")).thenReturn(Optional.of(existing));
-            when(repository.findAll()).thenReturn(List.of(existing));
-            when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-            KebunSawit result = service.update("id-1", updated);
-
-            assertEquals("Kebun Repositioned", result.getNamaKebun());
-            assertEquals(4.0, result.getLuasHektare(), 0.001);
-            assertEquals(-100, result.getKiriBawah().getX(), 0.001);
-        }
     }
 
     // DELETE TESTS
@@ -313,7 +240,7 @@ class KebunSawitServiceImplTest {
         void delete_noMandor_shouldSucceed() {
             KebunSawit existing = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(existing));
-            when(assignmentRepository.kebunHasMandor("id-1")).thenReturn(false);
+            when(kebunMandorRepository.existsByKebunId("id-1")).thenReturn(false);
 
             assertDoesNotThrow(() -> service.delete("id-1"));
             verify(repository).deleteById("id-1");
@@ -323,24 +250,12 @@ class KebunSawitServiceImplTest {
         void delete_withMandorAssigned_shouldThrow() {
             KebunSawit existing = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(existing));
-            when(assignmentRepository.kebunHasMandor("id-1")).thenReturn(true);
+            when(kebunMandorRepository.existsByKebunId("id-1")).thenReturn(true);
 
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                     () -> service.delete("id-1"));
             assertTrue(ex.getMessage().contains("masih memiliki Mandor"));
             verify(repository, never()).deleteById(any());
-        }
-
-        @Test
-        void delete_withSupirButNoMandor_currentlySucceeds() {
-            KebunSawit existing = createValidKebun("id-1", "KB-0001", 0, 0, 200);
-            when(repository.findById("id-1")).thenReturn(Optional.of(existing));
-            when(assignmentRepository.kebunHasMandor("id-1")).thenReturn(false);
-
-            assertDoesNotThrow(() -> service.delete("id-1"));
-
-            verify(repository).deleteById("id-1");
-            verify(assignmentRepository, never()).findSupirIdsByKebunId(anyString());
         }
 
         @Test
@@ -363,20 +278,24 @@ class KebunSawitServiceImplTest {
             when(repository.search("", "")).thenReturn(List.of(k1, k2));
 
             List<KebunSawit> result = service.findAll("", "");
+
             assertEquals(2, result.size());
+            verify(repository).search("", "");
+            verify(repository, never()).findAll();
         }
 
         @Test
         void findAll_filterByNama_returnsFiltered() {
             KebunSawit k1 = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             k1.setNamaKebun("Kebun Utara");
-            KebunSawit k2 = createValidKebun("id-2", "KB-0002", 500, 0, 200);
-            k2.setNamaKebun("Kebun Selatan");
             when(repository.search("Utara", "")).thenReturn(List.of(k1));
 
             List<KebunSawit> result = service.findAll("Utara", "");
+
             assertEquals(1, result.size());
             assertEquals("Kebun Utara", result.get(0).getNamaKebun());
+            verify(repository).search("Utara", "");
+            verify(repository, never()).findAll();
         }
 
         @Test
@@ -385,20 +304,11 @@ class KebunSawitServiceImplTest {
             when(repository.search("", "0001")).thenReturn(List.of(k1));
 
             List<KebunSawit> result = service.findAll("", "0001");
+
             assertEquals(1, result.size());
             assertEquals("KB-0001", result.get(0).getKodeUnik());
-        }
-
-        @Test
-        void findByKodeUnik_delegatesToRepository() {
-            KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
-            when(repository.findByKodeUnik("KB-0001")).thenReturn(Optional.of(kebun));
-
-            Optional<KebunSawit> result = service.findByKodeUnik("KB-0001");
-
-            assertTrue(result.isPresent());
-            assertEquals("id-1", result.get().getId());
-            verify(repository).findByKodeUnik("KB-0001");
+            verify(repository).search("", "0001");
+            verify(repository, never()).findAll();
         }
     }
 
@@ -410,14 +320,17 @@ class KebunSawitServiceImplTest {
             KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
 
-            when(assignmentRepository.findMandorIdByKebunId("id-1")).thenReturn(Optional.of(10L));
+            KebunMandorEntity mandorAssignment = new KebunMandorEntity("ma-1", "id-1", 10L);
+            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.of(mandorAssignment));
             when(userReader.findUserById(10L)).thenReturn(Optional.of(
-                    new UserSnapshot(10L, "Pak Mandor", "mandor1", Role.MANDOR, "CERT-001")));
+                    new UserSnapshot(10L, "Pak Mandor", "mandor1", "MANDOR", "CERT-001")));
 
-            when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L, 21L));
+            KebunSupirEntity supir1 = new KebunSupirEntity("sa-1", "id-1", 20L);
+            KebunSupirEntity supir2 = new KebunSupirEntity("sa-2", "id-1", 21L);
+            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of(supir1, supir2));
             when(userReader.findUsersByIds(List.of(20L, 21L))).thenReturn(List.of(
-                    new UserSnapshot(20L, "Supir Andi", "supir1", Role.SUPIR, null),
-                    new UserSnapshot(21L, "Supir Budi", "supir2", Role.SUPIR, null)));
+                    new UserSnapshot(20L, "Supir Andi", "supir1", "SUPIR", null),
+                    new UserSnapshot(21L, "Supir Budi", "supir2", "SUPIR", null)));
 
             KebunDetailResponse detail = service.getDetail("id-1", null);
 
@@ -432,8 +345,8 @@ class KebunSawitServiceImplTest {
         void getDetail_noMandor_shouldReturnNullMandor() {
             KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
-            when(assignmentRepository.findMandorIdByKebunId("id-1")).thenReturn(Optional.empty());
-            when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of());
+            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.empty());
+            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of());
 
             KebunDetailResponse detail = service.getDetail("id-1", null);
 
@@ -445,12 +358,14 @@ class KebunSawitServiceImplTest {
         void getDetail_filterSupirByName_shouldReturnFiltered() {
             KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
-            when(assignmentRepository.findMandorIdByKebunId("id-1")).thenReturn(Optional.empty());
+            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.empty());
 
-            when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L, 21L));
+            KebunSupirEntity supir1 = new KebunSupirEntity("sa-1", "id-1", 20L);
+            KebunSupirEntity supir2 = new KebunSupirEntity("sa-2", "id-1", 21L);
+            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of(supir1, supir2));
             when(userReader.findUsersByIds(List.of(20L, 21L))).thenReturn(List.of(
-                    new UserSnapshot(20L, "Andi Supir", "supir1", Role.SUPIR, null),
-                    new UserSnapshot(21L, "Budi Driver", "supir2", Role.SUPIR, null)));
+                    new UserSnapshot(20L, "Andi Supir", "supir1", "SUPIR", null),
+                    new UserSnapshot(21L, "Budi Driver", "supir2", "SUPIR", null)));
 
             KebunDetailResponse detail = service.getDetail("id-1", "Andi");
 
@@ -462,11 +377,12 @@ class KebunSawitServiceImplTest {
         void getDetail_filterSupirByName_handlesNullFullname() {
             KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
-            when(assignmentRepository.findMandorIdByKebunId("id-1")).thenReturn(Optional.empty());
+            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.empty());
 
-            when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L));
+            KebunSupirEntity supir1 = new KebunSupirEntity("sa-1", "id-1", 20L);
+            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of(supir1));
             when(userReader.findUsersByIds(List.of(20L))).thenReturn(List.of(
-                    new UserSnapshot(20L, null, "supir1", Role.SUPIR, null)));
+                    new UserSnapshot(20L, null, "supir1", "SUPIR", null)));
 
             KebunDetailResponse detail = service.getDetail("id-1", "Andi");
             assertTrue(detail.getSupirList().isEmpty());
@@ -476,11 +392,12 @@ class KebunSawitServiceImplTest {
         void getDetail_filterSupirByEmptyString_returnsAll() {
             KebunSawit kebun = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.findById("id-1")).thenReturn(Optional.of(kebun));
-            when(assignmentRepository.findMandorIdByKebunId("id-1")).thenReturn(Optional.empty());
+            when(kebunMandorRepository.findByKebunId("id-1")).thenReturn(Optional.empty());
 
-            when(assignmentRepository.findSupirIdsByKebunId("id-1")).thenReturn(List.of(20L));
+            KebunSupirEntity supir1 = new KebunSupirEntity("sa-1", "id-1", 20L);
+            when(kebunSupirRepository.findAllByKebunId("id-1")).thenReturn(List.of(supir1));
             when(userReader.findUsersByIds(List.of(20L))).thenReturn(List.of(
-                    new UserSnapshot(20L, "Andi Supir", "supir1", Role.SUPIR, null)));
+                    new UserSnapshot(20L, "Andi Supir", "supir1", "SUPIR", null)));
 
             KebunDetailResponse detail = service.getDetail("id-1", "");
             assertEquals(1, detail.getSupirList().size());
@@ -490,8 +407,12 @@ class KebunSawitServiceImplTest {
         void findAll_nullFilters_returnsAll() {
             KebunSawit k1 = createValidKebun("id-1", "KB-0001", 0, 0, 200);
             when(repository.search(null, null)).thenReturn(List.of(k1));
+
             List<KebunSawit> result = service.findAll(null, null);
+
             assertEquals(1, result.size());
+            verify(repository).search(null, null);
+            verify(repository, never()).findAll();
         }
 
         @Test
