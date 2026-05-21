@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.hasil.factory;
+package id.ac.ui.cs.advprog.mysawit.hasil.service;
 
 import java.time.Clock;
 import java.time.LocalDate;

@@ -21,11 +21,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilHistoryResponse;
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilTodayResponse;
-import id.ac.ui.cs.advprog.mysawit.hasil.mapper.HasilHistoryResponseMapper;
+import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilHistoryResponseMapper;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
-import id.ac.ui.cs.advprog.mysawit.hasil.security.HasilAccessPolicy;
-import id.ac.ui.cs.advprog.mysawit.hasil.security.HasilCurrentUserService;
+import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilAccessPolicy;
+import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilCurrentUserService;
 import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilHistoryQueryService;
 import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilService;
 

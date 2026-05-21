@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.hasil.payroll;
+package id.ac.ui.cs.advprog.mysawit.hasil.service;
 
 import java.math.BigDecimal;
 import java.util.concurrent.CompletableFuture;

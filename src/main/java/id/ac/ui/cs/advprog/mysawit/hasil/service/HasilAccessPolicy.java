@@ -1,9 +1,8 @@
-package id.ac.ui.cs.advprog.mysawit.hasil.security;
+package id.ac.ui.cs.advprog.mysawit.hasil.service;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
-import id.ac.ui.cs.advprog.mysawit.hasil.worker.HasilWorkerDirectory;
 
 @Component
 public class HasilAccessPolicy {

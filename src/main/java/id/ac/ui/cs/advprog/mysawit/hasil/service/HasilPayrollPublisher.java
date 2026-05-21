@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.hasil.payroll;
+package id.ac.ui.cs.advprog.mysawit.hasil.service;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 

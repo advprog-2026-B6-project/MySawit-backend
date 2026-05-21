@@ -1,10 +1,9 @@
-package id.ac.ui.cs.advprog.mysawit.hasil.specification;
+package id.ac.ui.cs.advprog.mysawit.hasil.service;
 
 import java.time.LocalDate;
 import java.util.Set;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
-import id.ac.ui.cs.advprog.mysawit.hasil.worker.HasilWorkerDirectory;
 
 public final class HasilSpecifications {
     private HasilSpecifications() {

@@ -1,10 +1,9 @@
-package id.ac.ui.cs.advprog.mysawit.hasil.mapper;
+package id.ac.ui.cs.advprog.mysawit.hasil.service;
 
 import org.springframework.stereotype.Component;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilHistoryResponse;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
-import id.ac.ui.cs.advprog.mysawit.hasil.worker.HasilWorkerDirectory;
 
 @Component
 public class HasilHistoryResponseMapper {

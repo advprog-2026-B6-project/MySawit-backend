@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.hasil.worker;
+package id.ac.ui.cs.advprog.mysawit.hasil.service;
 
 import java.util.Set;
 import java.util.stream.Collectors;

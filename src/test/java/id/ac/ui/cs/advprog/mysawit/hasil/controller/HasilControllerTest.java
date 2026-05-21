@@ -26,15 +26,15 @@ import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilHistoryResponse;
-import id.ac.ui.cs.advprog.mysawit.hasil.mapper.HasilHistoryResponseMapper;
+import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilHistoryResponseMapper;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
-import id.ac.ui.cs.advprog.mysawit.hasil.security.HasilAccessPolicy;
-import id.ac.ui.cs.advprog.mysawit.hasil.security.HasilCurrentUserService;
+import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilAccessPolicy;
+import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilCurrentUserService;
 import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilHistoryQueryService;
 import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilService;
-import id.ac.ui.cs.advprog.mysawit.hasil.worker.HasilWorkerDirectory;
-import id.ac.ui.cs.advprog.mysawit.hasil.worker.JpaHasilWorkerDirectoryAdapter;
+import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilWorkerDirectory;
+import id.ac.ui.cs.advprog.mysawit.hasil.service.JpaHasilWorkerDirectoryAdapter;
 
 @ExtendWith(MockitoExtension.class)
 class HasilControllerTest {

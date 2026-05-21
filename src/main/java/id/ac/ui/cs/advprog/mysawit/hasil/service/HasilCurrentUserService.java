@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.hasil.security;
+package id.ac.ui.cs.advprog.mysawit.hasil.service;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;

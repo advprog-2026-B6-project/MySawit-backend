@@ -8,12 +8,8 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilHistoryResponse;
-import id.ac.ui.cs.advprog.mysawit.hasil.mapper.HasilHistoryResponseMapper;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
-import id.ac.ui.cs.advprog.mysawit.hasil.specification.HasilSpecification;
-import id.ac.ui.cs.advprog.mysawit.hasil.specification.HasilSpecifications;
-import id.ac.ui.cs.advprog.mysawit.hasil.worker.HasilWorkerDirectory;
 
 @Service
 public class HasilHistoryQueryService {

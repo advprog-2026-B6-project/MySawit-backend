@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.hasil.transition;
+package id.ac.ui.cs.advprog.mysawit.hasil.service;
 
 import org.springframework.stereotype.Component;
 
