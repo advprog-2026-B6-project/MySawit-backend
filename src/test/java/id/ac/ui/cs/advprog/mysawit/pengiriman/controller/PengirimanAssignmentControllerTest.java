@@ -10,6 +10,7 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.UpdateAssignmentStatusRequest;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.ApprovalAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusAssignment;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.PengirimanAssignmentService;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,9 @@ class PengirimanAssignmentControllerTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private SupirIdentityMapper supirIdentityMapper;
 
     @InjectMocks
     private PengirimanAssignmentController controller;
@@ -169,6 +173,7 @@ class PengirimanAssignmentControllerTest {
         UUID supirId = UUID.nameUUIDFromBytes("supir@mysawit.id".getBytes());
         User supir = new User(1L, "Supir", "supir@mysawit.id", "pw", Role.SUPIR, null, null);
         when(userRepository.findAll()).thenReturn(List.of(supir));
+        when(supirIdentityMapper.toSupirId("supir@mysawit.id")).thenReturn(supirId);
         when(assignmentService.getAssignmentsByMandorAndSupirEmail("mandor@mysawit.id", "supir@mysawit.id"))
                 .thenReturn(List.of(response));
 

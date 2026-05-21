@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -23,6 +24,7 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanAssignmentRep
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
 
 @ExtendWith(MockitoExtension.class)
 class PengirimanAssignmentServiceImplTest {
@@ -35,6 +37,9 @@ class PengirimanAssignmentServiceImplTest {
 
     @Mock
     private PayrollRequestSender payrollRequestSender;
+
+    @Mock
+    private SupirIdentityMapper supirIdentityMapper;
 
     @InjectMocks
     private PengirimanAssignmentServiceImpl service;
@@ -189,6 +194,7 @@ class PengirimanAssignmentServiceImplTest {
     when(repository.save(any(PengirimanAssignment.class))).thenAnswer(i -> i.getArguments()[0]);
     when(userRepository.findByUsername("mandor@mysawit.id"))
         .thenReturn(java.util.Optional.of(new User("Mandor", "mandor", "secret", Role.MANDOR, null)));
+    when(supirIdentityMapper.toSupirId(anyString())).thenReturn(java.util.UUID.randomUUID());
 
     var response = service.updateApproval(2L, "mandor@mysawit.id", ApprovalAssignment.APPROVED, null);
 

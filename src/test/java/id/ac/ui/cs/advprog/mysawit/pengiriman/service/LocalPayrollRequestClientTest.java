@@ -21,6 +21,7 @@ import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollCreateRequest;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.service.PayrollService;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest;
+import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
 
 class LocalPayrollRequestClientTest {
 
@@ -28,11 +29,13 @@ class LocalPayrollRequestClientTest {
     void sendPayrollRequest_createsPayrollForSupir() {
         PayrollService payrollService = Mockito.mock(PayrollService.class);
         UserRepository userRepository = Mockito.mock(UserRepository.class);
-        LocalPayrollRequestClient client = new LocalPayrollRequestClient(payrollService, userRepository);
+        SupirIdentityMapper supirIdentityMapper = Mockito.mock(SupirIdentityMapper.class);
+        LocalPayrollRequestClient client = new LocalPayrollRequestClient(payrollService, userRepository, supirIdentityMapper);
 
         User supir = new User("Supir A", "supir-a", "secret", Role.SUPIR, null);
         UUID supirTrukId = UUID.nameUUIDFromBytes(supir.getUsername().getBytes());
         when(userRepository.findAll()).thenReturn(List.of(supir));
+        when(supirIdentityMapper.toSupirId("supir-a")).thenReturn(supirTrukId);
 
         PayrollRequest request = PayrollRequest.builder()
                 .supirTrukId(supirTrukId)
@@ -52,10 +55,12 @@ class LocalPayrollRequestClientTest {
     void sendPayrollRequest_ignoresWhenSupirNotFound() {
         PayrollService payrollService = Mockito.mock(PayrollService.class);
         UserRepository userRepository = Mockito.mock(UserRepository.class);
-        LocalPayrollRequestClient client = new LocalPayrollRequestClient(payrollService, userRepository);
+        SupirIdentityMapper supirIdentityMapper = Mockito.mock(SupirIdentityMapper.class);
+        LocalPayrollRequestClient client = new LocalPayrollRequestClient(payrollService, userRepository, supirIdentityMapper);
 
         User mandor = new User("Mandor", "mandor", "secret", Role.MANDOR, null);
         when(userRepository.findAll()).thenReturn(List.of(mandor));
+        when(supirIdentityMapper.toSupirId("mandor")).thenReturn(UUID.randomUUID());
 
         PayrollRequest request = PayrollRequest.builder()
                 .supirTrukId(UUID.randomUUID())
