@@ -8,7 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import id.ac.ui.cs.advprog.mysawit.hasil.service.DailySubmissionLimitException;
+import id.ac.ui.cs.advprog.mysawit.hasil.exception.DailySubmissionLimitException;
 
 @RestControllerAdvice
 public class HasilExceptionHandler {

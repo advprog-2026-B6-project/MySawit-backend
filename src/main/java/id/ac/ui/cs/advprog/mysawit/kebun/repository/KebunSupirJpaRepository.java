@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface KebunSupirJpaRepository extends JpaRepository<KebunSupirEntity, String> {
     List<KebunSupirEntity> findAllByKebunId(String kebunId);
     Optional<KebunSupirEntity> findBySupirId(Long supirId);
+    boolean existsByKebunId(String kebunId);
     boolean existsBySupirId(Long supirId);
 }

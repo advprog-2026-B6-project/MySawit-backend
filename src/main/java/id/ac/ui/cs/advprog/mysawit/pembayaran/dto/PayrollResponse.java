@@ -22,5 +22,4 @@ public class PayrollResponse {
     private BigDecimal totalWage;
     private String status;
     private LocalDateTime createdAt;
-    private String rejectReason;
 }

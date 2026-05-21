@@ -1,14 +1,9 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunDetailResponse;
-import id.ac.ui.cs.advprog.mysawit.kebun.dto.KebunResponseMapper;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.MandorInfo;
 import id.ac.ui.cs.advprog.mysawit.kebun.dto.SupirInfo;
-import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunConflictException;
-import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunNotFoundException;
-import id.ac.ui.cs.advprog.mysawit.kebun.exception.KebunValidationException;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
 import id.ac.ui.cs.advprog.mysawit.kebun.service.KebunAssignmentService;
@@ -16,12 +11,9 @@ import id.ac.ui.cs.advprog.mysawit.kebun.service.KebunSawitService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,7 +22,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -49,9 +40,6 @@ class KebunControllerTest {
     @Mock
     private KebunAssignmentService assignmentService;
 
-    @Spy
-    private KebunResponseMapper kebunResponseMapper = new KebunResponseMapper();
-
     @InjectMocks
     private KebunSawitController kebunSawitController;
 
@@ -63,9 +51,7 @@ class KebunControllerTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        mockMvc = MockMvcBuilders.standaloneSetup(kebunSawitController, kebunAssignmentController)
-                .setControllerAdvice(new KebunExceptionHandler())
-                .build();
+        mockMvc = MockMvcBuilders.standaloneSetup(kebunSawitController, kebunAssignmentController).build();
     }
 
     private KebunSawit createValidKebun() {
@@ -81,25 +67,9 @@ class KebunControllerTest {
         return kebun;
     }
 
-    private String validKebunJson() throws Exception {
-        return objectMapper.writeValueAsString(createValidKebun());
-    }
-
-    private String validKebunJsonWithout(String fieldName) throws Exception {
-        Map<String, Object> body = objectMapper.convertValue(createValidKebun(), new TypeReference<>() {});
-        body.remove(fieldName);
-        return objectMapper.writeValueAsString(body);
-    }
-
-    private String kebunJsonWithCoordinateMissing(String coordinateName, String coordinateField) throws Exception {
-        Map<String, Object> body = objectMapper.convertValue(createValidKebun(), new TypeReference<>() {});
-        Map<String, Object> coordinate = objectMapper.convertValue(body.get(coordinateName), new TypeReference<>() {});
-        coordinate.remove(coordinateField);
-        body.put(coordinateName, coordinate);
-        return objectMapper.writeValueAsString(body);
-    }
-
+    // =====================================================================
     // CRUD CONTROLLER TESTS
+    // =====================================================================
     @Nested
     class CrudTests {
         @Test
@@ -115,59 +85,14 @@ class KebunControllerTest {
         }
 
         @Test
-        void createKebun_serviceValidationError_returns400() throws Exception {
-            when(kebunService.create(any()))
-                    .thenThrow(new KebunValidationException("Format kode unik tidak valid"));
+        void createKebun_invalid_returns400() throws Exception {
+            when(kebunService.create(any())).thenThrow(new IllegalArgumentException("Format kode unik tidak valid"));
 
             mockMvc.perform(post("/kebun")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(validKebunJson()))
+                            .content("{}"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").exists());
-        }
-
-        @Test
-        void createKebun_missingNama_returns400AndDoesNotCallService() throws Exception {
-            mockMvc.perform(post("/kebun")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(validKebunJsonWithout("namaKebun")))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(kebunService, never()).create(any());
-        }
-
-        @Test
-        void createKebun_missingCoordinate_returns400AndDoesNotCallService() throws Exception {
-            mockMvc.perform(post("/kebun")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(validKebunJsonWithout("kiriAtas")))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(kebunService, never()).create(any());
-        }
-
-        @Test
-        void createKebun_coordinateMissingX_returns400AndDoesNotCallService() throws Exception {
-            mockMvc.perform(post("/kebun")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(kebunJsonWithCoordinateMissing("kiriAtas", "x")))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(kebunService, never()).create(any());
-        }
-
-        @Test
-        void createKebun_coordinateMissingY_returns400AndDoesNotCallService() throws Exception {
-            mockMvc.perform(post("/kebun")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(kebunJsonWithCoordinateMissing("kiriAtas", "y")))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(kebunService, never()).create(any());
         }
 
         @Test
@@ -195,8 +120,7 @@ class KebunControllerTest {
             when(kebunService.findByKodeUnik("KB-9999")).thenReturn(Optional.empty());
 
             mockMvc.perform(get("/kebun/KB-9999"))
-                    .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").exists());
+                    .andExpect(status().isNotFound());
         }
 
         @Test
@@ -215,67 +139,23 @@ class KebunControllerTest {
         @Test
         void update_notFound_returns404() throws Exception {
             when(kebunService.update(eq("nonexistent"), any()))
-                    .thenThrow(new KebunNotFoundException("Kebun tidak ditemukan dengan id: nonexistent"));
+                    .thenThrow(new IllegalArgumentException("Kebun tidak ditemukan dengan id: nonexistent"));
 
             mockMvc.perform(put("/kebun/nonexistent")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(validKebunJson()))
+                            .content("{}"))
                     .andExpect(status().isNotFound());
         }
 
         @Test
         void update_overlap_returns400() throws Exception {
             when(kebunService.update(eq("test-id"), any()))
-                    .thenThrow(new KebunValidationException("Kebun overlap dengan kebun: X"));
+                    .thenThrow(new IllegalArgumentException("Kebun overlap dengan kebun: X"));
 
             mockMvc.perform(put("/kebun/test-id")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(validKebunJson()))
+                            .content("{}"))
                     .andExpect(status().isBadRequest());
-        }
-
-        @Test
-        void updateKebun_missingNama_returns400AndDoesNotCallService() throws Exception {
-            mockMvc.perform(put("/kebun/test-id")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(validKebunJsonWithout("namaKebun")))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(kebunService, never()).update(anyString(), any());
-        }
-
-        @Test
-        void updateKebun_missingCoordinate_returns400AndDoesNotCallService() throws Exception {
-            mockMvc.perform(put("/kebun/test-id")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(validKebunJsonWithout("kiriAtas")))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(kebunService, never()).update(anyString(), any());
-        }
-
-        @Test
-        void updateKebun_coordinateMissingX_returns400AndDoesNotCallService() throws Exception {
-            mockMvc.perform(put("/kebun/test-id")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(kebunJsonWithCoordinateMissing("kiriAtas", "x")))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(kebunService, never()).update(anyString(), any());
-        }
-
-        @Test
-        void updateKebun_coordinateMissingY_returns400AndDoesNotCallService() throws Exception {
-            mockMvc.perform(put("/kebun/test-id")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(kebunJsonWithCoordinateMissing("kiriAtas", "y")))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(kebunService, never()).update(anyString(), any());
         }
 
         @Test
@@ -288,7 +168,7 @@ class KebunControllerTest {
 
         @Test
         void delete_notFound_returns404() throws Exception {
-            doThrow(new KebunNotFoundException("Kebun tidak ditemukan dengan id: test-id"))
+            doThrow(new IllegalArgumentException("Kebun tidak ditemukan dengan id: test-id"))
                     .when(kebunService).delete("test-id");
 
             mockMvc.perform(delete("/kebun/test-id"))
@@ -297,7 +177,7 @@ class KebunControllerTest {
 
         @Test
         void delete_mandorBound_returns409() throws Exception {
-            doThrow(new KebunConflictException("Tidak dapat menghapus kebun yang masih memiliki Mandor"))
+            doThrow(new IllegalArgumentException("Tidak dapat menghapus kebun yang masih memiliki Mandor"))
                     .when(kebunService).delete("test-id");
 
             mockMvc.perform(delete("/kebun/test-id"))
@@ -305,7 +185,9 @@ class KebunControllerTest {
         }
     }
 
+    // =====================================================================
     // DETAIL VIEW TESTS
+    // =====================================================================
     @Nested
     class DetailTests {
         @Test
@@ -328,7 +210,7 @@ class KebunControllerTest {
         @Test
         void getDetail_notFound_returns404() throws Exception {
             when(kebunService.getDetail(eq("nonexistent"), any()))
-                    .thenThrow(new KebunNotFoundException("Kebun tidak ditemukan"));
+                    .thenThrow(new IllegalArgumentException("Kebun tidak ditemukan"));
 
             mockMvc.perform(get("/kebun/detail/nonexistent"))
                     .andExpect(status().isNotFound());
@@ -350,8 +232,10 @@ class KebunControllerTest {
                     .andExpect(jsonPath("$.supirList").isArray());
         }
     }
-    
+
+    // =====================================================================
     // ASSIGNMENT CONTROLLER TESTS
+    // =====================================================================
     @Nested
     class AssignmentTests {
         @Test
@@ -367,7 +251,7 @@ class KebunControllerTest {
 
         @Test
         void assignMandor_kebunNotFound_returns404() throws Exception {
-            doThrow(new KebunNotFoundException("Kebun tidak ditemukan"))
+            doThrow(new IllegalArgumentException("Kebun tidak ditemukan"))
                     .when(assignmentService).assignMandor("nonexistent", 10L);
 
             mockMvc.perform(post("/kebun/nonexistent/mandor")
@@ -378,7 +262,7 @@ class KebunControllerTest {
 
         @Test
         void assignMandor_alreadyAssigned_returns409() throws Exception {
-            doThrow(new KebunConflictException("Kebun sudah memiliki Mandor yang ditugaskan"))
+            doThrow(new IllegalArgumentException("Kebun sudah memiliki Mandor yang ditugaskan"))
                     .when(assignmentService).assignMandor("kebun-1", 10L);
 
             mockMvc.perform(post("/kebun/kebun-1/mandor")
@@ -387,24 +271,12 @@ class KebunControllerTest {
                     .andExpect(status().isConflict());
         }
 
-        static Stream<String> invalidMandorIdPayloads() {
-            return Stream.of(
-                    "{}",                          // missing mandorId
-                    "{\"mandorId\":null}",          // null mandorId
-                    "{\"mandorId\":\"not-a-number\"}" // wrong type mandorId
-            );
-        }
-
-        @ParameterizedTest
-        @MethodSource("invalidMandorIdPayloads")
-        void assignMandor_invalidMandorId_returns400(String body) throws Exception {
+        @Test
+        void assignMandor_missingMandorId_returns400() throws Exception {
             mockMvc.perform(post("/kebun/kebun-1/mandor")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(body))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(assignmentService, never()).assignMandor(anyString(), anyLong());
+                            .content("{}"))
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
@@ -424,37 +296,6 @@ class KebunControllerTest {
         }
 
         @Test
-        void reassignMandor_missingMandorId_returns400() throws Exception {
-            Map<String, Object> body = Map.of(
-                    "fromKebunId", "kebun-1",
-                    "toKebunId", "kebun-2");
-
-            mockMvc.perform(put("/kebun/mandor/reassign")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(body)))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(assignmentService, never()).reassignMandor(anyLong(), anyString(), anyString());
-        }
-
-        @Test
-        void reassignMandor_wrongTypeMandorId_returns400() throws Exception {
-            Map<String, Object> body = Map.of(
-                    "mandorId", "not-a-number",
-                    "fromKebunId", "kebun-1",
-                    "toKebunId", "kebun-2");
-
-            mockMvc.perform(put("/kebun/mandor/reassign")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(body)))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(assignmentService, never()).reassignMandor(anyLong(), anyString(), anyString());
-        }
-
-        @Test
         void assignSupir_success_returns201() throws Exception {
             doNothing().when(assignmentService).assignSupir("kebun-1", 20L);
 
@@ -462,28 +303,6 @@ class KebunControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(Map.of("supirId", 20))))
                     .andExpect(status().isCreated());
-        }
-
-        @Test
-        void assignSupir_nullSupirId_returns400() throws Exception {
-            mockMvc.perform(post("/kebun/kebun-1/supir")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\"supirId\":null}"))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(assignmentService, never()).assignSupir(anyString(), anyLong());
-        }
-
-        @Test
-        void assignSupir_wrongTypeSupirId_returns400() throws Exception {
-            mockMvc.perform(post("/kebun/kebun-1/supir")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\"supirId\":\"not-a-number\"}"))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(assignmentService, never()).assignSupir(anyString(), anyLong());
         }
 
         @Test
@@ -499,37 +318,6 @@ class KebunControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(body)))
                     .andExpect(status().isOk());
-        }
-
-        @Test
-        void reassignSupir_missingSupirId_returns400() throws Exception {
-            Map<String, Object> body = Map.of(
-                    "fromKebunId", "kebun-1",
-                    "toKebunId", "kebun-2");
-
-            mockMvc.perform(put("/kebun/supir/reassign")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(body)))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(assignmentService, never()).reassignSupir(anyLong(), anyString(), anyString());
-        }
-
-        @Test
-        void reassignSupir_wrongTypeSupirId_returns400() throws Exception {
-            Map<String, Object> body = Map.of(
-                    "supirId", "not-a-number",
-                    "fromKebunId", "kebun-1",
-                    "toKebunId", "kebun-2");
-
-            mockMvc.perform(put("/kebun/supir/reassign")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(body)))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").exists());
-
-            verify(assignmentService, never()).reassignSupir(anyLong(), anyString(), anyString());
         }
     }
 }

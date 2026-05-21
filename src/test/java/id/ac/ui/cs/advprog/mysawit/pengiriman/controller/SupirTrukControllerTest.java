@@ -13,14 +13,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -100,7 +98,9 @@ class SupirTrukControllerTest {
         when(supirTrukService.getSupirTrukById(supirTrukId))
                 .thenThrow(new IllegalArgumentException("Supir truk tidak ditemukan"));
 
-        assertThrows(IllegalArgumentException.class, () -> supirTrukController.getSupirTrukById(supirTrukId));
+        ResponseEntity<?> response = supirTrukController.getSupirTrukById(supirTrukId);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -135,61 +135,8 @@ class SupirTrukControllerTest {
         when(supirTrukService.getSupirTrukById(supirTrukId))
                 .thenThrow(new IllegalArgumentException("Supir truk tidak ditemukan"));
 
-        assertThrows(IllegalArgumentException.class, () -> supirTrukController.getPengirimanSupirTruk(supirTrukId));
-    }
+        ResponseEntity<?> response = supirTrukController.getPengirimanSupirTruk(supirTrukId);
 
-    @Test
-    void testGetRiwayatPengirimanSupirSuccess() {
-    Pengiriman pengiriman = Pengiriman.builder()
-        .supirTrukId(supirTrukId)
-        .mandorId(1L)
-        .muatanKg(100)
-        .tujuan("Jakarta")
-        .build();
-    when(supirTrukService.getSupirTrukById(supirTrukId)).thenReturn(supirTruk);
-    when(pengirimanService.getRiwayatPengirimanSupir(supirTrukId,
-        LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 3)))
-        .thenReturn(List.of(pengiriman));
-
-    ResponseEntity<?> response = supirTrukController.getRiwayatPengirimanSupir(
-        supirTrukId, LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 3));
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    }
-
-    @Test
-    void testGetRiwayatPengirimanSupirTanggalInvalid() {
-    when(supirTrukService.getSupirTrukById(supirTrukId)).thenReturn(supirTruk);
-    when(pengirimanService.getRiwayatPengirimanSupir(supirTrukId,
-        LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1)))
-        .thenThrow(new IllegalArgumentException("Tanggal mulai tidak boleh setelah tanggal selesai"));
-
-    assertThrows(IllegalArgumentException.class, () -> supirTrukController.getRiwayatPengirimanSupir(
-        supirTrukId, LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1)));
-    }
-
-    @Test
-    void testGetAlasanPenolakanPengirimanSuccess() {
-    UUID pengirimanId = UUID.randomUUID();
-        when(supirTrukService.getSupirTrukById(supirTrukId)).thenReturn(supirTruk);
-    when(pengirimanService.getAlasanPenolakan(pengirimanId, supirTrukId))
-                .thenReturn("Tidak sesuai");
-
-    ResponseEntity<?> response = supirTrukController.getAlasanPenolakanPengiriman(supirTrukId, pengirimanId);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-    }
-
-    @Test
-    void testGetAlasanPenolakanPengirimanError() {
-    UUID pengirimanId = UUID.randomUUID();
-        when(supirTrukService.getSupirTrukById(supirTrukId)).thenReturn(supirTruk);
-    when(pengirimanService.getAlasanPenolakan(pengirimanId, supirTrukId))
-                .thenThrow(new IllegalArgumentException("Pengiriman tidak berstatus ditolak"));
-
-    assertThrows(IllegalArgumentException.class,
-                () -> supirTrukController.getAlasanPenolakanPengiriman(supirTrukId, pengirimanId));
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 }

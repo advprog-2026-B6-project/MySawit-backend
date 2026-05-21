@@ -1,10 +1,12 @@
 package id.ac.ui.cs.advprog.mysawit.kebun.service;
 
-import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.KebunSawit;
 import id.ac.ui.cs.advprog.mysawit.kebun.model.Coordinate;
-import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunAssignmentRepository;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorEntity;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunMandorJpaRepository;
 import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSawitRepository;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirEntity;
+import id.ac.ui.cs.advprog.mysawit.kebun.repository.KebunSupirJpaRepository;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,7 +27,10 @@ class KebunAssignmentServiceImplTest {
     private KebunSawitRepository kebunRepository;
 
     @Mock
-    private KebunAssignmentRepository assignmentRepository;
+    private KebunMandorJpaRepository kebunMandorRepository;
+
+    @Mock
+    private KebunSupirJpaRepository kebunSupirRepository;
 
     @Mock
     private KebunUserReader userReader;
@@ -44,19 +50,21 @@ class KebunAssignmentServiceImplTest {
         return kebun;
     }
 
+    // =====================================================================
     // MANDOR ASSIGNMENT TESTS
+    // =====================================================================
     @Nested
     class AssignMandorTests {
         @Test
         void assignMandor_validInput_shouldSucceed() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(userReader.findUserById(10L)).thenReturn(Optional.of(
-                    new UserSnapshot(10L, "Mandor A", "mandor_a", Role.MANDOR, "CERT-001")));
-            when(assignmentRepository.kebunHasMandor("kebun-1")).thenReturn(false);
-            when(assignmentRepository.mandorIsAssigned(10L)).thenReturn(false);
+                    new UserSnapshot(10L, "Mandor A", "mandor_a", "MANDOR", "CERT-001")));
+            when(kebunMandorRepository.existsByKebunId("kebun-1")).thenReturn(false);
+            when(kebunMandorRepository.existsByMandorId(10L)).thenReturn(false);
 
             assertDoesNotThrow(() -> service.assignMandor("kebun-1", 10L));
-            verify(assignmentRepository).assignMandor("kebun-1", 10L);
+            verify(kebunMandorRepository).save(any(KebunMandorEntity.class));
         }
 
         @Test
@@ -82,7 +90,7 @@ class KebunAssignmentServiceImplTest {
         void assignMandor_wrongRole_shouldThrow() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(userReader.findUserById(10L)).thenReturn(Optional.of(
-                    new UserSnapshot(10L, "Buruh A", "buruh_a", Role.BURUH, null)));
+                    new UserSnapshot(10L, "Buruh A", "buruh_a", "BURUH", null)));
 
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                     () -> service.assignMandor("kebun-1", 10L));
@@ -93,8 +101,8 @@ class KebunAssignmentServiceImplTest {
         void assignMandor_kebunAlreadyHasMandor_shouldThrow() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(userReader.findUserById(10L)).thenReturn(Optional.of(
-                    new UserSnapshot(10L, "Mandor A", "mandor_a", Role.MANDOR, "CERT-001")));
-            when(assignmentRepository.kebunHasMandor("kebun-1")).thenReturn(true);
+                    new UserSnapshot(10L, "Mandor A", "mandor_a", "MANDOR", "CERT-001")));
+            when(kebunMandorRepository.existsByKebunId("kebun-1")).thenReturn(true);
 
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                     () -> service.assignMandor("kebun-1", 10L));
@@ -105,9 +113,9 @@ class KebunAssignmentServiceImplTest {
         void assignMandor_mandorAlreadyAssigned_shouldThrow() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(userReader.findUserById(10L)).thenReturn(Optional.of(
-                    new UserSnapshot(10L, "Mandor A", "mandor_a", Role.MANDOR, "CERT-001")));
-            when(assignmentRepository.kebunHasMandor("kebun-1")).thenReturn(false);
-            when(assignmentRepository.mandorIsAssigned(10L)).thenReturn(true);
+                    new UserSnapshot(10L, "Mandor A", "mandor_a", "MANDOR", "CERT-001")));
+            when(kebunMandorRepository.existsByKebunId("kebun-1")).thenReturn(false);
+            when(kebunMandorRepository.existsByMandorId(10L)).thenReturn(true);
 
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                     () -> service.assignMandor("kebun-1", 10L));
@@ -115,21 +123,23 @@ class KebunAssignmentServiceImplTest {
         }
     }
 
+    // =====================================================================
     // MANDOR REASSIGNMENT TESTS
+    // =====================================================================
     @Nested
     class ReassignMandorTests {
         @Test
         void reassignMandor_validInput_shouldSucceed() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(kebunRepository.findById("kebun-2")).thenReturn(Optional.of(createKebun("kebun-2")));
-            when(userReader.findUserById(10L)).thenReturn(Optional.of(
-                    new UserSnapshot(10L, "Mandor A", "mandor_a", Role.MANDOR, "CERT-001")));
 
-            when(assignmentRepository.findKebunIdByMandorId(10L)).thenReturn(Optional.of("kebun-1"));
-            when(assignmentRepository.kebunHasMandor("kebun-2")).thenReturn(false);
+            KebunMandorEntity currentAssignment = new KebunMandorEntity("ma-1", "kebun-1", 10L);
+            when(kebunMandorRepository.findByMandorId(10L)).thenReturn(Optional.of(currentAssignment));
+            when(kebunMandorRepository.existsByKebunId("kebun-2")).thenReturn(false);
 
             assertDoesNotThrow(() -> service.reassignMandor(10L, "kebun-1", "kebun-2"));
-            verify(assignmentRepository).moveMandor(10L, "kebun-1", "kebun-2");
+            verify(kebunMandorRepository).delete(currentAssignment);
+            verify(kebunMandorRepository).save(any(KebunMandorEntity.class));
         }
 
         @Test
@@ -150,40 +160,12 @@ class KebunAssignmentServiceImplTest {
         }
 
         @Test
-        void reassignMandor_userDoesNotExist_shouldThrowNotFound() {
-            when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
-            when(kebunRepository.findById("kebun-2")).thenReturn(Optional.of(createKebun("kebun-2")));
-            when(userReader.findUserById(10L)).thenReturn(Optional.empty());
-
-            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                    () -> service.reassignMandor(10L, "kebun-1", "kebun-2"));
-
-            assertTrue(ex.getMessage().contains("User tidak ditemukan"));
-            verify(assignmentRepository, never()).moveMandor(anyLong(), anyString(), anyString());
-        }
-
-        @Test
-        void reassignMandor_userIsNotMandor_shouldThrowConflict() {
-            when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
-            when(kebunRepository.findById("kebun-2")).thenReturn(Optional.of(createKebun("kebun-2")));
-            when(userReader.findUserById(10L)).thenReturn(Optional.of(
-                    new UserSnapshot(10L, "Supir A", "supir_a", Role.SUPIR, null)));
-
-            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                    () -> service.reassignMandor(10L, "kebun-1", "kebun-2"));
-
-            assertTrue(ex.getMessage().contains("bukan Mandor"));
-            verify(assignmentRepository, never()).moveMandor(anyLong(), anyString(), anyString());
-        }
-
-        @Test
         void reassignMandor_mandorNotAtFromKebun_shouldThrow() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(kebunRepository.findById("kebun-2")).thenReturn(Optional.of(createKebun("kebun-2")));
-            when(userReader.findUserById(10L)).thenReturn(Optional.of(
-                    new UserSnapshot(10L, "Mandor A", "mandor_a", Role.MANDOR, "CERT-001")));
 
-            when(assignmentRepository.findKebunIdByMandorId(10L)).thenReturn(Optional.of("kebun-3"));
+            KebunMandorEntity currentAssignment = new KebunMandorEntity("ma-1", "kebun-3", 10L);
+            when(kebunMandorRepository.findByMandorId(10L)).thenReturn(Optional.of(currentAssignment));
 
             assertThrows(IllegalArgumentException.class,
                     () -> service.reassignMandor(10L, "kebun-1", "kebun-2"));
@@ -193,11 +175,10 @@ class KebunAssignmentServiceImplTest {
         void reassignMandor_toKebunAlreadyHasMandor_shouldThrow() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(kebunRepository.findById("kebun-2")).thenReturn(Optional.of(createKebun("kebun-2")));
-            when(userReader.findUserById(10L)).thenReturn(Optional.of(
-                    new UserSnapshot(10L, "Mandor A", "mandor_a", Role.MANDOR, "CERT-001")));
 
-            when(assignmentRepository.findKebunIdByMandorId(10L)).thenReturn(Optional.of("kebun-1"));
-            when(assignmentRepository.kebunHasMandor("kebun-2")).thenReturn(true);
+            KebunMandorEntity currentAssignment = new KebunMandorEntity("ma-1", "kebun-1", 10L);
+            when(kebunMandorRepository.findByMandorId(10L)).thenReturn(Optional.of(currentAssignment));
+            when(kebunMandorRepository.existsByKebunId("kebun-2")).thenReturn(true);
 
             assertThrows(IllegalArgumentException.class,
                     () -> service.reassignMandor(10L, "kebun-1", "kebun-2"));
@@ -207,27 +188,27 @@ class KebunAssignmentServiceImplTest {
         void reassignMandor_mandorNotAssignedAnywhere_shouldThrow() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(kebunRepository.findById("kebun-2")).thenReturn(Optional.of(createKebun("kebun-2")));
-            when(userReader.findUserById(10L)).thenReturn(Optional.of(
-                    new UserSnapshot(10L, "Mandor A", "mandor_a", Role.MANDOR, "CERT-001")));
-            when(assignmentRepository.findKebunIdByMandorId(10L)).thenReturn(Optional.empty());
+            when(kebunMandorRepository.findByMandorId(10L)).thenReturn(Optional.empty());
 
             assertThrows(IllegalArgumentException.class,
                     () -> service.reassignMandor(10L, "kebun-1", "kebun-2"));
         }
     }
 
+    // =====================================================================
     // SUPIR ASSIGNMENT TESTS
+    // =====================================================================
     @Nested
     class AssignSupirTests {
         @Test
         void assignSupir_validInput_shouldSucceed() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(userReader.findUserById(20L)).thenReturn(Optional.of(
-                    new UserSnapshot(20L, "Supir A", "supir_a", Role.SUPIR, null)));
-            when(assignmentRepository.supirIsAssigned(20L)).thenReturn(false);
+                    new UserSnapshot(20L, "Supir A", "supir_a", "SUPIR", null)));
+            when(kebunSupirRepository.existsBySupirId(20L)).thenReturn(false);
 
             assertDoesNotThrow(() -> service.assignSupir("kebun-1", 20L));
-            verify(assignmentRepository).assignSupir("kebun-1", 20L);
+            verify(kebunSupirRepository).save(any(KebunSupirEntity.class));
         }
 
         @Test
@@ -251,7 +232,7 @@ class KebunAssignmentServiceImplTest {
         void assignSupir_wrongRole_shouldThrow() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(userReader.findUserById(20L)).thenReturn(Optional.of(
-                    new UserSnapshot(20L, "Mandor X", "mandor_x", Role.MANDOR, "CERT-001")));
+                    new UserSnapshot(20L, "Mandor X", "mandor_x", "MANDOR", "CERT-001")));
 
             assertThrows(IllegalArgumentException.class,
                     () -> service.assignSupir("kebun-1", 20L));
@@ -261,8 +242,8 @@ class KebunAssignmentServiceImplTest {
         void assignSupir_alreadyAssigned_shouldThrow() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(userReader.findUserById(20L)).thenReturn(Optional.of(
-                    new UserSnapshot(20L, "Supir A", "supir_a", Role.SUPIR, null)));
-            when(assignmentRepository.supirIsAssigned(20L)).thenReturn(true);
+                    new UserSnapshot(20L, "Supir A", "supir_a", "SUPIR", null)));
+            when(kebunSupirRepository.existsBySupirId(20L)).thenReturn(true);
 
             assertThrows(IllegalArgumentException.class,
                     () -> service.assignSupir("kebun-1", 20L));
@@ -272,38 +253,39 @@ class KebunAssignmentServiceImplTest {
         void assignSupir_secondSupirToSameKebun_shouldSucceed() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(userReader.findUserById(21L)).thenReturn(Optional.of(
-                    new UserSnapshot(21L, "Supir B", "supir_b", Role.SUPIR, null)));
-            when(assignmentRepository.supirIsAssigned(21L)).thenReturn(false);
+                    new UserSnapshot(21L, "Supir B", "supir_b", "SUPIR", null)));
+            when(kebunSupirRepository.existsBySupirId(21L)).thenReturn(false);
 
             assertDoesNotThrow(() -> service.assignSupir("kebun-1", 21L));
-            verify(assignmentRepository).assignSupir("kebun-1", 21L);
+            verify(kebunSupirRepository).save(any(KebunSupirEntity.class));
         }
     }
-    
+
+    // =====================================================================
     // SUPIR REASSIGNMENT TESTS
+    // =====================================================================
     @Nested
     class ReassignSupirTests {
         @Test
         void reassignSupir_validInput_shouldSucceed() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(kebunRepository.findById("kebun-2")).thenReturn(Optional.of(createKebun("kebun-2")));
-            when(userReader.findUserById(20L)).thenReturn(Optional.of(
-                    new UserSnapshot(20L, "Supir A", "supir_a", Role.SUPIR, null)));
 
-            when(assignmentRepository.findKebunIdBySupirId(20L)).thenReturn(Optional.of("kebun-1"));
+            KebunSupirEntity currentAssignment = new KebunSupirEntity("sa-1", "kebun-1", 20L);
+            when(kebunSupirRepository.findBySupirId(20L)).thenReturn(Optional.of(currentAssignment));
 
             assertDoesNotThrow(() -> service.reassignSupir(20L, "kebun-1", "kebun-2"));
-            verify(assignmentRepository).moveSupir(20L, "kebun-1", "kebun-2");
+            verify(kebunSupirRepository).delete(currentAssignment);
+            verify(kebunSupirRepository).save(any(KebunSupirEntity.class));
         }
 
         @Test
         void reassignSupir_notAtFromKebun_shouldThrow() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(kebunRepository.findById("kebun-2")).thenReturn(Optional.of(createKebun("kebun-2")));
-            when(userReader.findUserById(20L)).thenReturn(Optional.of(
-                    new UserSnapshot(20L, "Supir A", "supir_a", Role.SUPIR, null)));
 
-            when(assignmentRepository.findKebunIdBySupirId(20L)).thenReturn(Optional.of("kebun-3"));
+            KebunSupirEntity currentAssignment = new KebunSupirEntity("sa-1", "kebun-3", 20L);
+            when(kebunSupirRepository.findBySupirId(20L)).thenReturn(Optional.of(currentAssignment));
 
             assertThrows(IllegalArgumentException.class,
                     () -> service.reassignSupir(20L, "kebun-1", "kebun-2"));
@@ -313,39 +295,10 @@ class KebunAssignmentServiceImplTest {
         void reassignSupir_notAssignedAnywhere_shouldThrow() {
             when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
             when(kebunRepository.findById("kebun-2")).thenReturn(Optional.of(createKebun("kebun-2")));
-            when(userReader.findUserById(20L)).thenReturn(Optional.of(
-                    new UserSnapshot(20L, "Supir A", "supir_a", Role.SUPIR, null)));
-            when(assignmentRepository.findKebunIdBySupirId(20L)).thenReturn(Optional.empty());
+            when(kebunSupirRepository.findBySupirId(20L)).thenReturn(Optional.empty());
 
             assertThrows(IllegalArgumentException.class,
                     () -> service.reassignSupir(20L, "kebun-1", "kebun-2"));
-        }
-
-        @Test
-        void reassignSupir_userDoesNotExist_shouldThrowNotFound() {
-            when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
-            when(kebunRepository.findById("kebun-2")).thenReturn(Optional.of(createKebun("kebun-2")));
-            when(userReader.findUserById(20L)).thenReturn(Optional.empty());
-
-            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                    () -> service.reassignSupir(20L, "kebun-1", "kebun-2"));
-
-            assertTrue(ex.getMessage().contains("User tidak ditemukan"));
-            verify(assignmentRepository, never()).moveSupir(anyLong(), anyString(), anyString());
-        }
-
-        @Test
-        void reassignSupir_userIsNotSupir_shouldThrowConflict() {
-            when(kebunRepository.findById("kebun-1")).thenReturn(Optional.of(createKebun("kebun-1")));
-            when(kebunRepository.findById("kebun-2")).thenReturn(Optional.of(createKebun("kebun-2")));
-            when(userReader.findUserById(20L)).thenReturn(Optional.of(
-                    new UserSnapshot(20L, "Mandor A", "mandor_a", Role.MANDOR, "CERT-001")));
-
-            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                    () -> service.reassignSupir(20L, "kebun-1", "kebun-2"));
-
-            assertTrue(ex.getMessage().contains("bukan Supir Truk"));
-            verify(assignmentRepository, never()).moveSupir(anyLong(), anyString(), anyString());
         }
     }
 }

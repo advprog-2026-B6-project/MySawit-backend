@@ -10,6 +10,5 @@ public interface KebunSawitRepository {
     Optional<KebunSawit> findById(String id);
     Optional<KebunSawit> findByKodeUnik(String kodeUnik);
     List<KebunSawit> findAll();
-    List<KebunSawit> search(String searchNama, String searchKode);
     void deleteById(String id);
 }

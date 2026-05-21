@@ -26,15 +26,9 @@ import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.dto.HasilHistoryResponse;
-import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilHistoryResponseMapper;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
-import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilAccessPolicy;
-import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilCurrentUserService;
-import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilHistoryQueryService;
 import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilService;
-import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilWorkerDirectory;
-import id.ac.ui.cs.advprog.mysawit.hasil.service.JpaHasilWorkerDirectoryAdapter;
 
 @ExtendWith(MockitoExtension.class)
 class HasilControllerTest {
@@ -49,15 +43,7 @@ class HasilControllerTest {
 
     @BeforeEach
     void setUp() {
-        HasilWorkerDirectory workerDirectory = new JpaHasilWorkerDirectoryAdapter(userRepository);
-        HasilHistoryResponseMapper mapper = new HasilHistoryResponseMapper(workerDirectory);
-        controller = new HasilController(
-                hasilService,
-                new HasilHistoryQueryService(hasilService, workerDirectory, mapper),
-                new HasilCurrentUserService(),
-                new HasilAccessPolicy(workerDirectory),
-                mapper
-        );
+        controller = new HasilController(hasilService, userRepository);
     }
 
     @AfterEach
@@ -248,7 +234,7 @@ class HasilControllerTest {
         given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
                 new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1")
         ));
-        given(hasilService.findById("h-1")).willReturn(java.util.Optional.of(submitted));
+        given(hasilService.findAll()).willReturn(List.of(submitted));
         given(hasilService.approve("h-1")).willReturn(approved);
 
         var response = controller.approveReport("h-1");
@@ -268,7 +254,7 @@ class HasilControllerTest {
         given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
                 new User("Budi", "buruh-1", "pw", Role.BURUH, null, "mandor-1")
         ));
-        given(hasilService.findById("h-1")).willReturn(java.util.Optional.of(submitted));
+        given(hasilService.findAll()).willReturn(List.of(submitted));
         given(hasilService.reject("h-1", "Foto kurang jelas")).willReturn(rejected);
 
         var response = controller.rejectReport("h-1", Map.of("rejectionReason", "Foto kurang jelas"));
@@ -283,7 +269,7 @@ class HasilControllerTest {
     void pengirimanAvailableOnlyReturnsVisibleReportsFromService() {
         Hasil approved = Hasil.of("h-1", "buruh-1", LocalDate.of(2026, 3, 6), 100.0,
                 "Panen pagi", List.of("foto-1.jpg"), true, HasilStatus.VERIFIED, null, true);
-        given(hasilService.findAll()).willReturn(List.of(approved));
+        given(hasilService.findAvailableForPengiriman()).willReturn(List.of(approved));
         given(userRepository.findByUsername("buruh-1")).willReturn(java.util.Optional.of(
                 new User(1L, "Budi", "buruh-1", "pw", Role.BURUH, null, null)
         ));

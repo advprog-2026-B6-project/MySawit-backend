@@ -34,24 +34,6 @@ public class UserController {
         return dto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/username/{username}")
-    public ResponseEntity<UserDto> getUserByUsername(@PathVariable String username) {
-        Optional<UserDto> dto = userService.getUserByUsername(username);
-        return dto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/me")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal UserDetails auth) {
-        if (auth == null || auth.getUsername() == null || auth.getUsername().isBlank()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        return userService.getUserByUsername(auth.getUsername())
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
     @GetMapping("/example")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Object> example(@AuthenticationPrincipal UserDetails auth) {

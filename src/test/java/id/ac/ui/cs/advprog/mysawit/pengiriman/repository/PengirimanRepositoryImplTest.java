@@ -5,8 +5,6 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -194,83 +192,6 @@ class PengirimanRepositoryImplTest {
         List<Pengiriman> berlangsung = repository.findAllSedangBerlangsung();
 
         assertTrue(berlangsung.isEmpty());
-    }
-
-    @Test
-    void testFindRiwayatSupirWithTanggalFilter() {
-        UUID supirTrukId = UUID.randomUUID();
-        Pengiriman pengiriman1 = Pengiriman.builder()
-                .supirTrukId(supirTrukId)
-                .mandorId(1L)
-                .muatanKg(200.0)
-                .tujuan("Pabrik A")
-                .build();
-        pengiriman1.setStatus(StatusPengiriman.TIBA);
-        pengiriman1.setWaktuDibuat(LocalDateTime.of(2026, 5, 1, 9, 0));
-
-        Pengiriman pengiriman2 = Pengiriman.builder()
-                .supirTrukId(supirTrukId)
-                .mandorId(1L)
-                .muatanKg(300.0)
-                .tujuan("Pabrik B")
-                .build();
-        pengiriman2.setStatus(StatusPengiriman.DISETUJUI);
-        pengiriman2.setWaktuDibuat(LocalDateTime.of(2026, 5, 3, 9, 0));
-
-        Pengiriman pengiriman3 = Pengiriman.builder()
-                .supirTrukId(supirTrukId)
-                .mandorId(1L)
-                .muatanKg(300.0)
-                .tujuan("Pabrik C")
-                .build();
-        pengiriman3.setStatus(StatusPengiriman.MENGIRIM);
-        pengiriman3.setWaktuDibuat(LocalDateTime.of(2026, 5, 2, 9, 0));
-
-        repository.save(pengiriman1);
-        repository.save(pengiriman2);
-        repository.save(pengiriman3);
-
-        List<Pengiriman> result = repository.findRiwayatSupir(
-                supirTrukId, LocalDate.of(2026, 5, 2), LocalDate.of(2026, 5, 3));
-
-        assertEquals(1, result.size());
-        assertEquals(pengiriman2.getId(), result.get(0).getId());
-    }
-
-    @Test
-    void testFindRiwayatSupirWithoutTanggalFilter() {
-        UUID supirTrukId = UUID.randomUUID();
-        Pengiriman pengiriman1 = Pengiriman.builder()
-                .supirTrukId(supirTrukId)
-                .mandorId(1L)
-                .muatanKg(200.0)
-                .tujuan("Pabrik A")
-                .build();
-        pengiriman1.setStatus(StatusPengiriman.TIBA);
-
-        Pengiriman pengiriman2 = Pengiriman.builder()
-                .supirTrukId(supirTrukId)
-                .mandorId(1L)
-                .muatanKg(300.0)
-                .tujuan("Pabrik B")
-                .build();
-        pengiriman2.setStatus(StatusPengiriman.DITOLAK);
-
-        Pengiriman pengiriman3 = Pengiriman.builder()
-                .supirTrukId(UUID.randomUUID())
-                .mandorId(1L)
-                .muatanKg(300.0)
-                .tujuan("Pabrik C")
-                .build();
-        pengiriman3.setStatus(StatusPengiriman.TIBA);
-
-        repository.save(pengiriman1);
-        repository.save(pengiriman2);
-        repository.save(pengiriman3);
-
-        List<Pengiriman> result = repository.findRiwayatSupir(supirTrukId, null, null);
-
-        assertEquals(2, result.size());
     }
 
     @Test

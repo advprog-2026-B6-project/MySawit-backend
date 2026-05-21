@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,12 +12,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.dao.DataIntegrityViolationException;
 
+import id.ac.ui.cs.advprog.mysawit.hasil.exception.DailySubmissionLimitException;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
-import id.ac.ui.cs.advprog.mysawit.hasil.repository.HasilRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.repository.InMemoryHasilRepository;
+import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollCreateRequest;
+import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollResponse;
+import id.ac.ui.cs.advprog.mysawit.pembayaran.service.PayrollService;
 
 class HasilServiceTest {
     private HasilService service;
@@ -62,17 +63,6 @@ class HasilServiceTest {
     }
 
     @Test
-    void createMapsDatabaseUniqueViolationToDailyLimit() {
-        Clock fixedClock = Clock.fixed(Instant.parse("2026-03-06T01:00:00Z"), ZoneId.of("UTC"));
-        HasilService duplicateSafeService = new HasilServiceImpl(new DuplicateOnSaveHasilRepository(), fixedClock);
-
-        assertThrows(
-                DailySubmissionLimitException.class,
-                () -> duplicateSafeService.create("worker-1", 90.0, "Panen siang", List.of("foto-siang.jpg"))
-        );
-    }
-
-    @Test
     void approveSubmittedReportVerifiesAndPublishesPayrollRequest() throws InterruptedException {
         Hasil report = service.create(
                 "worker-1",
@@ -85,9 +75,9 @@ class HasilServiceTest {
 
         assertEquals(HasilStatus.VERIFIED, approved.getStatus());
         assertTrue(approved.isVisibleForPengiriman());
-        Hasil payrollReport = payrollService.awaitFirstRequest();
-        assertEquals("worker-1", payrollReport.getWorkerId());
-        assertEquals(110.0, payrollReport.getWeightKg());
+        PayrollCreateRequest request = payrollService.awaitFirstRequest();
+        assertEquals("worker-1", request.getUsername());
+        assertEquals(0, request.getTotalKg().compareTo(java.math.BigDecimal.valueOf(110.0)));
     }
 
     @Test
@@ -119,18 +109,19 @@ class HasilServiceTest {
         assertThrows(IllegalArgumentException.class, () -> service.approve(report.getId()));
     }
 
-    private static class FakePayrollService implements HasilPayrollPublisher {
-        private final List<Hasil> requests = new ArrayList<>();
+    private static class FakePayrollService implements PayrollService {
+        private final List<PayrollCreateRequest> requests = new ArrayList<>();
 
         @Override
-        public void publishApproved(Hasil report) {
+        public PayrollResponse createPayroll(PayrollCreateRequest request) {
             synchronized (requests) {
-                requests.add(report);
+                requests.add(request);
                 requests.notifyAll();
             }
+            return null;
         }
 
-        Hasil awaitFirstRequest() throws InterruptedException {
+        PayrollCreateRequest awaitFirstRequest() throws InterruptedException {
             synchronized (requests) {
                 if (requests.isEmpty()) {
                     requests.wait(TimeUnit.SECONDS.toMillis(2));
@@ -138,34 +129,30 @@ class HasilServiceTest {
                 return requests.get(0);
             }
         }
-    }
-
-    private static class DuplicateOnSaveHasilRepository implements HasilRepository {
-        @Override
-        public Hasil save(Hasil report) {
-            throw new DataIntegrityViolationException("duplicate worker/date");
-        }
 
         @Override
-        public Optional<Hasil> findById(String id) {
-            return Optional.empty();
-        }
-
-        @Override
-        public List<Hasil> findAll() {
+        public List<PayrollResponse> getPayrollsByUsernameForAdmin(
+                String username,
+                java.time.LocalDate startDate,
+                java.time.LocalDate endDate
+        ) {
             return List.of();
         }
 
         @Override
-        public Optional<Hasil> findByWorkerIdAndDate(String workerId, java.time.LocalDate hasilDate) {
-            return Optional.empty();
+        public List<PayrollResponse> getPayrollsForWorker(
+                String username,
+                java.time.LocalDate startDate,
+                java.time.LocalDate endDate,
+                String status
+        ) {
+            return List.of();
         }
 
         @Override
-        public boolean existsByWorkerIdAndDate(String workerId, java.time.LocalDate hasilDate) {
-            return false;
+        public java.math.BigDecimal calculateWage(String role, java.math.BigDecimal totalKg) {
+            return java.math.BigDecimal.ZERO;
         }
-
     }
 }
 

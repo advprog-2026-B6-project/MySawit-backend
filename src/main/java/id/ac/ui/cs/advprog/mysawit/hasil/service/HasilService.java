@@ -13,8 +13,6 @@ public interface HasilService {
 
     List<Hasil> findAvailableForPengiriman();
 
-    Optional<Hasil> findById(String reportId);
-
     Hasil approve(String reportId);
 
     Hasil reject(String reportId, String rejectionReason);
