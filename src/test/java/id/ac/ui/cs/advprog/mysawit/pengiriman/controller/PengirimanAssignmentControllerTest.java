@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -86,8 +87,7 @@ class PengirimanAssignmentControllerTest {
 
     @Test
     void createAssignmentUnauthorized() {
-        ResponseEntity<?> result = controller.createAssignment(request);
-        assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+        assertThrows(IllegalStateException.class, () -> controller.createAssignment(request));
     }
 
     @Test
@@ -96,8 +96,7 @@ class PengirimanAssignmentControllerTest {
         when(assignmentService.createAssignment(any(PengirimanAssignmentRequest.class), any()))
                 .thenThrow(new IllegalArgumentException("invalid"));
 
-        ResponseEntity<?> result = controller.createAssignment(request);
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> controller.createAssignment(request));
     }
 
     @Test
@@ -117,8 +116,7 @@ class PengirimanAssignmentControllerTest {
 
     @Test
     void getAssignmentsMandorSayaUnauthorized() {
-        ResponseEntity<?> result = controller.getAssignmentsMandorSaya();
-        assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+        assertThrows(IllegalStateException.class, controller::getAssignmentsMandorSaya);
     }
 
     @Test
@@ -131,8 +129,7 @@ class PengirimanAssignmentControllerTest {
 
     @Test
     void getAssignmentsSupirSayaUnauthorized() {
-        ResponseEntity<?> result = controller.getAssignmentsSupirSaya();
-        assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+        assertThrows(IllegalStateException.class, controller::getAssignmentsSupirSaya);
     }
 
     @Test
@@ -154,19 +151,16 @@ class PengirimanAssignmentControllerTest {
         when(assignmentService.getRiwayatAssignmentsBySupirEmail(eq("supir@mysawit.id"), any(), any()))
                 .thenThrow(new IllegalArgumentException("invalid"));
 
-        ResponseEntity<?> result = controller.getRiwayatAssignmentsSupirSaya(
+        assertThrows(IllegalArgumentException.class, () -> controller.getRiwayatAssignmentsSupirSaya(
                 LocalDate.of(2026, 5, 3),
-                LocalDate.of(2026, 5, 1));
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+                LocalDate.of(2026, 5, 1)));
     }
 
     @Test
     void getRiwayatAssignmentsSupirSayaUnauthorized() {
-        ResponseEntity<?> result = controller.getRiwayatAssignmentsSupirSaya(
+        assertThrows(IllegalStateException.class, () -> controller.getRiwayatAssignmentsSupirSaya(
                 LocalDate.of(2026, 5, 1),
-                LocalDate.of(2026, 5, 2));
-        assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+                LocalDate.of(2026, 5, 2)));
     }
 
     @Test
@@ -188,14 +182,12 @@ class PengirimanAssignmentControllerTest {
         setAuthenticatedUser("mandor@mysawit.id");
         when(userRepository.findAll()).thenReturn(List.of());
 
-        ResponseEntity<?> result = controller.getAssignmentsSupirByMandor(UUID.randomUUID());
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> controller.getAssignmentsSupirByMandor(UUID.randomUUID()));
     }
 
     @Test
     void getAssignmentsSupirByMandorUnauthorized() {
-        ResponseEntity<?> result = controller.getAssignmentsSupirByMandor(UUID.randomUUID());
-        assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+        assertThrows(IllegalStateException.class, () -> controller.getAssignmentsSupirByMandor(UUID.randomUUID()));
     }
 
     @Test
@@ -204,8 +196,7 @@ class PengirimanAssignmentControllerTest {
         User mandor = new User(2L, "Mandor", "mandor2@mysawit.id", "pw", Role.MANDOR, null, null);
         when(userRepository.findAll()).thenReturn(List.of(mandor));
 
-        ResponseEntity<?> result = controller.getAssignmentsSupirByMandor(UUID.randomUUID());
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> controller.getAssignmentsSupirByMandor(UUID.randomUUID()));
     }
 
     @Test
@@ -224,14 +215,13 @@ class PengirimanAssignmentControllerTest {
     void getSupirProfileByEmailForMandorBadRequest() {
         setAuthenticatedUser("mandor@mysawit.id");
         when(userRepository.findByUsername("supir@mysawit.id")).thenReturn(Optional.empty());
-        ResponseEntity<?> result = controller.getSupirProfileByEmailForMandor("supir@mysawit.id");
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.getSupirProfileByEmailForMandor("supir@mysawit.id"));
     }
 
     @Test
     void getSupirProfileByEmailForMandorUnauthorized() {
-        ResponseEntity<?> result = controller.getSupirProfileByEmailForMandor("supir@mysawit.id");
-        assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+        assertThrows(IllegalStateException.class, () -> controller.getSupirProfileByEmailForMandor("supir@mysawit.id"));
     }
 
     @Test
@@ -240,8 +230,8 @@ class PengirimanAssignmentControllerTest {
         User mandor = new User(2L, "Mandor", "supir@mysawit.id", "pw", Role.MANDOR, null, null);
         when(userRepository.findByUsername("supir@mysawit.id")).thenReturn(Optional.of(mandor));
 
-        ResponseEntity<?> result = controller.getSupirProfileByEmailForMandor("supir@mysawit.id");
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.getSupirProfileByEmailForMandor("supir@mysawit.id"));
     }
 
     @Test
@@ -257,8 +247,7 @@ class PengirimanAssignmentControllerTest {
     @Test
     void updateStatusUnauthorized() {
         UpdateAssignmentStatusRequest update = new UpdateAssignmentStatusRequest(StatusAssignment.TIBA);
-        ResponseEntity<?> result = controller.updateStatus(1L, update);
-        assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+        assertThrows(IllegalStateException.class, () -> controller.updateStatus(1L, update));
     }
 
     @Test
@@ -267,8 +256,7 @@ class PengirimanAssignmentControllerTest {
         UpdateAssignmentStatusRequest update = new UpdateAssignmentStatusRequest(StatusAssignment.TIBA);
         when(assignmentService.updateStatus(1L, "supir@mysawit.id", StatusAssignment.TIBA))
                 .thenThrow(new IllegalArgumentException("invalid"));
-        ResponseEntity<?> result = controller.updateStatus(1L, update);
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> controller.updateStatus(1L, update));
     }
 
     @Test
@@ -289,21 +277,18 @@ class PengirimanAssignmentControllerTest {
         when(assignmentService.updateApproval(1L, "mandor@mysawit.id", ApprovalAssignment.REJECTED, "no"))
                 .thenThrow(new IllegalArgumentException("invalid"));
 
-        ResponseEntity<?> result = controller.updateApproval(1L, update);
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> controller.updateApproval(1L, update));
     }
 
     @Test
     void updateApprovalUnauthorized() {
         UpdateAssignmentApprovalRequest update = new UpdateAssignmentApprovalRequest(ApprovalAssignment.APPROVED, "ok");
-        ResponseEntity<?> result = controller.updateApproval(1L, update);
-        assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+        assertThrows(IllegalStateException.class, () -> controller.updateApproval(1L, update));
     }
 
     @Test
     void getAssignmentsMandorSayaUnauthorizedForAnonymousUser() {
         setAuthenticatedUser("anonymousUser");
-        ResponseEntity<?> result = controller.getAssignmentsMandorSaya();
-        assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+        assertThrows(IllegalStateException.class, controller::getAssignmentsMandorSaya);
     }
 }

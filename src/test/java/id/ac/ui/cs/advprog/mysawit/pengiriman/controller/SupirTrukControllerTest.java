@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -99,9 +100,7 @@ class SupirTrukControllerTest {
         when(supirTrukService.getSupirTrukById(supirTrukId))
                 .thenThrow(new IllegalArgumentException("Supir truk tidak ditemukan"));
 
-        ResponseEntity<?> response = supirTrukController.getSupirTrukById(supirTrukId);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> supirTrukController.getSupirTrukById(supirTrukId));
     }
 
     @Test
@@ -136,9 +135,7 @@ class SupirTrukControllerTest {
         when(supirTrukService.getSupirTrukById(supirTrukId))
                 .thenThrow(new IllegalArgumentException("Supir truk tidak ditemukan"));
 
-        ResponseEntity<?> response = supirTrukController.getPengirimanSupirTruk(supirTrukId);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> supirTrukController.getPengirimanSupirTruk(supirTrukId));
     }
 
     @Test
@@ -168,10 +165,8 @@ class SupirTrukControllerTest {
         LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1)))
         .thenThrow(new IllegalArgumentException("Tanggal mulai tidak boleh setelah tanggal selesai"));
 
-    ResponseEntity<?> response = supirTrukController.getRiwayatPengirimanSupir(
-        supirTrukId, LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1));
-
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertThrows(IllegalArgumentException.class, () -> supirTrukController.getRiwayatPengirimanSupir(
+        supirTrukId, LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1)));
     }
 
     @Test
@@ -194,8 +189,7 @@ class SupirTrukControllerTest {
     when(pengirimanService.getAlasanPenolakan(pengirimanId, supirTrukId))
                 .thenThrow(new IllegalArgumentException("Pengiriman tidak berstatus ditolak"));
 
-    ResponseEntity<?> response = supirTrukController.getAlasanPenolakanPengiriman(supirTrukId, pengirimanId);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertThrows(IllegalArgumentException.class,
+                () -> supirTrukController.getAlasanPenolakanPengiriman(supirTrukId, pengirimanId));
     }
 }

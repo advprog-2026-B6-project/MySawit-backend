@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,10 +93,8 @@ class AdminPengirimanControllerTest {
         when(pengirimanService.getPengirimanDisetujui(any(), any(), any()))
                 .thenThrow(new IllegalArgumentException("Tanggal mulai tidak boleh setelah tanggal selesai"));
 
-        ResponseEntity<?> result = adminPengirimanController.getPengirimanDisetujui(
-                "Mandor", LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1));
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> adminPengirimanController.getPengirimanDisetujui(
+                "Mandor", LocalDate.of(2026, 5, 3), LocalDate.of(2026, 5, 1)));
     }
 
     @Test
@@ -128,10 +127,8 @@ class AdminPengirimanControllerTest {
         when(pengirimanService.tolakPengirimanAdmin(eq(pengirimanId), eq(1L), eq("Alasan")))
                 .thenThrow(new IllegalArgumentException("Admin tidak ditemukan"));
 
-        ResponseEntity<?> result = adminPengirimanController.rejectPengirimanFinal(
-                pengirimanId, new AdminRejectPengirimanRequest(1L, "Alasan"));
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> adminPengirimanController.rejectPengirimanFinal(
+                pengirimanId, new AdminRejectPengirimanRequest(1L, "Alasan")));
     }
 
     @Test
@@ -152,10 +149,8 @@ class AdminPengirimanControllerTest {
         when(pengirimanService.tolakPengirimanParsialAdmin(eq(pengirimanId), eq(1L), eq(120.0), eq("Alasan")))
                 .thenThrow(new IllegalArgumentException("Data tidak valid"));
 
-        ResponseEntity<?> result = adminPengirimanController.rejectPengirimanFinalParsial(
-                pengirimanId, new PartialRejectPengirimanRequest(1L, 120.0, "Alasan"));
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> adminPengirimanController.rejectPengirimanFinalParsial(
+                pengirimanId, new PartialRejectPengirimanRequest(1L, 120.0, "Alasan")));
     }
 
         @Test
@@ -174,10 +169,8 @@ class AdminPengirimanControllerTest {
         when(pengirimanService.tolakAssignmentFinalParsialAdmin(eq(10L), eq(1L), eq(120.0), eq("Alasan")))
                 .thenThrow(new IllegalArgumentException("Data tidak valid"));
 
-        ResponseEntity<?> result = adminPengirimanController.rejectAssignmentFinalParsial(
-                10L, new PartialRejectPengirimanRequest(1L, 120.0, "Alasan"));
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> adminPengirimanController.rejectAssignmentFinalParsial(
+                10L, new PartialRejectPengirimanRequest(1L, 120.0, "Alasan")));
     }
 
     @Test
@@ -186,10 +179,8 @@ class AdminPengirimanControllerTest {
         when(pengirimanService.setujuiPengirimanAdmin(eq(pengirimanId), eq(1L)))
                 .thenThrow(new IllegalArgumentException("Admin tidak ditemukan"));
 
-        ResponseEntity<?> result = adminPengirimanController.approvePengirimanFinal(
-                pengirimanId, new AdminApprovePengirimanRequest(1L));
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> adminPengirimanController.approvePengirimanFinal(
+                pengirimanId, new AdminApprovePengirimanRequest(1L)));
     }
 
     @Test
@@ -208,10 +199,8 @@ class AdminPengirimanControllerTest {
         when(pengirimanService.setujuiAssignmentFinalAdmin(10L, 1L))
                 .thenThrow(new IllegalArgumentException("Admin tidak ditemukan"));
 
-        ResponseEntity<?> result = adminPengirimanController.approveAssignmentFinal(
-                10L, new AdminApprovePengirimanRequest(1L));
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> adminPengirimanController.approveAssignmentFinal(
+                10L, new AdminApprovePengirimanRequest(1L)));
     }
 
     @Test
@@ -230,9 +219,7 @@ class AdminPengirimanControllerTest {
         when(pengirimanService.tolakAssignmentFinalAdmin(10L, 1L, "Alasan"))
                 .thenThrow(new IllegalArgumentException("Data tidak valid"));
 
-        ResponseEntity<?> result = adminPengirimanController.rejectAssignmentFinal(
-                10L, new AdminRejectPengirimanRequest(1L, "Alasan"));
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertThrows(IllegalArgumentException.class, () -> adminPengirimanController.rejectAssignmentFinal(
+                10L, new AdminRejectPengirimanRequest(1L, "Alasan")));
     }
 }
