@@ -40,8 +40,6 @@ dependencies {
 
     // 2. Database & JPA
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.flywaydb:flyway-core")
-    runtimeOnly("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("com.h2database:h2") // H2 untuk testing/lokal
 
