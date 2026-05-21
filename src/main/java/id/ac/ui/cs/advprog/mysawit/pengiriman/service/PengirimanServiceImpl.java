@@ -218,6 +218,7 @@ public class PengirimanServiceImpl implements PengirimanService {
         response.setAdminFinalNote(assignment.getAdminFinalNote());
         response.setKilogramDiakui(assignment.getKilogramDiakui());
         response.setAdminFinalReviewedAt(assignment.getAdminFinalReviewedAt());
+        response.setSupirEmail(assignment.getSupirEmail());
         return response;
     }
 

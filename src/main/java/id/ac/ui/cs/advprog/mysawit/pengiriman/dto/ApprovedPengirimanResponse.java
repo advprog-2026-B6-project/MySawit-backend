@@ -10,6 +10,7 @@ public class ApprovedPengirimanResponse {
     private Long assignmentId;
     private UUID pengirimanId;
     private UUID supirTrukId;
+    private String supirEmail;
     private Long mandorId;
     private String mandorName;
     private double muatanKg;
@@ -60,6 +61,14 @@ public class ApprovedPengirimanResponse {
 
     public void setSupirTrukId(UUID supirTrukId) {
         this.supirTrukId = supirTrukId;
+    }
+
+    public String getSupirEmail() {
+        return supirEmail;
+    }
+
+    public void setSupirEmail(String supirEmail) {
+        this.supirEmail = supirEmail;
     }
 
     public Long getMandorId() {
