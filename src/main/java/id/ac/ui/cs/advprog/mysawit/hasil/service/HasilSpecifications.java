@@ -33,7 +33,8 @@ public final class HasilSpecifications {
     }
 
     public static HasilSpecification visibleForPengiriman() {
-        return Hasil::isVisibleForPengiriman;
+        return statusIs(HasilStatus.VERIFIED)
+                .and(Hasil::isVisibleForPengiriman);
     }
 
     public static HasilSpecification workerNameContains(
@@ -50,5 +51,14 @@ public final class HasilSpecifications {
         if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("startDate cannot be after endDate");
         }
+    }
+}
+
+@FunctionalInterface
+interface HasilSpecification {
+    boolean isSatisfiedBy(Hasil report);
+
+    default HasilSpecification and(HasilSpecification other) {
+        return report -> isSatisfiedBy(report) && other.isSatisfiedBy(report);
     }
 }
