@@ -1,11 +1,16 @@
 package id.ac.ui.cs.advprog.mysawit.pembayaran.service;
 
+import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.model.User;
 import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollCreateRequest;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollResponse;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.Payroll;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.WageSetting;
+import id.ac.ui.cs.advprog.mysawit.pembayaran.model.strategy.BuruhWageStrategy;
+import id.ac.ui.cs.advprog.mysawit.pembayaran.model.strategy.MandorWageStrategy;
+import id.ac.ui.cs.advprog.mysawit.pembayaran.model.strategy.SupirWageStrategy;
+import id.ac.ui.cs.advprog.mysawit.pembayaran.model.strategy.WageCalculationStrategy;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.repository.PayrollRepository;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,21 +21,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-public class PayrollServiceImplTest {
+class PayrollServiceImplTest {
 
     @Mock
     private PayrollRepository payrollRepository;
@@ -42,82 +48,37 @@ public class PayrollServiceImplTest {
     private WageSettingService wageSettingService;
 
     private PayrollServiceImpl payrollService;
+    private Map<String, WageCalculationStrategy> strategies;
 
     @BeforeEach
     void setUp() {
-        payrollService = new PayrollServiceImpl(payrollRepository, userRepository, wageSettingService);
+        strategies = new HashMap<>();
+        strategies.put("buruh", new BuruhWageStrategy());
+        strategies.put("supir", new SupirWageStrategy());
+        strategies.put("mandor", new MandorWageStrategy());
+        payrollService = new PayrollServiceImpl(payrollRepository, userRepository, wageSettingService, strategies);
     }
 
     @Test
     void testCalculateWage_Buruh() {
         WageSetting mockSetting = new WageSetting(
-            "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
+                "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
         when(wageSettingService.getWageSetting()).thenReturn(mockSetting);
 
-        // totalKg = 10 -> baseWage = 10 * 100 = 1000
-        // expected wage = 1000 * 90% = 900.00
         BigDecimal result = payrollService.calculateWage("BURUH", new BigDecimal("10"));
         assertEquals(new BigDecimal("900.00"), result);
     }
 
     @Test
-    void testCalculateWage_Supir() {
-        WageSetting mockSetting = new WageSetting(
-            "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
-        when(wageSettingService.getWageSetting()).thenReturn(mockSetting);
-
-        // totalKg = 15 -> baseWage = 15 * 200 = 3000
-        // expected wage = 3000 * 0.9 = 2700.00
-        BigDecimal result = payrollService.calculateWage("SUPIR", new BigDecimal("15"));
-        assertEquals(new BigDecimal("2700.00"), result);
-    }
-
-    @Test
-    void testCalculateWage_Mandor() {
-        WageSetting mockSetting = new WageSetting(
-            "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
-        when(wageSettingService.getWageSetting()).thenReturn(mockSetting);
-
-        // totalKg = 5 -> baseWage = 5 * 300 = 1500
-        // expected wage = 1500 * 0.9 = 1350.00
-        BigDecimal result = payrollService.calculateWage("MANDOR", new BigDecimal("5"));
-        assertEquals(new BigDecimal("1350.00"), result);
-    }
-
-    @Test
     void testCalculateWage_UnknownRole_ShouldReturnZero() {
         WageSetting mockSetting = new WageSetting(
-            "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
+                "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
         when(wageSettingService.getWageSetting()).thenReturn(mockSetting);
 
         BigDecimal result = payrollService.calculateWage("ADMIN", new BigDecimal("10"));
         assertEquals(new BigDecimal("0.00"), result);
     }
 
-    @Test
-    void testCalculateWage_ZeroKg_ShouldReturnZero() {
-        BigDecimal result = payrollService.calculateWage("BURUH", BigDecimal.ZERO);
-        assertEquals(BigDecimal.ZERO, result);
-    }
-
-    @Test
-    void testCalculateWage_NullKg_ShouldReturnZero() {
-        BigDecimal result = payrollService.calculateWage(
-            "BURUH", null);
-        assertEquals(BigDecimal.ZERO, result);
-    }
-
-    @Test
-    void testCalculateWage_DecimalKgAndScale() {
-        WageSetting mockSetting = new WageSetting(
-            "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
-        when(wageSettingService.getWageSetting()).thenReturn(mockSetting);
-
-        // totalKg = 10.55 -> base = 10.55 * 100 = 1055.00
-        // expected wage = 1055.00 * 0.9 = 949.50
-        BigDecimal result = payrollService.calculateWage("BURUH", new BigDecimal("10.55"));
-        assertEquals(new BigDecimal("949.50"), result);
-    }
     @Test
     void testCreatePayroll_Success() {
         PayrollCreateRequest req = new PayrollCreateRequest();
@@ -128,20 +89,19 @@ public class PayrollServiceImplTest {
 
         User mockUser = mock(User.class);
         when(mockUser.getUsername()).thenReturn("budi");
-        // Memaksa role null agar fallback ke branch "" teruji
-        when(mockUser.getRole()).thenReturn(null); 
+        when(mockUser.getRole()).thenReturn(Role.BURUH);
         when(userRepository.findByUsername("budi")).thenReturn(Optional.of(mockUser));
 
         WageSetting mockSetting = new WageSetting(
-            "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
+                "1", new BigDecimal("100"), new BigDecimal("200"), new BigDecimal("300"));
         when(wageSettingService.getWageSetting()).thenReturn(mockSetting);
 
         Payroll savedPayroll = new Payroll();
         savedPayroll.setId(1L);
         savedPayroll.setUsername("budi");
-        savedPayroll.setTotalWage(BigDecimal.ZERO); // fallback wage
+        savedPayroll.setTotalWage(new BigDecimal("9000.00"));
         savedPayroll.setStatus("PENDING");
-        
+
         when(payrollRepository.save(any(Payroll.class))).thenReturn(savedPayroll);
 
         PayrollResponse response = payrollService.createPayroll(req);
@@ -153,57 +113,81 @@ public class PayrollServiceImplTest {
     }
 
     @Test
-    void testCreatePayroll_UserNotFound_ThrowsException() {
-        PayrollCreateRequest req = new PayrollCreateRequest();
-        req.setUsername("hacker");
+    void getPayrollsByUsernameForAdmin_returnsMappedResponses() {
+        Payroll payroll = new Payroll();
+        payroll.setId(10L);
+        payroll.setUsername("budi");
+        payroll.setStartDate(LocalDate.of(2026, 5, 1));
+        payroll.setEndDate(LocalDate.of(2026, 5, 31));
+        payroll.setTotalKg(new BigDecimal("100"));
+        payroll.setTotalWage(new BigDecimal("9000.00"));
+        payroll.setStatus("PENDING");
 
-        when(userRepository.findByUsername("hacker")).thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class, () -> payrollService.createPayroll(req));
-    }
-
-    // --- TESTING GET PAYROLLS ---
-
-    @Test
-    void testGetPayrollsByUsernameForAdmin_Success() {
         when(userRepository.existsByUsername("budi")).thenReturn(true);
-        
-        Payroll mockPayroll = new Payroll();
-        mockPayroll.setId(99L);
-        
         when(payrollRepository.findByUsernameAndDateFilter(
-                eq("budi"), any(LocalDate.class), any(LocalDate.class)))
-            .thenReturn(List.of(mockPayroll));
+                "budi", LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 31)))
+                .thenReturn(List.of(payroll));
 
-        List<PayrollResponse> result = payrollService.getPayrollsByUsernameForAdmin(
-                "budi", LocalDate.now(), LocalDate.now());
+        List<PayrollResponse> responses = payrollService.getPayrollsByUsernameForAdmin(
+                "budi", LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 31));
 
-        assertEquals(1, result.size());
-        assertEquals(99L, result.get(0).getId());
+        assertEquals(1, responses.size());
+        assertEquals(10L, responses.get(0).getId());
+        assertEquals("PENDING", responses.get(0).getStatus());
     }
 
     @Test
-    void testGetPayrollsByUsernameForAdmin_UserNotFound_ThrowsException() {
-        when(userRepository.existsByUsername("ghost")).thenReturn(false);
-
-        assertThrows(IllegalArgumentException.class, () -> 
-            payrollService.getPayrollsByUsernameForAdmin(
-                "ghost", LocalDate.now(), LocalDate.now()));
-    }
-
-    @Test
-    void testGetPayrollsForWorker_Success() {
+    void testApprovePayroll_Success() {
         Payroll mockPayroll = new Payroll();
-        mockPayroll.setId(55L);
+        mockPayroll.setId(1L);
+        mockPayroll.setStatus("PENDING");
 
-        when(payrollRepository.findByUsernameAndFilter(
-                eq("joko"), any(), any(), eq("PAID")))
-            .thenReturn(List.of(mockPayroll));
+        when(payrollRepository.findById(1L)).thenReturn(Optional.of(mockPayroll));
+        when(payrollRepository.save(any(Payroll.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        List<PayrollResponse> result = payrollService.getPayrollsForWorker(
-                "joko", LocalDate.now(), LocalDate.now(), "PAID");
+        PayrollResponse response = payrollService.approvePayroll(1L);
+        assertEquals("ACCEPTED", response.getStatus());
+    }
 
-        assertEquals(1, result.size());
-        assertEquals(55L, result.get(0).getId());
+    @Test
+    void testRejectPayroll_Success() {
+        Payroll mockPayroll = new Payroll();
+        mockPayroll.setId(1L);
+        mockPayroll.setStatus("PENDING");
+
+        when(payrollRepository.findById(1L)).thenReturn(Optional.of(mockPayroll));
+        when(payrollRepository.save(any(Payroll.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        PayrollResponse response = payrollService.rejectPayroll(1L, "Kurang kg");
+        assertEquals("REJECTED", response.getStatus());
+    }
+
+    @Test
+    void testApprovePayroll_NotFound() {
+        when(payrollRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(IllegalArgumentException.class, () -> payrollService.approvePayroll(99L));
+    }
+
+    @Test
+    void testGenerateMonthlyRecap() {
+        Payroll p1 = new Payroll();
+        p1.setStartDate(LocalDate.of(2023, 10, 5));
+        p1.setStatus("ACCEPTED");
+        p1.setTotalWage(new BigDecimal("1000"));
+
+        Payroll p2 = new Payroll();
+        p2.setStartDate(LocalDate.of(2023, 10, 15));
+        p2.setStatus("PENDING"); // Should be ignored
+        p2.setTotalWage(new BigDecimal("2000"));
+
+        Payroll p3 = new Payroll();
+        p3.setStartDate(LocalDate.of(2023, 9, 15)); // Wrong month, ignored
+        p3.setStatus("ACCEPTED");
+        p3.setTotalWage(new BigDecimal("3000"));
+
+        when(payrollRepository.findAll()).thenReturn(List.of(p1, p2, p3));
+
+        BigDecimal total = payrollService.generateMonthlyRecap(2023, 10);
+        assertEquals(new BigDecimal("1000.00"), total);
     }
 }

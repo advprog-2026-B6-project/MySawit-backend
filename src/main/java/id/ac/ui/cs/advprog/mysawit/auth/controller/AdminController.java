@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.auth.controller;
 
+import id.ac.ui.cs.advprog.mysawit.auth.dto.DeleteUserResponse;
 import id.ac.ui.cs.advprog.mysawit.auth.dto.UserDto;
 import id.ac.ui.cs.advprog.mysawit.auth.service.UserService;
 
@@ -37,9 +38,16 @@ public class AdminController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<UserDto> deleteUser(@PathVariable Long id) {
-        Optional<UserDto> deleted = userService.deleteUserById(id);
-        return deleted.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<DeleteUserResponse> deleteUser(@PathVariable Long id) {
+        try {
+            Optional<UserDto> deleted = userService.deleteUserById(id);
+            if (deleted.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new DeleteUserResponse(e.getMessage()));
+        }
     }
 
     @PostMapping("/assign/{buruhUsername}/{mandorUsername}")

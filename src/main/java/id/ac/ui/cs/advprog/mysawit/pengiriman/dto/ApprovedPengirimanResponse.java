@@ -25,6 +25,7 @@ public class ApprovedPengirimanResponse {
     public ApprovedPengirimanResponse() {
     }
 
+    @SuppressWarnings("java:S107")
     public ApprovedPengirimanResponse(Long assignmentId, UUID pengirimanId, UUID supirTrukId, Long mandorId,
                                       String mandorName, double muatanKg, String tujuan,
                                       LocalDateTime waktuDisetujui, StatusPengiriman status) {

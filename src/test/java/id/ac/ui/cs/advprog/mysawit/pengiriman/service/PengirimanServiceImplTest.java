@@ -35,6 +35,7 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.SupirTrukRepository;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings({"java:S5778", "java:S6068"})
 class PengirimanServiceImplTest {
 
     @Mock

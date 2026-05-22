@@ -4,13 +4,13 @@ import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.WageUpdateRequest;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.WageSetting;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.service.WageSettingService;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/wages") //tentatif dapat diubah juga sesuai diskusi kelompok
+@RequestMapping("/pembayaran/admin/wages")
 @CrossOrigin(origins = {"http://localhost:3000", "https://my-sawit-frontend.vercel.app"})
-//@PreAuthorize("hasRole('ADMIN_UTAMA')") // mungkin nanti diubah mengikuti modul user
+@PreAuthorize("hasAuthority('ADMIN')")
 public class WageSettingController {
 
     private final WageSettingService wageSettingService;

@@ -7,6 +7,7 @@ import id.ac.ui.cs.advprog.mysawit.pembayaran.dto.PayrollResponse;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.Payroll;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.model.WageSetting;
 import id.ac.ui.cs.advprog.mysawit.pembayaran.repository.PayrollRepository;
+import id.ac.ui.cs.advprog.mysawit.pembayaran.model.strategy.WageCalculationStrategy;
 
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,8 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import java.util.Map;
 
 @Service
 public class PayrollServiceImpl implements PayrollService {
@@ -23,56 +25,34 @@ public class PayrollServiceImpl implements PayrollService {
     private final PayrollRepository payrollRepository;
     private final UserRepository userRepository;
     private final WageSettingService wageSettingService;
-
-    // 90% logic meaning multiplier is 0.9
-    private static final BigDecimal WAGE_MULTIPLIER = new BigDecimal("0.90");
+    private final Map<String, WageCalculationStrategy> wageStrategies;
 
     public PayrollServiceImpl(PayrollRepository payrollRepository,
                               UserRepository userRepository,
-                              WageSettingService wageSettingService) {
+                              WageSettingService wageSettingService,
+                              Map<String, WageCalculationStrategy> wageStrategies) {
         this.payrollRepository = payrollRepository;
         this.userRepository = userRepository;
         this.wageSettingService = wageSettingService;
+        this.wageStrategies = wageStrategies;
     }
 
     @Override
     public java.math.BigDecimal calculateWage(String roleStr, BigDecimal totalKg) {
-        if (totalKg == null || totalKg.compareTo(BigDecimal.ZERO) <= 0) {
-            return BigDecimal.ZERO;
-        }
-
         WageSetting wageSetting = wageSettingService.getWageSetting();
-        BigDecimal ratePerKg;
-
-        switch (roleStr) {
-            case "BURUH":
-                ratePerKg = wageSetting.getUpahBuruhPerKg();
-                break;
-            case "SUPIR":
-                ratePerKg = wageSetting.getUpahSupirPerKg();
-                break;
-            case "MANDOR":
-                ratePerKg = wageSetting.getUpahMandorPerKg();
-                break;
-            default:
-                ratePerKg = BigDecimal.ZERO;
+        WageCalculationStrategy strategy = wageStrategies.get(roleStr.toLowerCase());
+        if (strategy == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }
-
-        if (ratePerKg == null) {
-            ratePerKg = BigDecimal.ZERO;
-        }
-
-        // Calculation: totalKg * ratePerKg * 90%
-        BigDecimal baseWage = totalKg.multiply(ratePerKg);
-        return baseWage.multiply(WAGE_MULTIPLIER).setScale(2, RoundingMode.HALF_UP);
+        return strategy.calculate(totalKg, wageSetting);
     }
 
     @Override
     public PayrollResponse createPayroll(PayrollCreateRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException(
-                    "User not found with username: " + request.getUsername()));
-                
+                        "User not found with username: " + request.getUsername()));
+
         String roleStr = user.getRole() != null ? user.getRole().name() : "";
 
         BigDecimal calculatedWage = calculateWage(roleStr, request.getTotalKg());
@@ -93,22 +73,60 @@ public class PayrollServiceImpl implements PayrollService {
 
     @Override
     public List<PayrollResponse> getPayrollsByUsernameForAdmin(
-        String username, LocalDate startDate, LocalDate endDate) {
+            String username, LocalDate startDate, LocalDate endDate) {
 
         if (!userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException(
-                "User not found: " + username);
+                    "User not found: " + username);
         }
         List<Payroll> payrolls = payrollRepository
-        .findByUsernameAndDateFilter(username, startDate, endDate);
-        return payrolls.stream().map(this::mapToResponse).collect(Collectors.toList());
+                .findByUsernameAndDateFilter(username, startDate, endDate);
+        return payrolls.stream().map(this::mapToResponse).toList();
     }
 
     @Override
     public List<PayrollResponse> getPayrollsForWorker(
-        String username, LocalDate startDate, LocalDate endDate, String status) {
+            String username, LocalDate startDate, LocalDate endDate, String status) {
         List<Payroll> payrolls = payrollRepository.findByUsernameAndFilter(username, startDate, endDate, status);
-        return payrolls.stream().map(this::mapToResponse).collect(Collectors.toList());
+        return payrolls.stream().map(this::mapToResponse).toList();
+    }
+
+    @Override
+    public PayrollResponse approvePayroll(Long id) {
+        Payroll payroll = payrollRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Payroll not found"));
+        payroll.approve(); // State Pattern
+        Payroll saved = payrollRepository.save(payroll);
+        return mapToResponse(saved);
+    }
+
+    @Override
+    public PayrollResponse rejectPayroll(Long id, String reason) {
+        Payroll payroll = payrollRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Payroll not found"));
+        payroll.reject(reason); // State Pattern
+        Payroll saved = payrollRepository.save(payroll);
+        return mapToResponse(saved);
+    }
+
+    @Override
+    public BigDecimal generateMonthlyRecap(int year, int month) {
+        List<Payroll> allPayrolls = payrollRepository.findAll();
+        BigDecimal total = BigDecimal.ZERO;
+        // Intentionally complex calculation for profiling
+        for (Payroll p : allPayrolls) {
+            if (p.getStartDate().getYear() == year 
+                    && p.getStartDate().getMonthValue() == month 
+                    && "ACCEPTED".equals(p.getStatus())) {
+                BigDecimal wage = p.getTotalWage();
+                    // Some artificial complexity for JMH/VisualVM
+                    for(int i=0; i<100; i++) {
+                        wage = wage.multiply(BigDecimal.ONE).setScale(2, RoundingMode.HALF_UP);
+                    }
+                    total = total.add(wage);
+            }
+        }
+        return total.setScale(2, RoundingMode.HALF_UP);
     }
 
     private PayrollResponse mapToResponse(Payroll payroll) {
@@ -121,6 +139,7 @@ public class PayrollServiceImpl implements PayrollService {
                 .totalWage(payroll.getTotalWage())
                 .status(payroll.getStatus())
                 .createdAt(payroll.getCreatedAt())
+                .rejectReason(payroll.getRejectReason())
                 .build();
     }
 }

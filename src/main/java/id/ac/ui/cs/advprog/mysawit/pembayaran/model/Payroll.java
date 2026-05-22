@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Payroll {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -42,4 +42,24 @@ public class Payroll {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(columnDefinition = "TEXT")
+    private String rejectReason;
+
+    public id.ac.ui.cs.advprog.mysawit.pembayaran.model.state.PayrollState getPayrollState() {
+        if ("ACCEPTED".equals(status)) {
+            return new id.ac.ui.cs.advprog.mysawit.pembayaran.model.state.AcceptedState();
+        } else if ("REJECTED".equals(status)) {
+            return new id.ac.ui.cs.advprog.mysawit.pembayaran.model.state.RejectedState();
+        }
+        return new id.ac.ui.cs.advprog.mysawit.pembayaran.model.state.PendingState();
+    }
+
+    public void approve() {
+        getPayrollState().approve(this);
+    }
+
+    public void reject(String reason) {
+        getPayrollState().reject(this, reason);
+    }
 }

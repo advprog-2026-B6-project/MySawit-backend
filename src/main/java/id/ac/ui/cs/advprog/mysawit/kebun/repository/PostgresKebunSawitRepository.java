@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 @Primary
@@ -42,12 +41,23 @@ public class PostgresKebunSawitRepository implements KebunSawitRepository {
     public List<KebunSawit> findAll() {
         return jpaRepository.findAll().stream()
                 .map(this::toDomain)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    @Override
+    public List<KebunSawit> search(String searchNama, String searchKode) {
+        return jpaRepository.search(normalize(searchNama), normalize(searchKode)).stream()
+                .map(this::toDomain)
+                .toList();
     }
 
     @Override
     public void deleteById(String id) {
         jpaRepository.deleteById(id);
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value;
     }
 
     private KebunSawitEntity toEntity(KebunSawit domain) {

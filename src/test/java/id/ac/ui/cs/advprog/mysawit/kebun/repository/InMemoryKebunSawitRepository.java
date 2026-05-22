@@ -38,6 +38,17 @@ public class InMemoryKebunSawitRepository implements KebunSawitRepository {
     }
 
     @Override
+    public List<KebunSawit> search(String searchNama, String searchKode) {
+        String nama = searchNama == null ? "" : searchNama.toLowerCase();
+        String kode = searchKode == null ? "" : searchKode.toLowerCase();
+
+        return kebunRepository.values().stream()
+                .filter(k -> nama.isEmpty() || k.getNamaKebun().toLowerCase().contains(nama))
+                .filter(k -> kode.isEmpty() || k.getKodeUnik().toLowerCase().contains(kode))
+                .toList();
+    }
+
+    @Override
     public void deleteById(String id) {
         kebunRepository.remove(id);
     }
