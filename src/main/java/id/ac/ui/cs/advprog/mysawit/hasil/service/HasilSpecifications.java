@@ -52,3 +52,12 @@ public final class HasilSpecifications {
         }
     }
 }
+
+@FunctionalInterface
+interface HasilSpecification {
+    boolean isSatisfiedBy(Hasil report);
+
+    default HasilSpecification and(HasilSpecification other) {
+        return report -> isSatisfiedBy(report) && other.isSatisfiedBy(report);
+    }
+}
