@@ -41,25 +41,33 @@ class HasilFactoryTest {
 
     @Test
     void createSubmittedRejectsBlankWorkerId() {
+        List<String> photoUrls = List.of("foto.jpg");
+
         assertThrows(IllegalArgumentException.class,
-                () -> factory.createSubmitted(" ", 90.5, "Panen", List.of("foto.jpg")));
+                () -> factory.createSubmitted(" ", 90.5, "Panen", photoUrls));
     }
 
     @Test
     void createSubmittedRejectsNonPositiveKilogram() {
+        List<String> photoUrls = List.of("foto.jpg");
+
         assertThrows(IllegalArgumentException.class,
-                () -> factory.createSubmitted("worker-1", 0.0, "Panen", List.of("foto.jpg")));
+                () -> factory.createSubmitted("worker-1", 0.0, "Panen", photoUrls));
     }
 
     @Test
     void createSubmittedRejectsBlankNews() {
+        List<String> photoUrls = List.of("foto.jpg");
+
         assertThrows(IllegalArgumentException.class,
-                () -> factory.createSubmitted("worker-1", 90.5, " ", List.of("foto.jpg")));
+                () -> factory.createSubmitted("worker-1", 90.5, " ", photoUrls));
     }
 
     @Test
     void createSubmittedRejectsMissingPhotos() {
+        List<String> photoUrls = List.of();
+
         assertThrows(IllegalArgumentException.class,
-                () -> factory.createSubmitted("worker-1", 90.5, "Panen", List.of()));
+                () -> factory.createSubmitted("worker-1", 90.5, "Panen", photoUrls));
     }
 }
