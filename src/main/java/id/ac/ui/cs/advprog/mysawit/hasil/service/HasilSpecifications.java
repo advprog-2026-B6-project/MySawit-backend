@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.mysawit.hasil.service;
 import java.time.LocalDate;
 import java.util.Set;
 
+import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
 
 public final class HasilSpecifications {
@@ -32,7 +33,7 @@ public final class HasilSpecifications {
     }
 
     public static HasilSpecification visibleForPengiriman() {
-        return report -> report.isVisibleForPengiriman();
+        return Hasil::isVisibleForPengiriman;
     }
 
     public static HasilSpecification workerNameContains(

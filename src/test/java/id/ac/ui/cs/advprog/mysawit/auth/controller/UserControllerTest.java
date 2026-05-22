@@ -45,6 +45,65 @@ class UserControllerTest {
     }
 
     @Test
+    void getUserByUsername_found_returnsOk() {
+        UserDto dto = new UserDto(1L, "A", "alice", Role.BURUH, null, null);
+        when(userService.getUserByUsername("alice")).thenReturn(Optional.of(dto));
+
+        ResponseEntity<UserDto> out = controller.getUserByUsername("alice");
+
+        assertEquals(200, out.getStatusCode().value());
+        assertEquals("alice", out.getBody().getUsername());
+    }
+
+    @Test
+    void getUserByUsername_notFound_returns404() {
+        when(userService.getUserByUsername("ghost")).thenReturn(Optional.empty());
+
+        ResponseEntity<UserDto> out = controller.getUserByUsername("ghost");
+
+        assertEquals(404, out.getStatusCode().value());
+        assertNull(out.getBody());
+    }
+
+    @Test
+    void getCurrentUser_nullPrincipal_returns401() {
+        ResponseEntity<UserDto> out = controller.getCurrentUser(null);
+
+        assertEquals(401, out.getStatusCode().value());
+    }
+
+    @Test
+    void getCurrentUser_blankUsername_returns401() {
+        UserDetails auth = User.withUsername(" ").password("p").roles("BURUH").build();
+
+        ResponseEntity<UserDto> out = controller.getCurrentUser(auth);
+
+        assertEquals(401, out.getStatusCode().value());
+    }
+
+    @Test
+    void getCurrentUser_found_returnsOk() {
+        UserDetails auth = User.withUsername("alice").password("p").roles("BURUH").build();
+        UserDto dto = new UserDto(1L, "A", "alice", Role.BURUH, null, null);
+        when(userService.getUserByUsername("alice")).thenReturn(Optional.of(dto));
+
+        ResponseEntity<UserDto> out = controller.getCurrentUser(auth);
+
+        assertEquals(200, out.getStatusCode().value());
+        assertEquals("alice", out.getBody().getUsername());
+    }
+
+    @Test
+    void getCurrentUser_missingUser_returns404() {
+        UserDetails auth = User.withUsername("ghost").password("p").roles("BURUH").build();
+        when(userService.getUserByUsername("ghost")).thenReturn(Optional.empty());
+
+        ResponseEntity<UserDto> out = controller.getCurrentUser(auth);
+
+        assertEquals(404, out.getStatusCode().value());
+    }
+
+    @Test
     void example_returnsFormattedString() {
         UserDetails auth = User.withUsername("alice").password("p").roles("BURUH").build();
         UserDto dto = new UserDto(1L, "A", "alice", Role.BURUH, null, null);

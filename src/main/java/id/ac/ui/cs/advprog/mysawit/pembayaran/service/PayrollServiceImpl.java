@@ -16,7 +16,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import java.util.Map;
 
@@ -27,9 +26,6 @@ public class PayrollServiceImpl implements PayrollService {
     private final UserRepository userRepository;
     private final WageSettingService wageSettingService;
     private final Map<String, WageCalculationStrategy> wageStrategies;
-
-    // 90% logic meaning multiplier is 0.9
-    private static final BigDecimal WAGE_MULTIPLIER = new BigDecimal("0.90");
 
     public PayrollServiceImpl(PayrollRepository payrollRepository,
                               UserRepository userRepository,
@@ -85,14 +81,14 @@ public class PayrollServiceImpl implements PayrollService {
         }
         List<Payroll> payrolls = payrollRepository
                 .findByUsernameAndDateFilter(username, startDate, endDate);
-        return payrolls.stream().map(this::mapToResponse).collect(Collectors.toList());
+        return payrolls.stream().map(this::mapToResponse).toList();
     }
 
     @Override
     public List<PayrollResponse> getPayrollsForWorker(
             String username, LocalDate startDate, LocalDate endDate, String status) {
         List<Payroll> payrolls = payrollRepository.findByUsernameAndFilter(username, startDate, endDate, status);
-        return payrolls.stream().map(this::mapToResponse).collect(Collectors.toList());
+        return payrolls.stream().map(this::mapToResponse).toList();
     }
 
     @Override

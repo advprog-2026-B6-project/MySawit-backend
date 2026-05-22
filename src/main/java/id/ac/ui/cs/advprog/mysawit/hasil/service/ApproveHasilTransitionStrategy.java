@@ -6,11 +6,11 @@ import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
 
 @Component
 public class ApproveHasilTransitionStrategy implements HasilStatusTransitionStrategy {
-    public static final String ACTION = "approve";
+    public static final String ACTION_NAME = "approve";
 
     @Override
     public String action() {
-        return ACTION;
+        return ACTION_NAME;
     }
 
     @Override

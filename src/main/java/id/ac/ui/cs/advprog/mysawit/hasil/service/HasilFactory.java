@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import id.ac.ui.cs.advprog.mysawit.hasil.model.Hasil;
@@ -14,6 +15,7 @@ import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
 public class HasilFactory {
     private final Clock clock;
 
+    @Autowired
     public HasilFactory() {
         this(Clock.systemDefaultZone());
     }

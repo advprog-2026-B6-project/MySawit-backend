@@ -20,11 +20,13 @@ public class Hasil {
         );
     }
 
+    @SuppressWarnings("java:S107")
     public static Hasil of(String id, String workerId, java.time.LocalDate hasilDate, double weightKg,
                            String news, List<String> photoUrls, boolean locked, HasilStatus status) {
         return of(id, workerId, hasilDate, weightKg, news, photoUrls, locked, status, null, false);
     }
 
+    @SuppressWarnings("java:S107")
     public static Hasil of(String id, String workerId, java.time.LocalDate hasilDate, double weightKg,
                            String news, List<String> photoUrls, boolean locked, HasilStatus status,
                            String rejectionReason, boolean visibleForPengiriman) {
@@ -82,5 +84,4 @@ public class Hasil {
         return data.visibleForPengiriman();
     }
 }
-
 

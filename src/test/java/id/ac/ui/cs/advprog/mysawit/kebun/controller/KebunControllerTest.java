@@ -39,6 +39,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("java:S6068")
 class KebunControllerTest {
 
     private MockMvc mockMvc;

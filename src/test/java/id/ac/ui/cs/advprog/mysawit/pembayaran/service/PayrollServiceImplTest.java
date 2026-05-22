@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-public class PayrollServiceImplTest {
+class PayrollServiceImplTest {
 
     @Mock
     private PayrollRepository payrollRepository;
@@ -110,6 +110,30 @@ public class PayrollServiceImplTest {
         assertEquals(1L, response.getId());
         assertEquals("PENDING", response.getStatus());
         verify(payrollRepository, times(1)).save(any(Payroll.class));
+    }
+
+    @Test
+    void getPayrollsByUsernameForAdmin_returnsMappedResponses() {
+        Payroll payroll = new Payroll();
+        payroll.setId(10L);
+        payroll.setUsername("budi");
+        payroll.setStartDate(LocalDate.of(2026, 5, 1));
+        payroll.setEndDate(LocalDate.of(2026, 5, 31));
+        payroll.setTotalKg(new BigDecimal("100"));
+        payroll.setTotalWage(new BigDecimal("9000.00"));
+        payroll.setStatus("PENDING");
+
+        when(userRepository.existsByUsername("budi")).thenReturn(true);
+        when(payrollRepository.findByUsernameAndDateFilter(
+                "budi", LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 31)))
+                .thenReturn(List.of(payroll));
+
+        List<PayrollResponse> responses = payrollService.getPayrollsByUsernameForAdmin(
+                "budi", LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 31));
+
+        assertEquals(1, responses.size());
+        assertEquals(10L, responses.get(0).getId());
+        assertEquals("PENDING", responses.get(0).getStatus());
     }
 
     @Test

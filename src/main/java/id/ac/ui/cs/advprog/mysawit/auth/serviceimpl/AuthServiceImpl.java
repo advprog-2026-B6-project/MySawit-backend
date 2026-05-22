@@ -10,6 +10,7 @@ import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.auth.security.JwtUtil;
 import id.ac.ui.cs.advprog.mysawit.auth.service.AuthService;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,12 +33,12 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse login(LoginRequest request) {
         Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
         if (userOptional.isEmpty()) {
-            throw new RuntimeException("Invalid credentials");
+            throw new BadCredentialsException("Invalid credentials");
         }
 
         User user = userOptional.get();
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new BadCredentialsException("Invalid credentials");
         }
 
         String token = jwtUtil.generateToken(user);
@@ -50,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
     public RegisterResponse register(RegisterRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new IllegalArgumentException("Username already exists");
         }
 
         Role finalRole = request.getRole();
@@ -58,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (finalRole == Role.MANDOR
                 && (request.getCertificationNumber() == null || request.getCertificationNumber().isBlank())) {
-            throw new RuntimeException("Mandor must provide certificationNumber");
+            throw new IllegalArgumentException("Mandor must provide certificationNumber");
         }
 
         String cert = (finalRole == Role.MANDOR) ? request.getCertificationNumber() : null;

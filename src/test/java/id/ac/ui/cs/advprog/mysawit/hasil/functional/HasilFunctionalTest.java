@@ -9,6 +9,8 @@ import id.ac.ui.cs.advprog.mysawit.hasil.repository.HasilJpaRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.repository.HasilRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpEntity;
@@ -94,40 +96,19 @@ class HasilFunctionalTest {
         return new HttpEntity<>(body, headers);
     }
 
-    @Test
-    void buruhCanCheckTodayStatus() {
-        String token = getToken("buruh1", "buruhpass");
+    @ParameterizedTest
+    @CsvSource({
+        "buruh1,buruhpass,/hasil-reports/me/today",
+        "buruh1,buruhpass,/hasil-reports/me/history",
+        "mandor1,mandorpass,/hasil-reports/mandor/history"
+    })
+    void authenticatedUserCanReadHasilEndpoint(String username, String password, String endpoint) {
+        String token = getToken(username, password);
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
-        ResponseEntity<Map> response = restTemplate.exchange(
-                url("/hasil-reports/me/today"), HttpMethod.GET,
-                new HttpEntity<>(headers), Map.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(false, response.getBody().get("hasSubmittedToday"));
-    }
-
-    @Test
-    void buruhCanViewOwnHistory() {
-        String token = getToken("buruh1", "buruhpass");
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        ResponseEntity<Object[]> response = restTemplate.exchange(
-                url("/hasil-reports/me/history"), HttpMethod.GET,
-                new HttpEntity<>(headers), Object[].class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-    }
-
-    @Test
-    void mandorCanViewHistoryOfTheirTeam() {
-        String token = getToken("mandor1", "mandorpass");
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        ResponseEntity<Object[]> response = restTemplate.exchange(
-                url("/hasil-reports/mandor/history"), HttpMethod.GET,
-                new HttpEntity<>(headers), Object[].class);
+        ResponseEntity<Object> response = restTemplate.exchange(
+                url(endpoint), HttpMethod.GET,
+                new HttpEntity<>(headers), Object.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());

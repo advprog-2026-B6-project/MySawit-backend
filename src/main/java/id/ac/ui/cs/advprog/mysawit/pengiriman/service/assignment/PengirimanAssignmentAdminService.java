@@ -24,7 +24,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class PengirimanAssignmentAdminService {
@@ -64,28 +63,44 @@ public class PengirimanAssignmentAdminService {
                         normalizedMandorQuery,
                         startAt,
                         endAt);
-        if (approvedAssignments.isEmpty()) {
-            approvedAssignments = pengirimanAssignmentRepository.findAll().stream()
-                    .filter(a -> a.getApproval() == ApprovalAssignment.APPROVED)
-                    .filter(a -> normalizedMandorQuery.isBlank()
-                            || (a.getMandorEmail() == null ? "" : a.getMandorEmail().toLowerCase())
-                            .contains(normalizedMandorQuery))
-                    .filter(a -> {
-                        if (startAt == null && endAt == null) {
-                            return true;
-                        }
-                        if (a.getCreatedAt() == null) {
-                            return false;
-                        }
-                        return (startAt == null || !a.getCreatedAt().isBefore(startAt))
-                                && (endAt == null || !a.getCreatedAt().isAfter(endAt));
-                    })
-                    .toList();
-        }
+        approvedAssignments = fallbackWhenEmpty(approvedAssignments, normalizedMandorQuery, startAt, endAt);
 
         return approvedAssignments.stream()
                 .map(this::toApprovedResponseFromAssignment)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    private List<PengirimanAssignment> fallbackWhenEmpty(List<PengirimanAssignment> assignments,
+                                                         String normalizedMandorQuery,
+                                                         LocalDateTime startAt,
+                                                         LocalDateTime endAt) {
+        if (!assignments.isEmpty()) {
+            return assignments;
+        }
+        return pengirimanAssignmentRepository.findAll().stream()
+                .filter(a -> a.getApproval() == ApprovalAssignment.APPROVED)
+                .filter(a -> matchesMandor(a, normalizedMandorQuery))
+                .filter(a -> matchesCreatedAt(a, startAt, endAt))
+                .toList();
+    }
+
+    private boolean matchesMandor(PengirimanAssignment assignment, String normalizedMandorQuery) {
+        if (normalizedMandorQuery.isBlank()) {
+            return true;
+        }
+        String mandorEmail = assignment.getMandorEmail() == null ? "" : assignment.getMandorEmail().toLowerCase();
+        return mandorEmail.contains(normalizedMandorQuery);
+    }
+
+    private boolean matchesCreatedAt(PengirimanAssignment assignment, LocalDateTime startAt, LocalDateTime endAt) {
+        if (startAt == null && endAt == null) {
+            return true;
+        }
+        if (assignment.getCreatedAt() == null) {
+            return false;
+        }
+        return (startAt == null || !assignment.getCreatedAt().isBefore(startAt))
+                && (endAt == null || !assignment.getCreatedAt().isAfter(endAt));
     }
 
     @Transactional
