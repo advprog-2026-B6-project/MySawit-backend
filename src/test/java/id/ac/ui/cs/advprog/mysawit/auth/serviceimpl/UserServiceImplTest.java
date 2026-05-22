@@ -76,6 +76,18 @@ class UserServiceImplTest {
     }
 
     @Test
+    void deleteUserById_mandorAssignedToBuruh_throwsAndDoesNotDelete() {
+        User mandor = new User(8L, "Mandor", "mandor", "p", Role.MANDOR, "C-1", null);
+        when(userRepository.findById(8L)).thenReturn(Optional.of(mandor));
+        when(userRepository.existsByRoleAndMandorUsername(Role.BURUH, "mandor")).thenReturn(true);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> userService.deleteUserById(8L));
+
+        assertEquals("We cant delete that users as its been assigned to a Buruh", ex.getMessage());
+        verify(userRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
     void deleteUserById_notFound_returnsEmpty() {
         when(userRepository.findById(11L)).thenReturn(Optional.empty());
         Optional<UserDto> dto = userService.deleteUserById(11L);

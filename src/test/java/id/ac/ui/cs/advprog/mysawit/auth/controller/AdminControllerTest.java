@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mysawit.auth.controller;
 
+import id.ac.ui.cs.advprog.mysawit.auth.dto.DeleteUserResponse;
 import id.ac.ui.cs.advprog.mysawit.auth.dto.UserDto;
 import id.ac.ui.cs.advprog.mysawit.auth.model.Role;
 import id.ac.ui.cs.advprog.mysawit.auth.service.UserService;
@@ -41,20 +42,31 @@ class AdminControllerTest {
     }
 
     @Test
-    void deleteUser_found_returnsOk() {
+    void deleteUser_found_returnsNoContent() {
         UserDto dto = new UserDto(1L, "A", "a", Role.BURUH, null, null);
         when(userService.deleteUserById(1L)).thenReturn(Optional.of(dto));
-        ResponseEntity<UserDto> out = controller.deleteUser(1L);
-        assertEquals(200, out.getStatusCode().value());
-        assertEquals(1L, out.getBody().getId());
+        ResponseEntity<DeleteUserResponse> out = controller.deleteUser(1L);
+        assertEquals(204, out.getStatusCode().value());
+        assertNull(out.getBody());
     }
 
     @Test
     void deleteUser_notFound_returns404() {
         when(userService.deleteUserById(2L)).thenReturn(Optional.empty());
-        ResponseEntity<UserDto> out = controller.deleteUser(2L);
+        ResponseEntity<DeleteUserResponse> out = controller.deleteUser(2L);
         assertEquals(404, out.getStatusCode().value());
         assertNull(out.getBody());
+    }
+
+    @Test
+    void deleteUser_illegalState_returns409() {
+        when(userService.deleteUserById(3L))
+                .thenThrow(new IllegalStateException("We cant delete that users as its been assigned to a Buruh"));
+        ResponseEntity<DeleteUserResponse> out = controller.deleteUser(3L);
+        assertEquals(409, out.getStatusCode().value());
+        DeleteUserResponse body = out.getBody();
+        assertNotNull(body);
+        assertEquals("We cant delete that users as its been assigned to a Buruh", body.getMessage());
     }
 
     @Test
