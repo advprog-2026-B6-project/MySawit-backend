@@ -1,2 +1,1 @@
-ALTER TABLE payrolls
-    ADD COLUMN reject_reason TEXT;
+ALTER TABLE payrolls ADD COLUMN IF NOT EXISTS reject_reason VARCHAR(255);
