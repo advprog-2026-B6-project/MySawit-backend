@@ -11,6 +11,9 @@ group = "com.example"
 version = "0.0.1-SNAPSHOT"
 description = "MySawit Backend Project"
 
+val midtransVersion = "3.2.2"
+val jwtVersion = "0.11.5"
+
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
@@ -34,43 +37,40 @@ repositories {
 }
 
 dependencies {
-    // 1. Core Web & MVC
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    val midtransVersion = "3.2.2"
-    implementation("com.midtrans:java-library:${midtransVersion}")
-
-    // 2. Database & JPA
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
-    runtimeOnly("org.flywaydb:flyway-database-postgresql")
-    runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("com.h2database:h2") // H2 untuk testing/lokal
-
-    // 3. Security & JWT
+    implementation("org.flywaydb:flyway-core")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("com.midtrans:java-library:${midtransVersion}")
+    implementation("io.jsonwebtoken:jjwt-api:${jwtVersion}")
 
-    // 4. Tools (Lombok & DevTools)
     compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-    testCompileOnly("org.projectlombok:lombok")
-    testAnnotationProcessor("org.projectlombok:lombok")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    annotationProcessor("org.projectlombok:lombok")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-    // 5. Testing
+    runtimeOnly("org.flywaydb:flyway-database-postgresql")
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:${jwtVersion}")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:${jwtVersion}")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
+    testCompileOnly("org.projectlombok:lombok")
+
+    testAnnotationProcessor("org.projectlombok:lombok")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("com.fasterxml.jackson.core:jackson-databind")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    // 6. Monitoring
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.withType<Test> {

@@ -37,6 +37,7 @@ import id.ac.ui.cs.advprog.mysawit.hasil.service.HasilWorkerDirectory;
 import id.ac.ui.cs.advprog.mysawit.hasil.service.JpaHasilWorkerDirectoryAdapter;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("java:S5778")
 class HasilControllerTest {
 
     @Mock

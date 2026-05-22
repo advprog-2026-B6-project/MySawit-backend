@@ -12,20 +12,20 @@ import id.ac.ui.cs.advprog.mysawit.hasil.service.DailySubmissionLimitException;
 
 @RestControllerAdvice
 public class HasilExceptionHandler {
+    private static final String ERROR_KEY = "error";
 
     @ExceptionHandler(DailySubmissionLimitException.class)
     public ResponseEntity<Map<String, String>> handleDailyLimit(DailySubmissionLimitException exception) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", exception.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(ERROR_KEY, exception.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleBadRequest(IllegalArgumentException exception) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", exception.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(ERROR_KEY, exception.getMessage()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, String>> handleForbidden(AccessDeniedException exception) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", exception.getMessage()));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(ERROR_KEY, exception.getMessage()));
     }
 }
-

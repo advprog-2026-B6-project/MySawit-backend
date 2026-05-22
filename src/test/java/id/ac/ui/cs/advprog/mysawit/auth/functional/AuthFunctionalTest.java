@@ -86,9 +86,7 @@ class AuthFunctionalTest {
         ResponseEntity<Map> response = restTemplate.exchange(
                 url("/auth/register"), HttpMethod.POST, jsonBody(body), Map.class);
 
-        // RuntimeException from AuthService is not mapped to 400;
-        // Spring Boot 4 returns 403 via GlobalExceptionHandler
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -117,8 +115,6 @@ class AuthFunctionalTest {
         ResponseEntity<Map> response = restTemplate.exchange(
                 url("/auth/login"), HttpMethod.POST, jsonBody(body), Map.class);
 
-        // RuntimeException from AuthService is not mapped to 400;
-        // Spring Boot 4 returns 403 via GlobalExceptionHandler
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 

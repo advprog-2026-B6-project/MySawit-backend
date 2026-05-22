@@ -19,6 +19,7 @@ public class PengirimanAssignmentResponse {
     public PengirimanAssignmentResponse() {
     }
 
+    @SuppressWarnings("java:S107")
     public PengirimanAssignmentResponse(Long id, String mandorEmail, String supirEmail, double muatanKg, String tujuan,
             StatusAssignment status, ApprovalAssignment approval, String note, LocalDateTime createdAt) {
         this.id = id;

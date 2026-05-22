@@ -4,11 +4,13 @@ import org.junit.jupiter.api.Test;
 
 import id.ac.ui.cs.advprog.mysawit.pengiriman.dto.PayrollRequest;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 class NoOpPayrollRequestClientTest {
 
     @Test
     void sendPayrollRequest_doesNothing() {
         NoOpPayrollRequestClient client = new NoOpPayrollRequestClient();
-        client.sendPayrollRequest(new PayrollRequest());
+        assertDoesNotThrow(() -> client.sendPayrollRequest(new PayrollRequest()));
     }
 }

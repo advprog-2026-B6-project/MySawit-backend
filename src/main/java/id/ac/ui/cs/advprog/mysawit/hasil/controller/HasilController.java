@@ -59,7 +59,6 @@ public class HasilController {
             @RequestParam("news") String news,
             @RequestParam("photos") List<MultipartFile> photos
     ) {
-        // TODO: upload photos using the storage module and store returned URLs.
         String workerId = currentUserService.currentBuruhUsername();
 
         List<String> photoUrls = photos.stream()
@@ -150,6 +149,5 @@ public class HasilController {
         return ResponseEntity.ok(historyQueryService.availableForPengiriman());
     }
 }
-
 
 

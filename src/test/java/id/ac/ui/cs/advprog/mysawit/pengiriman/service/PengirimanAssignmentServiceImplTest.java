@@ -28,6 +28,7 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.PayrollRequestFacto
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("java:S5778")
 class PengirimanAssignmentServiceImplTest {
 
     @Mock
@@ -100,6 +101,21 @@ class PengirimanAssignmentServiceImplTest {
                 .thenReturn(List.of(PengirimanAssignment.builder().id(2L).build()));
 
         assertEquals(1, service.getAssignmentsBySupirEmail("supir@mysawit.id").size());
+    }
+
+    @Test
+    void getAssignmentsByMandorAndSupirEmail_returnsList() {
+        when(repository.findByMandorEmailAndSupirEmail("mandor@mysawit.id", "supir@mysawit.id"))
+                .thenReturn(List.of(PengirimanAssignment.builder()
+                        .id(4L)
+                        .mandorEmail("mandor@mysawit.id")
+                        .supirEmail("supir@mysawit.id")
+                        .build()));
+
+        var result = service.getAssignmentsByMandorAndSupirEmail("mandor@mysawit.id", "supir@mysawit.id");
+
+        assertEquals(1, result.size());
+        assertEquals(4L, result.get(0).getId());
     }
 
     @Test

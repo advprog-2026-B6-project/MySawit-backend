@@ -2,7 +2,6 @@ package id.ac.ui.cs.advprog.mysawit.pengiriman.service;
 
 import java.util.List;
 import java.time.LocalDate;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -57,21 +56,21 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
     public List<PengirimanAssignmentResponse> getAllAssignments() {
         return repository.findAll().stream()
                 .map(PengirimanAssignmentMapper::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<PengirimanAssignmentResponse> getAssignmentsByMandorEmail(String mandorEmail) {
         return repository.findByMandorEmail(mandorEmail).stream()
                 .map(PengirimanAssignmentMapper::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<PengirimanAssignmentResponse> getAssignmentsBySupirEmail(String supirEmail) {
         return repository.findBySupirEmail(supirEmail).stream()
                 .map(PengirimanAssignmentMapper::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -89,7 +88,7 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
                     return afterStart && beforeEnd;
                 })
                 .map(PengirimanAssignmentMapper::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -98,7 +97,7 @@ public class PengirimanAssignmentServiceImpl implements PengirimanAssignmentServ
             String supirEmail) {
         return repository.findByMandorEmailAndSupirEmail(mandorEmail, supirEmail).stream()
                 .map(PengirimanAssignmentMapper::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

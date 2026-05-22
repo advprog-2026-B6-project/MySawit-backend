@@ -43,7 +43,7 @@ public class UserController {
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal UserDetails auth) {
-        if (auth == null || auth.getUsername() == null || auth.getUsername().isBlank()) {
+        if (auth == null || auth.getUsername().isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
