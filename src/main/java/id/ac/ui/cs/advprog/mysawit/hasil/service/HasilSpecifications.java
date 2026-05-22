@@ -33,7 +33,8 @@ public final class HasilSpecifications {
     }
 
     public static HasilSpecification visibleForPengiriman() {
-        return Hasil::isVisibleForPengiriman;
+        return statusIs(HasilStatus.VERIFIED)
+                .and(Hasil::isVisibleForPengiriman);
     }
 
     public static HasilSpecification workerNameContains(
