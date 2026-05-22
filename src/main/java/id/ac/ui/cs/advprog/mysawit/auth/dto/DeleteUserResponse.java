@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,12 +20,13 @@ public class DeleteUserResponse {
     private String message;
 
     public DeleteUserResponse(UserDto user) {
-        this.id = user.getId();
-        this.fullname = user.getFullname();
-        this.username = user.getUsername();
-        this.role = user.getRole();
-        this.certificationNumber = user.getCertificationNumber();
-        this.mandorUsername = user.getMandorUsername();
+        UserDto deletedUser = Objects.requireNonNull(user);
+        this.id = deletedUser.getId();
+        this.fullname = deletedUser.getFullname();
+        this.username = deletedUser.getUsername();
+        this.role = deletedUser.getRole();
+        this.certificationNumber = deletedUser.getCertificationNumber();
+        this.mandorUsername = deletedUser.getMandorUsername();
         this.message = "User deleted successfully.";
     }
 

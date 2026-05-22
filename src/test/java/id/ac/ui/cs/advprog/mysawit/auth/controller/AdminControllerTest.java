@@ -47,7 +47,9 @@ class AdminControllerTest {
         when(userService.deleteUserById(1L)).thenReturn(Optional.of(dto));
         ResponseEntity<DeleteUserResponse> out = controller.deleteUser(1L);
         assertEquals(200, out.getStatusCode().value());
-        assertEquals(1L, out.getBody().getId());
+        DeleteUserResponse body = out.getBody();
+        assertNotNull(body);
+        assertEquals(1L, body.getId());
     }
 
     @Test
@@ -64,7 +66,9 @@ class AdminControllerTest {
                 .thenThrow(new IllegalStateException("We cant delete that users as its been assigned to a Buruh"));
         ResponseEntity<DeleteUserResponse> out = controller.deleteUser(3L);
         assertEquals(409, out.getStatusCode().value());
-        assertTrue(out.getBody().getMessage().contains("assigned to a Buruh"));
+        DeleteUserResponse body = out.getBody();
+        assertNotNull(body);
+        assertEquals("We cant delete that users as its been assigned to a Buruh", body.getMessage());
     }
 
     @Test

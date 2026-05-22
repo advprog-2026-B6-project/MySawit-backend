@@ -49,17 +49,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<UserDto> deleteUserById(Long id) {
-        Optional<User> userOpt = userRepository.findById(id);
-        Optional<UserDto> dtoOpt = userOpt.map(UserDto::new);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            if (user.getRole() == Role.MANDOR
-                    && userRepository.existsByRoleAndMandorUsername(Role.BURUH, user.getUsername())) {
-                throw new IllegalStateException(MANDOR_ASSIGNED_TO_BURUH_MESSAGE);
-            }
+        return userRepository.findById(id).map(user -> {
+            rejectDeletingAssignedMandor(user);
             userRepository.deleteById(id);
+            return new UserDto(user);
+        });
+    }
+
+    private void rejectDeletingAssignedMandor(User user) {
+        if (user.getRole() == Role.MANDOR
+                && userRepository.existsByRoleAndMandorUsername(Role.BURUH, user.getUsername())) {
+            throw new IllegalStateException(MANDOR_ASSIGNED_TO_BURUH_MESSAGE);
         }
-        return dtoOpt;
     }
 
     @Override
