@@ -16,6 +16,7 @@ import java.util.Map;
 @RequestMapping("/kebun")
 
 public class KebunAssignmentController {
+    private static final String MESSAGE_KEY = "message";
 
     private final KebunAssignmentService assignmentService;
 
@@ -31,7 +32,7 @@ public class KebunAssignmentController {
             @Valid @RequestBody AssignMandorRequest request) {
         assignmentService.assignMandor(kebunId, request.getMandorId());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "Mandor berhasil ditugaskan ke kebun"));
+                .body(Map.of(MESSAGE_KEY, "Mandor berhasil ditugaskan ke kebun"));
     }
 
     @PutMapping("/mandor/reassign")
@@ -40,7 +41,7 @@ public class KebunAssignmentController {
                 request.getMandorId(),
                 request.getFromKebunId(),
                 request.getToKebunId());
-        return ResponseEntity.ok(Map.of("message", "Mandor berhasil dipindahkan ke kebun baru"));
+        return ResponseEntity.ok(Map.of(MESSAGE_KEY, "Mandor berhasil dipindahkan ke kebun baru"));
     }
 
     // === SUPIR ASSIGNMENT ===
@@ -51,7 +52,7 @@ public class KebunAssignmentController {
             @Valid @RequestBody AssignSupirRequest request) {
         assignmentService.assignSupir(kebunId, request.getSupirId());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "Supir Truk berhasil ditugaskan ke kebun"));
+                .body(Map.of(MESSAGE_KEY, "Supir Truk berhasil ditugaskan ke kebun"));
     }
 
     @PutMapping("/supir/reassign")
@@ -60,6 +61,6 @@ public class KebunAssignmentController {
                 request.getSupirId(),
                 request.getFromKebunId(),
                 request.getToKebunId());
-        return ResponseEntity.ok(Map.of("message", "Supir Truk berhasil dipindahkan ke kebun baru"));
+        return ResponseEntity.ok(Map.of(MESSAGE_KEY, "Supir Truk berhasil dipindahkan ke kebun baru"));
     }
 }

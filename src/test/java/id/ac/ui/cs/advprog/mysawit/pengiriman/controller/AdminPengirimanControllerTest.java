@@ -32,6 +32,7 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.model.StatusPengiriman;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.PengirimanService;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings({"java:S5778", "java:S6068"})
 class AdminPengirimanControllerTest {
 
     @Mock

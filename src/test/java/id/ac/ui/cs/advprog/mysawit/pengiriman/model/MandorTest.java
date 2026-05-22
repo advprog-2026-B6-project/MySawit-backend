@@ -26,10 +26,10 @@ class MandorTest {
         User supir  = new User("Cici",  "cici",  "secret", Role.SUPIR,  null);
         User admin  = new User("Dodi",  "dodi",  "secret", Role.ADMIN,  null);
 
-        assertTrue(mandor.getRole() == Role.MANDOR);
-        assertFalse(buruh.getRole()  == Role.MANDOR);
-        assertFalse(supir.getRole()  == Role.MANDOR);
-        assertFalse(admin.getRole()  == Role.MANDOR);
+        assertSame(Role.MANDOR, mandor.getRole());
+        assertNotSame(Role.MANDOR, buruh.getRole());
+        assertNotSame(Role.MANDOR, supir.getRole());
+        assertNotSame(Role.MANDOR, admin.getRole());
     }
 
     @Test

@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-public class PayrollServiceImplTest {
+class PayrollServiceImplTest {
 
     @Mock
     private PayrollRepository payrollRepository;

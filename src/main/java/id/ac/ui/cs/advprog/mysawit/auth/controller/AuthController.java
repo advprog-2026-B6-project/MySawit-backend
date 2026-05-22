@@ -48,7 +48,7 @@ public class AuthController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> helloAdmin() {
         Map<String, String> body = new HashMap<>();
-        body.put("message", "hello");
+        body.put("message", "hello admin");
         return ResponseEntity.ok(body);
 
     }

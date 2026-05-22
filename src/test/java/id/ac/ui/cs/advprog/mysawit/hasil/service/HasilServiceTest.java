@@ -20,6 +20,7 @@ import id.ac.ui.cs.advprog.mysawit.hasil.model.HasilStatus;
 import id.ac.ui.cs.advprog.mysawit.hasil.repository.HasilRepository;
 import id.ac.ui.cs.advprog.mysawit.hasil.repository.InMemoryHasilRepository;
 
+@SuppressWarnings("java:S5778")
 class HasilServiceTest {
     private HasilService service;
     private FakePayrollService payrollService;
@@ -168,5 +169,4 @@ class HasilServiceTest {
 
     }
 }
-
 

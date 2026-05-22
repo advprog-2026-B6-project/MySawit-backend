@@ -88,13 +88,14 @@ public class HasilServiceImpl implements HasilService {
     @Override
     @Transactional
     public Hasil approve(String reportId) {
-        return transition(reportId, ApproveHasilTransitionStrategy.ACTION, HasilTransitionRequest.empty());
+        return transition(reportId, ApproveHasilTransitionStrategy.ACTION_NAME, HasilTransitionRequest.empty());
     }
 
     @Override
     @Transactional
     public Hasil reject(String reportId, String rejectionReason) {
-        return transition(reportId, RejectHasilTransitionStrategy.ACTION, new HasilTransitionRequest(rejectionReason));
+        HasilTransitionRequest request = new HasilTransitionRequest(rejectionReason);
+        return transition(reportId, RejectHasilTransitionStrategy.ACTION_NAME, request);
     }
 
     @Override
@@ -122,6 +123,4 @@ public class HasilServiceImpl implements HasilService {
         return savedReport;
     }
 }
-
-
 

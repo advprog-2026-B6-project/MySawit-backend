@@ -6,6 +6,8 @@ import id.ac.ui.cs.advprog.mysawit.auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.mysawit.pengiriman.repository.PengirimanAssignmentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpEntity;
@@ -97,37 +99,18 @@ class PengirimanAssignmentFunctionalTest {
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
-    @Test
-    void mandorCanViewAllAssignments() {
-        String token = getToken("mandor@mysawit.id", "mandorpass");
+    @ParameterizedTest
+    @CsvSource({
+        "mandor@mysawit.id,mandorpass,/api/pengiriman/assignments",
+        "mandor@mysawit.id,mandorpass,/api/pengiriman/assignments/me/mandor",
+        "supir@mysawit.id,supirpass,/api/pengiriman/assignments/me/supir"
+    })
+    void authenticatedUserCanViewAssignmentEndpoint(String username, String password, String endpoint) {
+        String token = getToken(username, password);
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         ResponseEntity<Map> response = restTemplate.exchange(
-                url("/api/pengiriman/assignments"), HttpMethod.GET,
-                new HttpEntity<>(headers), Map.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
-
-    @Test
-    void mandorCanViewOwnAssignments() {
-        String token = getToken("mandor@mysawit.id", "mandorpass");
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        ResponseEntity<Map> response = restTemplate.exchange(
-                url("/api/pengiriman/assignments/me/mandor"), HttpMethod.GET,
-                new HttpEntity<>(headers), Map.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
-
-    @Test
-    void supirCanViewOwnAssignments() {
-        String token = getToken("supir@mysawit.id", "supirpass");
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        ResponseEntity<Map> response = restTemplate.exchange(
-                url("/api/pengiriman/assignments/me/supir"), HttpMethod.GET,
+                url(endpoint), HttpMethod.GET,
                 new HttpEntity<>(headers), Map.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());

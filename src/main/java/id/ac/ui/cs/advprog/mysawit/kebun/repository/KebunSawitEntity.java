@@ -27,30 +27,22 @@ public class KebunSawitEntity {
     private Double luasHektare;
 
     @Embedded
-    @AttributeOverrides({
-        @AttributeOverride(name = "x", column = @Column(name = "kiri_atas_x")),
-        @AttributeOverride(name = "y", column = @Column(name = "kiri_atas_y"))
-    })
+    @AttributeOverride(name = "x", column = @Column(name = "kiri_atas_x"))
+    @AttributeOverride(name = "y", column = @Column(name = "kiri_atas_y"))
     private CoordinateEmbeddable kiriAtas;
 
     @Embedded
-    @AttributeOverrides({
-        @AttributeOverride(name = "x", column = @Column(name = "kiri_bawah_x")),
-        @AttributeOverride(name = "y", column = @Column(name = "kiri_bawah_y"))
-    })
+    @AttributeOverride(name = "x", column = @Column(name = "kiri_bawah_x"))
+    @AttributeOverride(name = "y", column = @Column(name = "kiri_bawah_y"))
     private CoordinateEmbeddable kiriBawah;
 
     @Embedded
-    @AttributeOverrides({
-        @AttributeOverride(name = "x", column = @Column(name = "kanan_atas_x")),
-        @AttributeOverride(name = "y", column = @Column(name = "kanan_atas_y"))
-    })
+    @AttributeOverride(name = "x", column = @Column(name = "kanan_atas_x"))
+    @AttributeOverride(name = "y", column = @Column(name = "kanan_atas_y"))
     private CoordinateEmbeddable kananAtas;
 
     @Embedded
-    @AttributeOverrides({
-        @AttributeOverride(name = "x", column = @Column(name = "kanan_bawah_x")),
-        @AttributeOverride(name = "y", column = @Column(name = "kanan_bawah_y"))
-    })
+    @AttributeOverride(name = "x", column = @Column(name = "kanan_bawah_x"))
+    @AttributeOverride(name = "y", column = @Column(name = "kanan_bawah_y"))
     private CoordinateEmbeddable kananBawah;
 }

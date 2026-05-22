@@ -28,6 +28,7 @@ import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.PayrollRequestFacto
 import id.ac.ui.cs.advprog.mysawit.pengiriman.service.shared.SupirIdentityMapper;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("java:S5778")
 class PengirimanAssignmentServiceImplTest {
 
     @Mock

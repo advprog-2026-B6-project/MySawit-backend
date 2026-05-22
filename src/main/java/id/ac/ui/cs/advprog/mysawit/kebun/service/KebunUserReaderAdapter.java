@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class KebunUserReaderAdapter implements KebunUserReader {
@@ -31,14 +30,14 @@ public class KebunUserReaderAdapter implements KebunUserReader {
         return userRepository.findAll().stream()
                 .filter(u -> u.getRole() == roleEnum)
                 .map(this::toSnapshot)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<UserSnapshot> findUsersByIds(List<Long> userIds) {
         return userRepository.findAllById(userIds).stream()
                 .map(this::toSnapshot)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private UserSnapshot toSnapshot(User user) {

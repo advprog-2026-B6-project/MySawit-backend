@@ -37,6 +37,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("java:S6068")
 class PengirimanControllerTest {
 
     @Mock

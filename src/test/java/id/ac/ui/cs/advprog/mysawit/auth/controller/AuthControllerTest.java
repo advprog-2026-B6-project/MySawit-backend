@@ -56,6 +56,6 @@ class AuthControllerTest {
     void helloAdmin_returnsMessage() {
         ResponseEntity<Map<String, String>> out = controller.helloAdmin();
         assertEquals(200, out.getStatusCode().value());
-        assertEquals("hello", out.getBody().get("message"));
+        assertEquals("hello admin", out.getBody().get("message"));
     }
 }
