@@ -104,6 +104,21 @@ class PengirimanAssignmentServiceImplTest {
     }
 
     @Test
+    void getAssignmentsByMandorAndSupirEmail_returnsList() {
+        when(repository.findByMandorEmailAndSupirEmail("mandor@mysawit.id", "supir@mysawit.id"))
+                .thenReturn(List.of(PengirimanAssignment.builder()
+                        .id(4L)
+                        .mandorEmail("mandor@mysawit.id")
+                        .supirEmail("supir@mysawit.id")
+                        .build()));
+
+        var result = service.getAssignmentsByMandorAndSupirEmail("mandor@mysawit.id", "supir@mysawit.id");
+
+        assertEquals(1, result.size());
+        assertEquals(4L, result.get(0).getId());
+    }
+
+    @Test
     void getRiwayatAssignmentsBySupirEmail_filtersByDate() {
         PengirimanAssignment assignment = PengirimanAssignment.builder()
                 .id(3L)
