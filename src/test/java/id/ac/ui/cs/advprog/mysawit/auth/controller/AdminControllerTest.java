@@ -42,14 +42,12 @@ class AdminControllerTest {
     }
 
     @Test
-    void deleteUser_found_returnsOk() {
+    void deleteUser_found_returnsNoContent() {
         UserDto dto = new UserDto(1L, "A", "a", Role.BURUH, null, null);
         when(userService.deleteUserById(1L)).thenReturn(Optional.of(dto));
         ResponseEntity<DeleteUserResponse> out = controller.deleteUser(1L);
-        assertEquals(200, out.getStatusCode().value());
-        DeleteUserResponse body = out.getBody();
-        assertNotNull(body);
-        assertEquals(1L, body.getId());
+        assertEquals(204, out.getStatusCode().value());
+        assertNull(out.getBody());
     }
 
     @Test

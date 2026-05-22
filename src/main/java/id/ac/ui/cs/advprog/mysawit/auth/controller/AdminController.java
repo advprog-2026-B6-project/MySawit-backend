@@ -41,8 +41,10 @@ public class AdminController {
     public ResponseEntity<DeleteUserResponse> deleteUser(@PathVariable Long id) {
         try {
             Optional<UserDto> deleted = userService.deleteUserById(id);
-            return deleted.map((user) -> ResponseEntity.ok(new DeleteUserResponse(user)))
-                    .orElseGet(() -> ResponseEntity.notFound().build());
+            if (deleted.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
+            return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new DeleteUserResponse(e.getMessage()));
         }
