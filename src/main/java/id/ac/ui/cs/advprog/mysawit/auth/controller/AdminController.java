@@ -44,7 +44,7 @@ public class AdminController {
             if (deleted.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
             }
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new DeleteUserResponse(e.getMessage()));
         }
