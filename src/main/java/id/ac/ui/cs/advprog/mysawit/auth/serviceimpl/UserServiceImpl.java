@@ -13,6 +13,9 @@ import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
+    private static final String MANDOR_ASSIGNED_TO_BURUH_MESSAGE =
+            "We cant delete that users as its been assigned to a Buruh";
+
     private final UserRepository userRepository;
 
     public UserServiceImpl(UserRepository userRepository) {
@@ -48,7 +51,12 @@ public class UserServiceImpl implements UserService {
     public Optional<UserDto> deleteUserById(Long id) {
         Optional<User> userOpt = userRepository.findById(id);
         Optional<UserDto> dtoOpt = userOpt.map(UserDto::new);
-        if (dtoOpt.isPresent()) {
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (user.getRole() == Role.MANDOR
+                    && userRepository.existsByRoleAndMandorUsername(Role.BURUH, user.getUsername())) {
+                throw new IllegalStateException(MANDOR_ASSIGNED_TO_BURUH_MESSAGE);
+            }
             userRepository.deleteById(id);
         }
         return dtoOpt;
